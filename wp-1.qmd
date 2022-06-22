@@ -1,0 +1,42 @@
+---
+title: "WP 1"
+subtitle: |
+  Research into worldwide grid framework
+author:
+  name: Nicolas Palominos
+date: "2022-06"
+date-format: "MMMM, YYYY"
+format: 
+  html:
+    code-fold: true
+    toc: true
+    toc-title: Contents
+    toc-location: left
+    link-external-newwindow: true
+    linkcolor: "#6EC0A5"
+    backgroundcolor: "#FFFFF9"
+    mainfont: "Trebuchet MS"
+---
+
+## Section 1
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec condimentum commodo massa vel commodo. Proin commodo elementum ex faucibus egestas. Vestibulum ac imperdiet augue. Vestibulum placerat porttitor massa, vitae elementum ante euismod sed. Mauris hendrerit eros nec tempor aliquet. Nam ut bibendum mi, ut viverra nibh.
+
+## Section 2
+
+Fusce eget mi sed diam mollis sollicitudin vitae ut risus. Aliquam scelerisque non dolor id tincidunt. Maecenas urna dolor, viverra ac tempor mollis, hendrerit non lorem. Cras feugiat urna ac est porttitor, quis porttitor neque tempus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
+
+```{r}
+#| results: asis
+1 + 1
+```
+
+Sed tincidunt lobortis mi, a vehicula nisi congue eget. Donec vestibulum aliquet lectus, ac condimentum turpis. Fusce ut consectetur tortor. Donec dictum aliquam magna. Nunc maximus laoreet egestas. Integer lacus mauris, iaculis eget massa ac, auctor feugiat felis. Morbi dapibus turpis in metus euismod vehicula. 
+
+```{r}
+#| echo: false
+#| results: hide
+2 * 2
+```
+
+Sed tincidunt lobortis mi, a `vehicula nisi congue eget`. Donec vestibulum aliquet lectus, ac condimentum turpis.

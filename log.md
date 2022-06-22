@@ -8,6 +8,42 @@ Original Publish Date: 2022-06-22 <br> Updated on: 2022-06-22
 
 date: 2022-06-22
 
+-   Connecting cities, interconnectivity
+
+-   Relevant for others using the data
+
+-   Spatial unit of analysis: is the grid and then is mapped to the
+    streets
+
+-   Problems: Air quality modelling data 20x20 grid (highest
+    resolution), not connected to anything (good to look at streets and
+    park areas)
+
+-   How can our own grid be created? Limitations?
+
+-   Moving data is not necessarily an issue. high resolution,
+    low-resolution jump between urban/rural areas
+
+-   Avoid processing time and not lose resolution level
+
+-   How is the grid produced? How can other people use it?
+
+-   The main thing is researching other ones that would be relevant.
+
+-   Tiling systems (e.g. Google Maps, OSM), maybe look at OGC standards.
+
+-   No visualisations yet
+
+-   How can TC contribute to OSM? This would be a pro
+
+references:
+
+-   <https://www.ogc.org/>
+
+-   <https://h3geo.org/docs/core-library/>
+
+-   <https://wiki.openstreetmap.org/wiki/H3>
+
 ## Project Brief
 
 **Worldwide Database Creation Model**

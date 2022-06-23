@@ -1,7 +1,7 @@
 ---
-title: "WP 1"
+title: "Research into worldwide grid framework"
 subtitle: |
-  Research into worldwide grid framework
+  WP 1
 author:
   name: Nicolas Palominos
 date: "2022-06"
@@ -27,7 +27,7 @@ TranquilCity (TC) is looking into scaling its air and noise pollution indices wo
 3.  What are the specific limitations of creating their own grid system? e.g. geographic extent vs processing time at the expense of losing spatial resolution
 4.  Besides the Uber's H3 and Whatthreewords grid, what other grid systems are available and relevant?
 
-This notebook first reviews the nature of spatial grids, then it outlines a brief description of existing grid systems and finally summarises their advantages and disadvantages
+This notebook first reviews the nature of spatial grids, then it outlines a brief description of existing grid systems and finally concludes with final comments and recommendations.
 
 ## Spatial grids
 
@@ -35,15 +35,15 @@ Grids are frequently used to study physical space, for observations (collecting 
 
 Even though for TC the main purpose is to create and indexing solution, the statements below reveal useful concepts for the definition of a grid system. More advanced tools and technoques for spatial analysis can be found in the chapter 'Building Blocks of Spatial Analysis' from [Geospatial Analysis 6th Edition, 2021 update](https://spatialanalysisonline.com/HTML/index.html).
 
-Grids can be classified as irregular and regular. Both follow the same principle of dividing a region into a set of non-overlapping areas. A common method for subdividing space from existing point observations is the Voronoi tessellation (which is the dual of a [Delaunay triangulation](https://miro.medium.com/max/1400/1*LI-z6a73mRYupGMQs9Ar2Q.gif), see figures below) and creates irregular cells based on the **distance** between points (panel B in Fig.2).
+Grids can be classified as irregular and regular. Both follow the same principle of dividing a region into a set of non-overlapping areas. A common method for subdividing space from existing point observations is the Voronoi tessellation (which is the dual of a [Delaunay triangulation](https://miro.medium.com/max/1400/1*LI-z6a73mRYupGMQs9Ar2Q.gif), see figures below) and creates irregular cells based on the **distance** between points (panel B in Fig.1b).
 
-![Fig.1 A Delaunay triangulation of set of points (blue) converted to a voronoi diagram (red)](https://mathworld.wolfram.com/images/eps-svg/DelaunayTriangulation_1000.svg){width="500"} 
+![Fig.1a A Delaunay triangulation of set of points (blue) converted to a voronoi diagram (red)](https://mathworld.wolfram.com/images/eps-svg/DelaunayTriangulation_1000.svg){width="500"} 
 
-![Fig.2 Steps for the creation of Voronoi polygons from a set of points](https://www.frontiersin.org/files/Articles/418641/fbuil-04-00078-HTML/image_m/fbuil-04-00078-g002.jpg){width="500"}
+![Fig.1b Steps for the creation of Voronoi polygons from a set of points](https://www.frontiersin.org/files/Articles/418641/fbuil-04-00078-HTML/image_m/fbuil-04-00078-g002.jpg){width="500"}
 
 Another typical approach in Geographic Information Systems is the creation of regular grids. "The rectangular grid is generally preferred because of its symmetrical, orthogonal co-ordinate system and the frequent use of rasters". "Remotely sensed data are stored as pixels in regular lattices. Thus, regular lattices are important for experimental and observational science, as well as providing the most common framework for spatially explicit models" [^1]. Mathematically reasoning yields only [3 regular tessellations of a plane](https://en.wikipedia.org/wiki/List_of_regular_polytopes_and_compounds#Euclidean_tilings): Square tilling, Triangular tilling and Hexagonal tilling. The following section reviews existing grid systems commonly used for spatial applications.
 
-![Regular tesselations](https://mathworld.wolfram.com/images/eps-svg/RegularTessellations_1000.svg)
+![Fig.2 Regular tesselations](https://mathworld.wolfram.com/images/eps-svg/RegularTessellations_1000.svg)
 
 [^1]: Birch, C.P.D., Oom, S.P. and Beecham, J.A. (2007) 'Rectangular and hexagonal grids used for observation, experiment and simulation in ecology', Ecological Modelling, 206(3), pp. 347--359. doi:10.1016/j.ecolmodel.2007.03.041.
 
@@ -118,18 +118,30 @@ The [DGGRID](https://www.discreteglobalgrids.org/) project from the Southern Ore
 
 ## Conclusions and recommendations
 
-According to the information reviewed it is clear that for the purposes of scaling TC's methodology in an efficient and interoperable way a number of solutions are easily accessible. From these and given the advantages (and popularity of its implementation) an hexagon-based grid is recommended and would work for both summarising data at a convenient resolution and sharing the information. 
+According to the information reviewed it is clear that for the purposes of scaling TC's methodology in an efficient and interoperable way a number of solutions are easily and accessible and most commonly free. From these and given the advantages (and popularity of its implementation) an hexagon-based grid is recommended and would work for both summarising data at a convenient resolution and sharing the information. Additionally, although not yet discussed, it has been shown that hexagonal grids outperform square grids when conducting more advanced spatial analysis, in particular network analysis due to its lesser ambiguity in the identification of neighbours.
+
+![Fig.8 Nearest neighbour interaction comparison between squares and hexagons (source:1)](img/nn.png)
 
 Both the Uber H3 and the DGGRID have a number of openly accessible resources for a convenient implementation and integration with other platforms. A recent paper (2020) evaluating the compliance of these libraries against OGC specifications concludes that "the H3 library appears to be the most complete, lacking only criterion 7": Equal area precision. The method of evaluation considered the use of the libraries "as a comprehensive approach for geocoding, addressing, and discretizing of geospatial data, as well as effective ways for its analysis and display". The paper further suggests that "Further work developing operational DGGS that solve real world problems may promote greater community adoption and integration of DGGS data structures into commonly used geospatial platforms". Nevertheless, given the available explicit documentation and continuing development it can be inferred that the H3 grid system is likely to be implemented as the facto system by both the industry and scientific communities.
 
-![Fig.8 Hierarchical partition of space with (a) aperture 3, (b) aperture 4, and (c) aperture 7 hexagon levels (source:4)](img/hex347.png)
+![Fig.9 Hierarchical partition of space with (a) aperture 3, (b) aperture 4, and (c) aperture 7 hexagon levels (source:4)](img/hex347.png)
 This [interactive map](https://wolf-h3-viewer.glitch.me/) by [Cristian Lupașcu](https://github.com/clupasq) shows the hierarchical structure and resolution of the H3 grid system.
 
-### Resources
+### Extra resources
 
 [Research into innovative DGGS indexing](https://landscape-geoinformatics.ut.ee/dggs-en)
 
 [Discrete Global Grid Systems presented by OGC](https://www.youtube.com/watch?v=xh5csOiRVsk)
+
+[Spatial Pattern Analysis in Plant Ecology](http://nozdr.ru/data/media/biblio/kolxoz/B/Dale%20M.R.T.%20Spatial%20pattern%20analysis%20in%20plant%20ecology%20(CUP,%201999)(ISBN%200521452279)(337s)_B_.pdf)
+
+[Rectangular and hexagonal grids used for observation, experiment and simulation in ecology](https://www-sciencedirect-com.libproxy.ucl.ac.uk/science/article/pii/S0304380007001949#fig4)
+
+[Discrete Global Grid Systems: Operational Capability of the Current State of the Art](http://ceur-ws.org/Vol-2323/SKI-Canada-2019-7-6-1.pdf)
+
+[Wbmap Tiles - client-side raster reprojection capabilities from OSM (EPSG:3857)](https://openlayers.org/en/latest/examples/reprojection-by-code.html)
+
+
 
 
 

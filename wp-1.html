@@ -8,7 +8,7 @@
 
 <meta name="author" content="Nicolas Palominos">
 
-<title>WP 1</title>
+<title>Research into worldwide grid framework</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -52,7 +52,7 @@ ul.task-list{list-style: none;}
   </ul></li>
   <li><a href="#conclusions-and-recommendations" id="toc-conclusions-and-recommendations" class="nav-link" data-scroll-target="#conclusions-and-recommendations">Conclusions and recommendations</a>
   <ul class="collapse">
-  <li><a href="#resources" id="toc-resources" class="nav-link" data-scroll-target="#resources">Resources</a></li>
+  <li><a href="#extra-resources" id="toc-extra-resources" class="nav-link" data-scroll-target="#extra-resources">Extra resources</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -63,8 +63,8 @@ ul.task-list{list-style: none;}
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">WP 1</h1>
-<p class="subtitle lead"></p><p>Research into worldwide grid framework</p><p></p>
+<h1 class="title">Research into worldwide grid framework</h1>
+<p class="subtitle lead"></p><p>WP 1</p><p></p>
 </div>
 
 
@@ -107,24 +107,24 @@ ul.task-list{list-style: none;}
 <h2 class="anchored" data-anchor-id="spatial-grids">Spatial grids</h2>
 <p>Grids are frequently used to study physical space, for observations (collecting data), experiments and simulations (modelling). In spatial analysis grids are often defined to sample, index, or partition a study area.</p>
 <p>Even though for TC the main purpose is to create and indexing solution, the statements below reveal useful concepts for the definition of a grid system. More advanced tools and technoques for spatial analysis can be found in the chapter ‘Building Blocks of Spatial Analysis’ from <a href="https://spatialanalysisonline.com/HTML/index.html">Geospatial Analysis 6th Edition, 2021 update</a>.</p>
-<p>Grids can be classified as irregular and regular. Both follow the same principle of dividing a region into a set of non-overlapping areas. A common method for subdividing space from existing point observations is the Voronoi tessellation (which is the dual of a <a href="https://miro.medium.com/max/1400/1*LI-z6a73mRYupGMQs9Ar2Q.gif">Delaunay triangulation</a>, see figures below) and creates irregular cells based on the <strong>distance</strong> between points (panel B in Fig.2).</p>
+<p>Grids can be classified as irregular and regular. Both follow the same principle of dividing a region into a set of non-overlapping areas. A common method for subdividing space from existing point observations is the Voronoi tessellation (which is the dual of a <a href="https://miro.medium.com/max/1400/1*LI-z6a73mRYupGMQs9Ar2Q.gif">Delaunay triangulation</a>, see figures below) and creates irregular cells based on the <strong>distance</strong> between points (panel B in Fig.1b).</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="https://mathworld.wolfram.com/images/eps-svg/DelaunayTriangulation_1000.svg" class="img-fluid figure-img" width="500"></p>
-<p></p><figcaption aria-hidden="true" class="figure-caption">Fig.1 A Delaunay triangulation of set of points (blue) converted to a voronoi diagram (red)</figcaption><p></p>
+<p></p><figcaption aria-hidden="true" class="figure-caption">Fig.1a A Delaunay triangulation of set of points (blue) converted to a voronoi diagram (red)</figcaption><p></p>
 </figure>
 </div>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="https://www.frontiersin.org/files/Articles/418641/fbuil-04-00078-HTML/image_m/fbuil-04-00078-g002.jpg" class="img-fluid figure-img" width="500"></p>
-<p></p><figcaption aria-hidden="true" class="figure-caption">Fig.2 Steps for the creation of Voronoi polygons from a set of points</figcaption><p></p>
+<p></p><figcaption aria-hidden="true" class="figure-caption">Fig.1b Steps for the creation of Voronoi polygons from a set of points</figcaption><p></p>
 </figure>
 </div>
 <p>Another typical approach in Geographic Information Systems is the creation of regular grids. “The rectangular grid is generally preferred because of its symmetrical, orthogonal co-ordinate system and the frequent use of rasters”. “Remotely sensed data are stored as pixels in regular lattices. Thus, regular lattices are important for experimental and observational science, as well as providing the most common framework for spatially explicit models” <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. Mathematically reasoning yields only <a href="https://en.wikipedia.org/wiki/List_of_regular_polytopes_and_compounds#Euclidean_tilings">3 regular tessellations of a plane</a>: Square tilling, Triangular tilling and Hexagonal tilling. The following section reviews existing grid systems commonly used for spatial applications.</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="https://mathworld.wolfram.com/images/eps-svg/RegularTessellations_1000.svg" class="img-fluid figure-img"></p>
-<p></p><figcaption aria-hidden="true" class="figure-caption">Regular tesselations</figcaption><p></p>
+<p></p><figcaption aria-hidden="true" class="figure-caption">Fig.2 Regular tesselations</figcaption><p></p>
 </figure>
 </div>
 </section>
@@ -203,13 +203,23 @@ ul.task-list{list-style: none;}
 </section>
 <section id="conclusions-and-recommendations" class="level2">
 <h2 class="anchored" data-anchor-id="conclusions-and-recommendations">Conclusions and recommendations</h2>
-<p>According to the information reviewed it is clear that for the purposes of scaling TC’s methodology in an efficient and interoperable way a number of solutions are easily accessible. From these and given the advantages (and popularity of its implementation) an hexagon-based grid is recommended and would work for both summarising data at a convenient resolution and sharing the information.</p>
+<p>According to the information reviewed it is clear that for the purposes of scaling TC’s methodology in an efficient and interoperable way a number of solutions are easily and accessible and most commonly free. From these and given the advantages (and popularity of its implementation) an hexagon-based grid is recommended and would work for both summarising data at a convenient resolution and sharing the information. Additionally, although not yet discussed, it has been shown that hexagonal grids outperform square grids when conducting more advanced spatial analysis, in particular network analysis due to its lesser ambiguity in the identification of neighbours.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/nn.png" class="img-fluid figure-img"></p>
+<p></p><figcaption aria-hidden="true" class="figure-caption">Fig.8 Nearest neighbour interaction comparison between squares and hexagons (source:1)</figcaption><p></p>
+</figure>
+</div>
 <p>Both the Uber H3 and the DGGRID have a number of openly accessible resources for a convenient implementation and integration with other platforms. A recent paper (2020) evaluating the compliance of these libraries against OGC specifications concludes that “the H3 library appears to be the most complete, lacking only criterion 7”: Equal area precision. The method of evaluation considered the use of the libraries “as a comprehensive approach for geocoding, addressing, and discretizing of geospatial data, as well as effective ways for its analysis and display”. The paper further suggests that “Further work developing operational DGGS that solve real world problems may promote greater community adoption and integration of DGGS data structures into commonly used geospatial platforms”. Nevertheless, given the available explicit documentation and continuing development it can be inferred that the H3 grid system is likely to be implemented as the facto system by both the industry and scientific communities.</p>
-<p><img src="img/hex347.png" class="img-fluid" alt="Fig.8 Hierarchical partition of space with (a) aperture 3, (b) aperture 4, and (c) aperture 7 hexagon levels (source:4)"> This <a href="https://wolf-h3-viewer.glitch.me/">interactive map</a> by <a href="https://github.com/clupasq">Cristian Lupașcu</a> shows the hierarchical structure and resolution of the H3 grid system.</p>
-<section id="resources" class="level3">
-<h3 class="anchored" data-anchor-id="resources">Resources</h3>
+<p><img src="img/hex347.png" class="img-fluid" alt="Fig.9 Hierarchical partition of space with (a) aperture 3, (b) aperture 4, and (c) aperture 7 hexagon levels (source:4)"> This <a href="https://wolf-h3-viewer.glitch.me/">interactive map</a> by <a href="https://github.com/clupasq">Cristian Lupașcu</a> shows the hierarchical structure and resolution of the H3 grid system.</p>
+<section id="extra-resources" class="level3">
+<h3 class="anchored" data-anchor-id="extra-resources">Extra resources</h3>
 <p><a href="https://landscape-geoinformatics.ut.ee/dggs-en">Research into innovative DGGS indexing</a></p>
 <p><a href="https://www.youtube.com/watch?v=xh5csOiRVsk">Discrete Global Grid Systems presented by OGC</a></p>
+<p><a href="http://nozdr.ru/data/media/biblio/kolxoz/B/Dale%20M.R.T.%20Spatial%20pattern%20analysis%20in%20plant%20ecology%20(CUP,%201999)(ISBN%200521452279)(337s)_B_.pdf">Spatial Pattern Analysis in Plant Ecology</a></p>
+<p><a href="https://www-sciencedirect-com.libproxy.ucl.ac.uk/science/article/pii/S0304380007001949#fig4">Rectangular and hexagonal grids used for observation, experiment and simulation in ecology</a></p>
+<p><a href="http://ceur-ws.org/Vol-2323/SKI-Canada-2019-7-6-1.pdf">Discrete Global Grid Systems: Operational Capability of the Current State of the Art</a></p>
+<p><a href="https://openlayers.org/en/latest/examples/reprojection-by-code.html">Wbmap Tiles - client-side raster reprojection capabilities from OSM (EPSG:3857)</a></p>
 </section>
 </section>
 

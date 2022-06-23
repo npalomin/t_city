@@ -16,69 +16,6 @@ span.underline{text-decoration: underline;}
 div.column{display: inline-block; vertical-align: top; width: 50%;}
 div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-    color: #aaaaaa;
-  }
-pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
-}
-code span.al { color: #ff0000; font-weight: bold; } /* Alert */
-code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
-code span.at { color: #7d9029; } /* Attribute */
-code span.bn { color: #40a070; } /* BaseN */
-code span.bu { } /* BuiltIn */
-code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
-code span.ch { color: #4070a0; } /* Char */
-code span.cn { color: #880000; } /* Constant */
-code span.co { color: #60a0b0; font-style: italic; } /* Comment */
-code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
-code span.do { color: #ba2121; font-style: italic; } /* Documentation */
-code span.dt { color: #902000; } /* DataType */
-code span.dv { color: #40a070; } /* DecVal */
-code span.er { color: #ff0000; font-weight: bold; } /* Error */
-code span.ex { } /* Extension */
-code span.fl { color: #40a070; } /* Float */
-code span.fu { color: #06287e; } /* Function */
-code span.im { } /* Import */
-code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
-code span.kw { color: #007020; font-weight: bold; } /* Keyword */
-code span.op { color: #666666; } /* Operator */
-code span.ot { color: #007020; } /* Other */
-code span.pp { color: #bc7a00; } /* Preprocessor */
-code span.sc { color: #4070a0; } /* SpecialChar */
-code span.ss { color: #bb6688; } /* SpecialString */
-code span.st { color: #4070a0; } /* String */
-code span.va { color: #19177c; } /* Variable */
-code span.vs { color: #4070a0; } /* VerbatimString */
-code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
 </style>
 
 <script src="wp-1_files/libs/clipboard/clipboard.min.js"></script>
@@ -103,8 +40,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     <h2 id="toc-title">Contents</h2>
    
   <ul>
-  <li><a href="#section-1" id="toc-section-1" class="nav-link active" data-scroll-target="#section-1">Section 1</a></li>
-  <li><a href="#section-2" id="toc-section-2" class="nav-link" data-scroll-target="#section-2">Section 2</a></li>
+  <li><a href="#overview" id="toc-overview" class="nav-link active" data-scroll-target="#overview">Overview</a></li>
+  <li><a href="#spatial-grids" id="toc-spatial-grids" class="nav-link" data-scroll-target="#spatial-grids">Spatial grids</a></li>
+  <li><a href="#existing-grid-systems" id="toc-existing-grid-systems" class="nav-link" data-scroll-target="#existing-grid-systems">Existing grid systems</a>
+  <ul class="collapse">
+  <li><a href="#what3words" id="toc-what3words" class="nav-link" data-scroll-target="#what3words">what3words</a></li>
+  <li><a href="#uber-h3" id="toc-uber-h3" class="nav-link" data-scroll-target="#uber-h3">Uber H3</a></li>
+  <li><a href="#openeaggr-open-equal-area-global-grid" id="toc-openeaggr-open-equal-area-global-grid" class="nav-link" data-scroll-target="#openeaggr-open-equal-area-global-grid">OpenEAGGR (Open Equal Area Global GRid)</a></li>
+  <li><a href="#quarter-degree-grid-cell-system" id="toc-quarter-degree-grid-cell-system" class="nav-link" data-scroll-target="#quarter-degree-grid-cell-system">Quarter Degree Grid Cell System</a></li>
+  <li><a href="#free-and-open-source-software-foss-grid" id="toc-free-and-open-source-software-foss-grid" class="nav-link" data-scroll-target="#free-and-open-source-software-foss-grid">Free and open-source software (FOSS) grid</a></li>
+  </ul></li>
+  <li><a href="#conclusions-and-recommendations" id="toc-conclusions-and-recommendations" class="nav-link" data-scroll-target="#conclusions-and-recommendations">Conclusions and recommendations</a>
+  <ul class="collapse">
+  <li><a href="#resources" id="toc-resources" class="nav-link" data-scroll-target="#resources">Resources</a></li>
+  </ul></li>
   </ul>
 </nav>
 </div>
@@ -143,26 +92,137 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 
 </header>
 
-<section id="section-1" class="level2">
-<h2 class="anchored" data-anchor-id="section-1">Section 1</h2>
-<p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec condimentum commodo massa vel commodo. Proin commodo elementum ex faucibus egestas. Vestibulum ac imperdiet augue. Vestibulum placerat porttitor massa, vitae elementum ante euismod sed. Mauris hendrerit eros nec tempor aliquet. Nam ut bibendum mi, ut viverra nibh.</p>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>TranquilCity (TC) is looking into scaling its air and noise pollution indices worldwide. The gridding method used so far is based on their own 20 x 20 m grid which rationale derives from the grid of the air quality modelling data. Thus, the process of assigning metrics to streets starts with the 20 x 20 m grid, the highest resolution, and then data is joined to the street segments or park paths (areas). Some key points and questions arising are:</p>
+<ol type="1">
+<li>How can TC adopt a griding system that allows scaling their analysis worldwide? How would different regions (cities) be connected together?</li>
+<li>How can TC’s data be shared with other users in a universal way? How is their data interoperable with other data?</li>
+<li>What are the specific limitations of creating their own grid system? e.g.&nbsp;geographic extent vs processing time at the expense of losing spatial resolution</li>
+<li>Besides the Uber’s H3 and Whatthreewords grid, what other grid systems are available and relevant?</li>
+</ol>
+<p>This notebook first reviews the nature of spatial grids, then it outlines a brief description of existing grid systems and finally summarises their advantages and disadvantages</p>
 </section>
-<section id="section-2" class="level2">
-<h2 class="anchored" data-anchor-id="section-2">Section 2</h2>
-<p>Fusce eget mi sed diam mollis sollicitudin vitae ut risus. Aliquam scelerisque non dolor id tincidunt. Maecenas urna dolor, viverra ac tempor mollis, hendrerit non lorem. Cras feugiat urna ac est porttitor, quis porttitor neque tempus. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.</p>
-<details>
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dv">1</span> <span class="sc">+</span> <span class="dv">1</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<p>[1] 2</p>
-<p>Sed tincidunt lobortis mi, a vehicula nisi congue eget. Donec vestibulum aliquet lectus, ac condimentum turpis. Fusce ut consectetur tortor. Donec dictum aliquam magna. Nunc maximus laoreet egestas. Integer lacus mauris, iaculis eget massa ac, auctor feugiat felis. Morbi dapibus turpis in metus euismod vehicula.</p>
-<div class="cell">
-
+<section id="spatial-grids" class="level2">
+<h2 class="anchored" data-anchor-id="spatial-grids">Spatial grids</h2>
+<p>Grids are frequently used to study physical space, for observations (collecting data), experiments and simulations (modelling). In spatial analysis grids are often defined to sample, index, or partition a study area.</p>
+<p>Even though for TC the main purpose is to create and indexing solution, the statements below reveal useful concepts for the definition of a grid system. More advanced tools and technoques for spatial analysis can be found in the chapter ‘Building Blocks of Spatial Analysis’ from <a href="https://spatialanalysisonline.com/HTML/index.html">Geospatial Analysis 6th Edition, 2021 update</a>.</p>
+<p>Grids can be classified as irregular and regular. Both follow the same principle of dividing a region into a set of non-overlapping areas. A common method for subdividing space from existing point observations is the Voronoi tessellation (which is the dual of a <a href="https://miro.medium.com/max/1400/1*LI-z6a73mRYupGMQs9Ar2Q.gif">Delaunay triangulation</a>, see figures below) and creates irregular cells based on the <strong>distance</strong> between points (panel B in Fig.2).</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://mathworld.wolfram.com/images/eps-svg/DelaunayTriangulation_1000.svg" class="img-fluid figure-img" width="500"></p>
+<p></p><figcaption aria-hidden="true" class="figure-caption">Fig.1 A Delaunay triangulation of set of points (blue) converted to a voronoi diagram (red)</figcaption><p></p>
+</figure>
 </div>
-<p>Sed tincidunt lobortis mi, a <code>vehicula nisi congue eget</code>. Donec vestibulum aliquet lectus, ac condimentum turpis.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://www.frontiersin.org/files/Articles/418641/fbuil-04-00078-HTML/image_m/fbuil-04-00078-g002.jpg" class="img-fluid figure-img" width="500"></p>
+<p></p><figcaption aria-hidden="true" class="figure-caption">Fig.2 Steps for the creation of Voronoi polygons from a set of points</figcaption><p></p>
+</figure>
+</div>
+<p>Another typical approach in Geographic Information Systems is the creation of regular grids. “The rectangular grid is generally preferred because of its symmetrical, orthogonal co-ordinate system and the frequent use of rasters”. “Remotely sensed data are stored as pixels in regular lattices. Thus, regular lattices are important for experimental and observational science, as well as providing the most common framework for spatially explicit models” <a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. Mathematically reasoning yields only <a href="https://en.wikipedia.org/wiki/List_of_regular_polytopes_and_compounds#Euclidean_tilings">3 regular tessellations of a plane</a>: Square tilling, Triangular tilling and Hexagonal tilling. The following section reviews existing grid systems commonly used for spatial applications.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://mathworld.wolfram.com/images/eps-svg/RegularTessellations_1000.svg" class="img-fluid figure-img"></p>
+<p></p><figcaption aria-hidden="true" class="figure-caption">Regular tesselations</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="existing-grid-systems" class="level2">
+<h2 class="anchored" data-anchor-id="existing-grid-systems">Existing grid systems</h2>
+<p>Overview of grid systems published by different agencies. The following area reviewed below:</p>
+<ul>
+<li><p>what3words</p></li>
+<li><p>Uber H3</p></li>
+<li><p>OpenEAGGR</p></li>
+<li><p>Quarter Degree Grid Cell System</p></li>
+<li><p>Free and open-source software (FOSS) grid</p></li>
+</ul>
+<section id="what3words" class="level3">
+<h3 class="anchored" data-anchor-id="what3words">what3words</h3>
+<p>Is as proprietary geocode system that divides the world surface into 3 x 3 m squares grid creating 57 trillion cells. The motivation for its creator is that he “struggled to get bands and equipment to music venues using inadequate address information… he tried using GPS coordinates to locate the venues, but decided that words were better than numbers after a one-digit error led him to the wrong location” <a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. Each cell is encoded by a set of 3 words from the English dictionary (e.g.&nbsp;the South-east corner of the eastern fountain in Trafalgar square corresponds to <a href="https://what3words.com/vivid.cling.result">vivid.cling.result</a>. The interactive overlay of the 3 x 3 m gird on GoogleMaps below shows the level of detail displayed at each cell.</p>
+<iframe src="https://fobvp.csb.app/" style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;">
+</iframe>
+<p>Different industry applications are advertised, including the private and public sectors from the automotive and UAVs to humanitarian and government. An API and developers solutions are offered for the integration with other platforms.</p>
+</section>
+<section id="uber-h3" class="level3">
+<h3 class="anchored" data-anchor-id="uber-h3">Uber H3</h3>
+<p>This grid system was developed by UBER for operational and analytical purposes<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+<ul>
+<li>Operational: for efficiently optimizing ride pricing and dispatch</li>
+<li>Analytical: for visualizing and exploring spatial data</li>
+</ul>
+<p>A key characteristic of the H3 system is its hierarchical structure. This means that cells can be (dis)aggregated to almost any level and down to a square meter resolution (569,707,381,193,162 cells ~ 570 trillion). Again the rationale behind the hierarchical structure is analytical efficiency. Uber’s explanation well illustrates this: “Deriving information and insights… requires analysing data across an entire city. Because cities are geographically diverse, this analysis needs to happen at a fine granularity. Analysis at the finest granularity, the exact location where an event happens, is very difficult and expensive. Analysis on areas, such as neighbourhoods within a city, is much more practical”. The example pictured below is a common case of summarising points data in spatial analysis for the identification of patterns.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://urbandatapalette.com/post/2021-08-tessellation-sf/uber-hexagon-grid.png" class="img-fluid figure-img" width="600"></p>
+<p></p><figcaption aria-hidden="true" class="figure-caption">Fig.3 “Bucketing” points with H3: cars in a city; cars in hexagons; and hexagons shaded by number of cars</figcaption><p></p>
+</figure>
+</div>
+<p>This grid system has been developed into a collaborative project (see H3 GitHub <a href="https://github.com/uber/h3">page</a>) under an Apache License 2.0 which is described as a “permissive license whose main conditions require preservation of copyright and license notices. Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works may be distributed under different terms and without source code”.</p>
+</section>
+<section id="openeaggr-open-equal-area-global-grid" class="level3">
+<h3 class="anchored" data-anchor-id="openeaggr-open-equal-area-global-grid">OpenEAGGR (Open Equal Area Global GRid)</h3>
+<p>This system is a software library that implements a Discrete Global Grid System (DGGS), modelling the surface of the earth into equal area cells of up to an area one square centimetre. This system was developed by a security consultancy <a href="https://www.riskaware.co.uk/innovation-hub/">Riskaware</a> and has a GitHub <a href="https://github.com/riskaware-ltd/open-eaggr">repository</a>. The documentation is less comprehensive but it can be inferred that it implements the <a href="https://en.wikipedia.org/wiki/Snyder_equal-area_projection">Snyder Equal Area Projection</a> to map points into an icosahedron model of the Earth obtaining both a triangular (ISEA4T) and an hexagonal (ISEA3H) system partition.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://upload.wikimedia.org/wikipedia/commons/0/0a/DualTiling-TriangHex-fig1.png" class="img-fluid figure-img" width="300"></p>
+<p></p><figcaption aria-hidden="true" class="figure-caption">Fig.4 Snyder equal-area projection applying a dual tiling system</figcaption><p></p>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://landscape-geoinformatics.ut.ee/sites/default/files/landscape-geoinformatics/files/dggs-grids.png" class="img-fluid figure-img" width="500"></p>
+<p></p><figcaption aria-hidden="true" class="figure-caption">Fig.5 Comparison between ISEA3H, Uber H3, rHEALPix, and ISEA4T</figcaption><p></p>
+</figure>
+</div>
+<p>This <a href="https://nbviewer.org/github/allixender/30MapChallenge2020/blob/main/08/day-08.ipynb">notebook</a> shows the implementation of the ISEA4T using GeoPandas and <a href="https://github.com/sahrk/DGGRID">DGGRID</a>, a free software program for creating and manipulating Discrete Global Grids, with the map below as result.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="img/mines.png" class="img-fluid figure-img" width="500"></p>
+<p></p><figcaption aria-hidden="true" class="figure-caption">Fig.6 Mining activities aggragated using ISEA4T grid</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="quarter-degree-grid-cell-system" class="level3">
+<h3 class="anchored" data-anchor-id="quarter-degree-grid-cell-system">Quarter Degree Grid Cell System</h3>
+<p>This system is most common in African applications. It takes longitude and latitude degree square cells and divides them into smaller squares. For example the location of 28°30’00.0”S 30°30’00.0”E can be noted as QDGC 2830CB.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="http://thebdi.org/wp-content/uploads/2019/06/QDGC_2830_bigger.jpg" class="img-fluid figure-img" width="300"></p>
+<p></p><figcaption aria-hidden="true" class="figure-caption">Fig.7 QDGC Degree square subdivision</figcaption><p></p>
+</figure>
+</div>
+</section>
+<section id="free-and-open-source-software-foss-grid" class="level3">
+<h3 class="anchored" data-anchor-id="free-and-open-source-software-foss-grid">Free and open-source software (FOSS) grid</h3>
+<p>According to this <a href="https://gis.stackexchange.com/questions/358382/is-there-a-foss-implementation-for-discrete-global-grid-system-global-statisti">GIS StackExchange QA</a>, there is not yet an Free Open Source Software (FOSS) implementation for a Discrete Global Grid System (DGGS). Reference is given about two standards; <a href="https://docs.opengeospatial.org/as/15-104r5/15-104r5.html">OGC - Open Geospatial Consortium</a> and <a href="Ihttps://inspire.ec.europa.eu/documents/Data_Specifications/INSPIRE_DataSpecification_GG_v3.1.pdf">Inspire - Infrastructure for Spatial Information in Europe</a>. Reference is also given about the <a href="https://s2geometry.io/">S2</a> which might be considered similar to QDGC as it divides the earth sphere and represents all data on three-dimensions.</p>
+<p>The paper ‘Assessing the state of the art in Discrete Global Grid Systems: OGC criteria and present functionality’<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> seems to conclude that H3 is the closest followed by S2.</p>
+<p>The <a href="https://www.discreteglobalgrids.org/">DGGRID</a> project from the Southern Oregon University has an important number of relevant resources and is refer as a possible FOSS solution. Among the DGGRID users <a href="https://hex.ohsome.org/">OpenStreetMap History eXplorer</a> stands out.</p>
+</section>
+</section>
+<section id="conclusions-and-recommendations" class="level2">
+<h2 class="anchored" data-anchor-id="conclusions-and-recommendations">Conclusions and recommendations</h2>
+<p>According to the information reviewed it is clear that for the purposes of scaling TC’s methodology in an efficient and interoperable way a number of solutions are easily accessible. From these and given the advantages (and popularity of its implementation) an hexagon-based grid is recommended and would work for both summarising data at a convenient resolution and sharing the information.</p>
+<p>Both the Uber H3 and the DGGRID have a number of openly accessible resources for a convenient implementation and integration with other platforms. A recent paper (2020) evaluating the compliance of these libraries against OGC specifications concludes that “the H3 library appears to be the most complete, lacking only criterion 7”: Equal area precision. The method of evaluation considered the use of the libraries “as a comprehensive approach for geocoding, addressing, and discretizing of geospatial data, as well as effective ways for its analysis and display”. The paper further suggests that “Further work developing operational DGGS that solve real world problems may promote greater community adoption and integration of DGGS data structures into commonly used geospatial platforms”. Nevertheless, given the available explicit documentation and continuing development it can be inferred that the H3 grid system is likely to be implemented as the facto system by both the industry and scientific communities.</p>
+<p><img src="img/hex347.png" class="img-fluid" alt="Fig.8 Hierarchical partition of space with (a) aperture 3, (b) aperture 4, and (c) aperture 7 hexagon levels (source:4)"> This <a href="https://wolf-h3-viewer.glitch.me/">interactive map</a> by <a href="https://github.com/clupasq">Cristian Lupașcu</a> shows the hierarchical structure and resolution of the H3 grid system.</p>
+<section id="resources" class="level3">
+<h3 class="anchored" data-anchor-id="resources">Resources</h3>
+<p><a href="https://landscape-geoinformatics.ut.ee/dggs-en">Research into innovative DGGS indexing</a></p>
+<p><a href="https://www.youtube.com/watch?v=xh5csOiRVsk">Discrete Global Grid Systems presented by OGC</a></p>
+</section>
 </section>
 
-</main>
+
+<div id="quarto-appendix" class="default"><section class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1" role="doc-endnote"><p>Birch, C.P.D., Oom, S.P. and Beecham, J.A. (2007) ‘Rectangular and hexagonal grids used for observation, experiment and simulation in ecology’, Ecological Modelling, 206(3), pp.&nbsp;347–359. doi:10.1016/j.ecolmodel.2007.03.041.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>From wikipedia: <a href="https://en.wikipedia.org/wiki/What3words#:~:text=What3words%20divides%20the%20world%20into,are%20available%20in%2050%20languages.">what3words</a><a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p>From <a href="https://eng.uber.com/h3/">Uber Engineering</a><a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p>Bondaruk, B., Roberts, S.A. and Robertson, C. (2020) ‘Assessing the state of the art in Discrete Global Grid Systems: OGC criteria and present functionality’, Geomatica, 74(1), pp.&nbsp;9–30. doi:10.1139/geomat-2019-0015.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main>
 <!-- /main column -->
 <script type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {

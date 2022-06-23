@@ -101,12 +101,12 @@ ul.task-list{list-style: none;}
 <li>What are the specific limitations of creating their own grid system? e.g.&nbsp;geographic extent vs processing time at the expense of losing spatial resolution</li>
 <li>Besides the Uber’s H3 and Whatthreewords grid, what other grid systems are available and relevant?</li>
 </ol>
-<p>This notebook first reviews the nature of spatial grids, then it outlines a brief description of existing grid systems and finally summarises their advantages and disadvantages</p>
+<p>This notebook first reviews the nature of spatial grids, then it outlines a brief description of existing grid systems and finally concludes with final comments and recommendations.</p>
 </section>
 <section id="spatial-grids" class="level2">
 <h2 class="anchored" data-anchor-id="spatial-grids">Spatial grids</h2>
 <p>Grids are frequently used to study physical space, for observations (collecting data), experiments and simulations (modelling). In spatial analysis grids are often defined to sample, index, or partition a study area.</p>
-<p>Even though for TC the main purpose is to create and indexing solution, the statements below reveal useful concepts for the definition of a grid system. More advanced tools and technoques for spatial analysis can be found in the chapter ‘Building Blocks of Spatial Analysis’ from <a href="https://spatialanalysisonline.com/HTML/index.html">Geospatial Analysis 6th Edition, 2021 update</a>.</p>
+<p>Even though for TC the main purpose is to create and indexing solution, the statements below reveal useful concepts for the definition of a grid system. More advanced tools and techniques for spatial analysis can be found in the chapter ‘Building Blocks of Spatial Analysis’ from <a href="https://spatialanalysisonline.com/HTML/index.html">Geospatial Analysis 6th Edition, 2021 update</a>.</p>
 <p>Grids can be classified as irregular and regular. Both follow the same principle of dividing a region into a set of non-overlapping areas. A common method for subdividing space from existing point observations is the Voronoi tessellation (which is the dual of a <a href="https://miro.medium.com/max/1400/1*LI-z6a73mRYupGMQs9Ar2Q.gif">Delaunay triangulation</a>, see figures below) and creates irregular cells based on the <strong>distance</strong> between points (panel B in Fig.1b).</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
@@ -203,7 +203,7 @@ ul.task-list{list-style: none;}
 </section>
 <section id="conclusions-and-recommendations" class="level2">
 <h2 class="anchored" data-anchor-id="conclusions-and-recommendations">Conclusions and recommendations</h2>
-<p>According to the information reviewed it is clear that for the purposes of scaling TC’s methodology in an efficient and interoperable way a number of solutions are easily and accessible and most commonly free. From these and given the advantages (and popularity of its implementation) an hexagon-based grid is recommended and would work for both summarising data at a convenient resolution and sharing the information. Additionally, although not yet discussed, it has been shown that hexagonal grids outperform square grids when conducting more advanced spatial analysis, in particular network analysis due to its lesser ambiguity in the identification of neighbours.</p>
+<p>According to the information reviewed it is clear that for the purposes of scaling TC’s methodology in an efficient and interoperable way a number of solutions are easily and accessible and most commonly free. From these and given the advantages (and popularity of its implementation) an hexagon-based grid is recommended and would work for both summarising data at a convenient resolution and sharing the information. Additionally, although not yet discussed, it has been shown that hexagonal grids outperform square grids when conducting more advanced spatial analysis, in particular network analysis due to its lesser ambiguity in the identification of neighbours (in regular hexagons grids all neighbours are identical each sharing one of the six equal length sides of the cells and with centroids at equal distance).</p>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="img/nn.png" class="img-fluid figure-img"></p>

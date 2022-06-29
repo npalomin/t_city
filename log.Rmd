@@ -6,7 +6,29 @@ date: '2022-06-22'
 
 Original Publish Date: 2022-06-22 <br> Updated on: `r format(Sys.time(), '%Y-%m-%d')`
 
+
+## WP 2, Kick-off meeting
+
+date: 2022-06-29
+
+
+- Package in QGIs (python based) - H3 Toolkit plugin
+- Choose a resolution to the n scale it up
+- Resolution level 12
+- Show how to run the script 
+- Summarise by classes (key = value)
+
+- Perhaps test it with Barcelona or Paris. Administrative boundaries from OSM. 
+
+room for TC meetings: https://meet.google.com/rii-zkux-pgp
+
+
 ## WP 1, Kick-off meeting
+
+
+WP 1, review (2022-06-29):
+
+
 
 date: 2022-06-22
 

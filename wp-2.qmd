@@ -72,6 +72,7 @@ oe_get("London", download_directory = "osm-data", stringsAsFactors = FALSE, skip
 ```
 
 ```{r}
+# read PBF data of type 'multipolygons'
 dir = "~/Documents/Q_GitHub/t_city/osm-data/geofabrik_London.osm.pbf"
 oe_read(dir, layer = "multipolygons") -> mpg
 ```
@@ -90,7 +91,7 @@ st
 # vector of top 5 building classes
 st %>%
   ungroup() %>%
-  slice_head(n=5) %>%
+  slice_head(n = 5) %>%
   pull(var="building") -> bclass5
 
 bclass5
@@ -99,8 +100,10 @@ bclass5
 ```{r}
 mpg %>%
   #slice(1:10000) %>%
+  # filter non-building geometries
   filter(!is.na(building)) %>%
   select("building") %>%
+  # recode 'other' classses
   mutate(building = case_when(building %in% bclass5 ~ building,
                               !building %in% bclass5 ~ "other")) %>%
   st_make_valid() -> mpg1
@@ -110,9 +113,8 @@ mpg1 %>%
   mapview()
 ```
 
-
 ```{r}
-# bbox polygon
+# bbox of all buildings as polygon
 mpg %>%
   st_bbox() %>%
   st_as_sfc() %>%
@@ -121,6 +123,7 @@ mpg %>%
 ```
 
 ```{r}
+# create h3 hexagon grid at level 12 over the bbox of administrative area
 h3_indexes <- polyfill(mpbox, res = 12)
 ```
 
@@ -128,7 +131,7 @@ h3_indexes <- polyfill(mpbox, res = 12)
 # hex id granary square
 gsid <- "8c195da4d98b7ff"
 
-# Get all neighbours within 1 step of the hexagon
+# Get all neighbours within 1 step of the hexagon from gsid
 k_ring(gsid, radius = 10) %>%
   h3_to_geo_boundary_sf() %>%
   mutate(hexid = k_ring(gsid, radius = 10)) -> gshex
@@ -139,7 +142,7 @@ mapview(gshex)
 ```
 
 ```{r}
-# bbox gshex
+# bbox of gshex as polygon
 gshex %>%
   st_bbox() %>%
   st_as_sfc() %>%
@@ -148,18 +151,13 @@ gshex %>%
 ```
 
 ```{r}
-# check geometry validity: https://r-spatial.org/r/2017/03/19/invalid.html
-any(is.na(st_is_valid(gshex)))
-```
-
-```{r}
-# ids of invalida geometries
+# ids of invalids geometries
 which(st_is_valid(mpg1, reason = TRUE) != "Valid Geometry") -> invalid
 invalid
 ```
 
 ```{r}
-mpg1["1068",] %>%
+mpg1["1190",] %>%
   plot()
 ```
 
@@ -173,6 +171,7 @@ mpg2[!st_is_empty(mpg2),, drop=FALSE] -> mpg3
 ```
 
 ```{r}
+# cookie cut buildings in Granary Square area
 st_crop(mpg3, gsbox) -> gspol
 ```
 
@@ -183,16 +182,16 @@ mapview(gspol) + mapview(gshex, color = "red", col.regions = "cyan")
 ```{r}
 #install.packages("spData")
 library(spData)
-```
 
-```{r}
 # calculate area
 gspol %>%
   mutate(area = st_area(.)) -> gspol1
 
 st_interpolate_aw(gspol1["area"], gshex, extensive = TRUE) -> agg_aw
+```
 
-
+```{r}
+# intersect hexagons with buildings
 st_intersection(gshex, gspol) -> agg_int
 ```
 
@@ -200,38 +199,57 @@ st_intersection(gshex, gspol) -> agg_int
 options(scipen = 999)
 ```
 
+8. Calculate the percentage of element in each grid cell
+9. Package result in CSV with WKT geometry (EPSG 4326)
+
 ```{r}
+# create building statistics by hexagon
 agg_int %>%
+  # calculate area
   mutate(area = as.numeric(st_area(.))) %>%
   st_drop_geometry() %>%
-  pivot_wider(names_from = "building", values_from = "area", values_fn = sum, values_fill = 0) %>%
-  mutate(total = rowSums(.[2:3])) -> agg_int_j
+  # building classes areas as variables
+  pivot_wider(names_from = "building", values_from = "area", values_fn = sum, values_fill = 0) -> agg_int_j
 
 agg_int_j %>%
-  na_if(., 0) -> agg_int_j
-
-agg_int_j
+  rename_with( ~ paste0("b_", .x), .cols = 2:ncol(.)) %>%
+  mutate_all(~replace(., is.na(.), 0)) %>%
+  # add total
+  mutate(total = rowSums(.[2:ncol(.)])) %>%
+  # add percentage by column
+  mutate_at(vars(starts_with("b")) , funs(pc = ./total * 100)) -> agg_int_j
 ```
 
 ```{r}
+# join building statistics to hexagons
 gshex %>%
   left_join(agg_int_j, by="hexid") -> gshexsum
 ```
 
 ```{r}
-plot(gshexsum[,c("yes", "other", "total")])
+plot(gshexsum[,c("b_yes", "b_other", "total")])
 ```
+
+```{r}
+st_write(gshexsum, "csv/gshexsum_wkt.csv", layer_options = c("GEOMETRY=AS_WKT","CREATE_CSVT=YES"), delete_dsn=TRUE)
+```
+
+
+
+
+
 
 ```{r}
 mapview(agg_int) + mapview(gspol, color = "red", alpha.regions = 0.1)
 ```
 
 
+
+
+
 ```{r}
 agg_aw["266",]
 ```
-
-
 
 ```{r}
 gspol %>%

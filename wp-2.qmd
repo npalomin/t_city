@@ -46,6 +46,7 @@ Each layer should be split by its fclass or type to count the specific unique fe
 
 ## Setup R environment
 ```{r}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
 #install.packages("remotes")
 #remotes::install_github("crazycapivara/h3-r")
 library(h3)
@@ -54,11 +55,18 @@ library(sf)
 library(tidyverse)
 library(mapview)
 
-
 # possible r library https://github.com/obrl-soil/h3jsr
+#install.packages("h3jsr")
+# library(h3jsr)
 ```
 
-Buildings are predominantly 'Way' types (ref: https://taginfo.openstreetmap.org/keys/building#overview)
+Predominantly 'Way' types (ref: https://taginfo.openstreetmap.org/keys/building#overview):
+- Buildings
+- Landuse
+- Water
+
+multipolygons : “way” features that are recognized as area
+lines : “way” features that are recognized as non-area.
 
 'Way' features can be recognised as having area (ref: https://gdal.org/drivers/vector/osm.html) and are of layer type 'multipolygons'
 
@@ -72,49 +80,155 @@ oe_get("London", download_directory = "osm-data", stringsAsFactors = FALSE, skip
 ```
 
 ```{r}
-# read PBF data of type 'multipolygons'
+# read PBF data of layer type 'multipolygons'
 dir = "~/Documents/Q_GitHub/t_city/osm-data/geofabrik_London.osm.pbf"
 oe_read(dir, layer = "multipolygons") -> mpg
 ```
 
 ```{r}
-# summary by unique building classes
+glimpse(mpg)
+```
+
+```{r}
+# multipolygon summary table: top 5 values by key
 mpg %>%
-  filter(!is.na(building)) %>%
   st_drop_geometry() %>%
-  group_by(building) %>%
-  count() %>%
-  arrange(desc(n)) -> st
-
-st
-
-# vector of top 5 building classes
-st %>%
-  ungroup() %>%
-  slice_head(n = 5) %>%
-  pull(var="building") -> bclass5
-
-bclass5
+  select(-c(osm_id, osm_way_id)) %>%
+  pivot_longer(everything()) %>%
+  count(name, value) %>%
+  group_by(name) %>% 
+  slice_max(order_by = n, n = 6)
 ```
 
 ```{r}
+# multipolygon summary table: distinct values by key
 mpg %>%
-  #slice(1:10000) %>%
-  # filter non-building geometries
-  filter(!is.na(building)) %>%
-  select("building") %>%
-  # recode 'other' classses
-  mutate(building = case_when(building %in% bclass5 ~ building,
-                              !building %in% bclass5 ~ "other")) %>%
-  st_make_valid() -> mpg1
+  st_drop_geometry() %>%
+  select(-c(osm_id, osm_way_id)) %>%
+  summarise_all(list(~ n_distinct(.)))
+```
 
-mpg1 %>%
-  slice(1:1000) %>%
-  mapview()
+
+```{r}
+# mpg %>%
+#   st_drop_geometry() %>%
+#   count(natural) %>%
+#   arrange(desc(n))
+```
+
+## Process alphanumeric variables
+
+```{r}
+# define key: (building, landuse or natural=water)
+key <- "natural"
+
+# get vector of N highest occurrences
+# mpg %>%
+#   st_drop_geometry() %>%
+#   filter(!is.na(get(key))) %>%
+#   group_by(get(key)) %>%
+#   count() %>%
+#   arrange(desc(n)) %>%
+#   ungroup() %>%
+#   slice_head(n = 5) %>%
+#   pull(var="get(key)") -> value5
+
+# ref function creation: https://mran.microsoft.com/snapshot/2017-09-15/web/packages/dplyr/vignettes/programming.html
+# this function takes an sf dataframe, a key name and an h numerical to obtain a character of h highest values by key
+
+values <- function(df, key, h) {
+  
+  qkey <- enquo(key)
+  
+  df %>%
+    st_drop_geometry() %>%
+    filter(!is.na(!!qkey)) %>%
+    group_by(!!qkey) %>%
+    count() %>%
+    arrange(desc(n)) %>%
+    ungroup() %>%
+    slice_head(n = h) %>%
+    pull(!!qkey) 
+}
+
+values_landuse <- values(mpg, landuse, 5)
+
+
+# # summary by unique values
+# mpg %>%
+#   # exclude NAs
+#   filter(!is.na(building)) %>%
+#   st_drop_geometry() %>%
+#   group_by(building) %>%
+#   count() %>%
+#   arrange(desc(n)) -> st
+# 
+# # vector of top 5 building classes
+# st %>%
+#   ungroup() %>%
+#   slice_head(n = 5) %>%
+#   pull(var="building") -> bclass5
 ```
 
 ```{r}
-# bbox of all buildings as polygon
+# recode to 'other' values that are not in highest occurrences
+# this function takes an sf dataframe, a key name and to recode to 'other' those values that are not in the h highest values. 
+# resulting sf has only the selected key name
+
+recother <- function(df, key) {
+  
+  qkey <- enquo(key)
+  
+  df %>%
+    filter(!is.na(!!qkey)) %>%
+    mutate(!!qkey := case_when(!!qkey %in% values_landuse ~ !!qkey,
+                               TRUE ~ "other")) %>%
+    select(!!qkey)
+}
+
+recother(mpg, landuse) -> mpg_r
+
+# mpg %>%
+#   # filter non-building geometries
+#   filter(!is.na(building)) %>%
+#   select("building") %>%
+#   # recode 'other' classses
+#   mutate(building = case_when(building %in% bclass5 ~ building,
+#                               !building %in% bclass5 ~ "other")) -> mpg
+
+# mpg1 %>%
+#   slice(1:100) %>%
+#   mapview()
+```
+
+## Process geometries
+
+```{r}
+# ids of invalids geometries
+which(st_is_valid(mpg_r, reason = TRUE) != "Valid Geometry") -> invalid
+invalid
+```
+
+```{r}
+# plot an example of invalid geometry
+mpg_r["112",] %>%
+  plot(max.plot = 1)
+```
+
+```{r}
+# remove invalid geometries
+mpg_r %>%
+  slice(-invalid) -> mpg_r
+
+# get only the non-empty geometries
+mpg_r[!st_is_empty(mpg_r),, drop=FALSE] -> mpg_r
+```
+
+
+## Create hexagonal grid
+
+```{r}
+# bbox of London, layer = "multipolygons"
 mpg %>%
   st_bbox() %>%
   st_as_sfc() %>%
@@ -125,20 +239,24 @@ mpg %>%
 ```{r}
 # create h3 hexagon grid at level 12 over the bbox of administrative area
 h3_indexes <- polyfill(mpbox, res = 12)
+# 12,015,189 hexagons
+
+# # all hexagons ~ 12 GB
+# h3_indexes %>%
+#   h3_to_geo_boundary_sf() -> all_hex
 ```
 
+### Study area from hex id
+
 ```{r}
+# get hex id from: https://wolf-h3-viewer.glitch.me/
 # hex id granary square
 gsid <- "8c195da4d98b7ff"
 
-# Get all neighbours within 1 step of the hexagon from gsid
-k_ring(gsid, radius = 10) %>%
+# Get all neighbours within N steps of the hexagon from gsid
+k_ring(gsid, radius = 11) %>%
   h3_to_geo_boundary_sf() %>%
-  mutate(hexid = k_ring(gsid, radius = 10)) -> gshex
-```
-
-```{r}
-mapview(gshex)
+  mutate(hexid = k_ring(gsid, radius = 11)) -> gshex
 ```
 
 ```{r}
@@ -151,237 +269,52 @@ gshex %>%
 ```
 
 ```{r}
-# ids of invalids geometries
-which(st_is_valid(mpg1, reason = TRUE) != "Valid Geometry") -> invalid
-invalid
-```
-
-```{r}
-mpg1["1190",] %>%
-  plot()
-```
-
-```{r}
-# remove invalid geometries
-mpg1 %>%
-  slice(-invalid) -> mpg2
-
-# get only the non-empty geometries
-mpg2[!st_is_empty(mpg2),, drop=FALSE] -> mpg3
-```
-
-```{r}
-# cookie cut buildings in Granary Square area
-st_crop(mpg3, gsbox) -> gspol
-```
-
-```{r}
-mapview(gspol) + mapview(gshex, color = "red", col.regions = "cyan")
-```
-
-```{r}
-#install.packages("spData")
-library(spData)
-
-# calculate area
-gspol %>%
-  mutate(area = st_area(.)) -> gspol1
-
-st_interpolate_aw(gspol1["area"], gshex, extensive = TRUE) -> agg_aw
+# cookie cut multipolygons in Granary Square area
+st_crop(mpg_r, gsbox) -> gspol
 ```
 
 ```{r}
 # intersect hexagons with buildings
-st_intersection(gshex, gspol) -> agg_int
+st_intersection(gshex, gspol) -> hp_int
 ```
 
 ```{r}
-options(scipen = 999)
-```
-
-8. Calculate the percentage of element in each grid cell
-9. Package result in CSV with WKT geometry (EPSG 4326)
-
-```{r}
-# create building statistics by hexagon
-agg_int %>%
+# create multipolygons statistics by hexagon = landuse
+hp_int %>%
   # calculate area
   mutate(area = as.numeric(st_area(.))) %>%
   st_drop_geometry() %>%
-  # building classes areas as variables
-  pivot_wider(names_from = "building", values_from = "area", values_fn = sum, values_fill = 0) -> agg_int_j
+  # classes areas as variables
+  pivot_wider(names_from = "landuse", values_from = "area", values_fn = sum, values_fill = 0) -> hp_int_j
 
-agg_int_j %>%
-  rename_with( ~ paste0("b_", .x), .cols = 2:ncol(.)) %>%
-  mutate_all(~replace(., is.na(.), 0)) %>%
+hp_int_j %>%
+  # add prefix to columns 2 onwards
+  rename_with( ~ paste0("l_", .x), .cols = 2:ncol(.)) %>%
+  mutate_all( ~ replace(., is.na(.), 0)) %>%
   # add total
   mutate(total = rowSums(.[2:ncol(.)])) %>%
   # add percentage by column
-  mutate_at(vars(starts_with("b")) , funs(pc = ./total * 100)) -> agg_int_j
+  mutate_at(vars(starts_with("l")) , funs(pc = ./total * 100)) -> hp_int_j1
 ```
 
 ```{r}
-# join building statistics to hexagons
+# join statistics to hexagons
 gshex %>%
-  left_join(agg_int_j, by="hexid") -> gshexsum
+  left_join(hp_int_j1, by="hexid") -> gshexsum
 ```
 
 ```{r}
-plot(gshexsum[,c("b_yes", "b_other", "total")])
+plot(gshexsum[,c("l_grass", "l_other", "total")])
 ```
 
 ```{r}
-st_write(gshexsum, "csv/gshexsum_wkt.csv", layer_options = c("GEOMETRY=AS_WKT","CREATE_CSVT=YES"), delete_dsn=TRUE)
+mapview(gspol) + mapview(gshexsum, zcol = "total")
 ```
 
-
-
-
-
-
+## Export csv
 ```{r}
-mapview(agg_int) + mapview(gspol, color = "red", alpha.regions = 0.1)
+st_write(gshexsum, "csv/gshexsum_wkt_landuse_studyarea.csv", layer_options = c("GEOMETRY=AS_WKT","CREATE_CSVT=YES"), delete_dsn=TRUE)
 ```
-
-
-
-
-
-```{r}
-agg_aw["266",]
-```
-
-```{r}
-gspol %>%
-  mutate(area = st_area(.))
-```
-
-
-
-
-
-
-
-TranquilCity (TC) is looking into scaling its air and noise pollution indices worldwide. The gridding method used so far is based on their own 20 x 20 m grid which rationale derives from the grid of the air quality modelling data. Thus, the process of assigning metrics to streets starts with the 20 x 20 m grid, the highest resolution, and then data is joined to the street segments or park paths (areas). Some key points and questions arising are:
-
-1.  How can TC adopt a griding system that allows scaling their analysis worldwide? How would different regions (cities) be connected together?
-2.  How can TC's data be shared with other users in a universal way? How is their data interoperable with other data?
-3.  What are the specific limitations of creating their own grid system? e.g. geographic extent vs processing time at the expense of losing spatial resolution
-4.  Besides the Uber's H3 and Whatthreewords grid, what other grid systems are available and relevant?
-
-This notebook first reviews the nature of spatial grids, then it outlines a brief description of existing grid systems and finally concludes with final comments and recommendations.
-
-## Spatial grids
-
-Grids are frequently used to study physical space, for observations (collecting data), experiments and simulations (modelling). In spatial analysis grids are often defined to sample, index, or partition a study area.
-
-Even though for TC the main purpose is to create and indexing solution, the statements below reveal useful concepts for the definition of a grid system. More advanced tools and techniques for spatial analysis can be found in the chapter 'Building Blocks of Spatial Analysis' from [Geospatial Analysis 6th Edition, 2021 update](https://spatialanalysisonline.com/HTML/index.html).
-
-Grids can be classified as irregular and regular. Both follow the same principle of dividing a region into a set of non-overlapping areas. A common method for subdividing space from existing point observations is the Voronoi tessellation (which is the dual of a [Delaunay triangulation](https://miro.medium.com/max/1400/1*LI-z6a73mRYupGMQs9Ar2Q.gif), see figures below) and creates irregular cells based on the **distance** between points (panel B in Fig.1b).
-
-![Fig.1a A Delaunay triangulation of set of points (blue) converted to a voronoi diagram (red)](https://mathworld.wolfram.com/images/eps-svg/DelaunayTriangulation_1000.svg){width="500"} 
-
-![Fig.1b Steps for the creation of Voronoi polygons from a set of points](https://www.frontiersin.org/files/Articles/418641/fbuil-04-00078-HTML/image_m/fbuil-04-00078-g002.jpg){width="500"}
-
-Another typical approach in Geographic Information Systems is the creation of regular grids. "The rectangular grid is generally preferred because of its symmetrical, orthogonal co-ordinate system and the frequent use of rasters". "Remotely sensed data are stored as pixels in regular lattices. Thus, regular lattices are important for experimental and observational science, as well as providing the most common framework for spatially explicit models" [^1]. Mathematically reasoning yields only [3 regular tessellations of a plane](https://en.wikipedia.org/wiki/List_of_regular_polytopes_and_compounds#Euclidean_tilings): Square tilling, Triangular tilling and Hexagonal tilling. The following section reviews existing grid systems commonly used for spatial applications.
-
-![Fig.2 Regular tesselations](https://mathworld.wolfram.com/images/eps-svg/RegularTessellations_1000.svg)
-
-[^1]: Birch, C.P.D., Oom, S.P. and Beecham, J.A. (2007) 'Rectangular and hexagonal grids used for observation, experiment and simulation in ecology', Ecological Modelling, 206(3), pp. 347--359. doi:10.1016/j.ecolmodel.2007.03.041.
-
-## Existing grid systems
-
-Overview of grid systems published by different agencies. The following area reviewed below:
-
-- what3words
-
-- Uber H3
-
-- OpenEAGGR
-
-- Quarter Degree Grid Cell System
-
-- Free and open-source software (FOSS) grid
-
-### what3words
-
-Is as proprietary geocode system that divides the world surface into 3 x 3 m squares grid creating 57 trillion cells. The motivation for its creator is that he "struggled to get bands and equipment to music venues using inadequate address information... he tried using GPS coordinates to locate the venues, but decided that words were better than numbers after a one-digit error led him to the wrong location" [^2]. Each cell is encoded by a set of 3 words from the English dictionary (e.g. the South-east corner of the eastern fountain in Trafalgar square corresponds to [vivid.cling.result](https://what3words.com/vivid.cling.result). The interactive overlay of the 3 x 3 m gird on GoogleMaps below shows the level of detail displayed at each cell.
-
-[^2]: From wikipedia: [what3words](https://en.wikipedia.org/wiki/What3words#:~:text=What3words%20divides%20the%20world%20into,are%20available%20in%2050%20languages.)
-
-<iframe src="https://fobvp.csb.app/" style="width:100%; height:500px; border:0; border-radius: 4px; overflow:hidden;">
-
-</iframe>
-
-Different industry applications are advertised, including the private and public sectors from the automotive and UAVs to humanitarian and government. An API and developers solutions are offered for the integration with other platforms.
-
-### Uber H3
-
-This grid system was developed by UBER for operational and analytical purposes[^3]
-
-[^3]: From [Uber Engineering](https://eng.uber.com/h3/)
-
--   Operational: for efficiently optimizing ride pricing and dispatch
--   Analytical: for visualizing and exploring spatial data
-
-A key characteristic of the H3 system is its hierarchical structure. This means that cells can be (dis)aggregated to almost any level and down to a square meter resolution (569,707,381,193,162 cells \~ 570 trillion). Again the rationale behind the hierarchical structure is analytical efficiency. Uber's explanation well illustrates this: "Deriving information and insights... requires analysing data across an entire city. Because cities are geographically diverse, this analysis needs to happen at a fine granularity. Analysis at the finest granularity, the exact location where an event happens, is very difficult and expensive. Analysis on areas, such as neighbourhoods within a city, is much more practical". The example pictured below is a common case of summarising points data in spatial analysis for the identification of patterns.
-
-![Fig.3 "Bucketing" points with H3: cars in a city; cars in hexagons; and hexagons shaded by number of cars](https://urbandatapalette.com/post/2021-08-tessellation-sf/uber-hexagon-grid.png){width="600"}
-
-This grid system has been developed into a collaborative project (see H3 GitHub [page](https://github.com/uber/h3)) under an Apache License 2.0 which is described as a "permissive license whose main conditions require preservation of copyright and license notices. Contributors provide an express grant of patent rights. Licensed works, modifications, and larger works may be distributed under different terms and without source code".
-
-### OpenEAGGR (Open Equal Area Global GRid)
-
-This system is a software library that implements a Discrete Global Grid System (DGGS), modelling the surface of the earth into equal area cells of up to an area one square centimetre. This system was developed by a security consultancy [Riskaware](https://www.riskaware.co.uk/innovation-hub/) and has a GitHub [repository](https://github.com/riskaware-ltd/open-eaggr). The documentation is less comprehensive but it can be inferred that it implements the [Snyder Equal Area Projection](https://en.wikipedia.org/wiki/Snyder_equal-area_projection) to map points into an icosahedron model of the Earth obtaining both a triangular (ISEA4T) and an hexagonal (ISEA3H) system partition.
-
-![Fig.4 Snyder equal-area projection applying a dual tiling system](https://upload.wikimedia.org/wikipedia/commons/0/0a/DualTiling-TriangHex-fig1.png){width="300"} 
-
-![Fig.5 Comparison between ISEA3H, Uber H3, rHEALPix, and ISEA4T](https://landscape-geoinformatics.ut.ee/sites/default/files/landscape-geoinformatics/files/dggs-grids.png){width="500"}
-
-This [notebook](https://nbviewer.org/github/allixender/30MapChallenge2020/blob/main/08/day-08.ipynb) shows the implementation of the ISEA4T using GeoPandas and [DGGRID](https://github.com/sahrk/DGGRID), a free software program for creating and manipulating Discrete Global Grids, with the map below as result.
-
-![Fig.6 Mining activities aggragated using ISEA4T grid](img/mines.png){width="500"}
-
-### Quarter Degree Grid Cell System
-
-This system is most common in African applications. It takes longitude and latitude degree square cells and divides them into smaller squares. For example the location of 28°30'00.0"S 30°30'00.0"E can be noted as QDGC 2830CB.
-
-![Fig.7 QDGC Degree square subdivision](http://thebdi.org/wp-content/uploads/2019/06/QDGC_2830_bigger.jpg){width="300"}
-
-### Free and open-source software (FOSS) grid
-
-According to this [GIS StackExchange QA](https://gis.stackexchange.com/questions/358382/is-there-a-foss-implementation-for-discrete-global-grid-system-global-statisti), there is not yet an Free Open Source Software (FOSS) implementation for a Discrete Global Grid System (DGGS). Reference is given about two standards; [OGC - Open Geospatial Consortium](https://docs.opengeospatial.org/as/15-104r5/15-104r5.html) and [Inspire - Infrastructure for Spatial Information in Europe](Ihttps://inspire.ec.europa.eu/documents/Data_Specifications/INSPIRE_DataSpecification_GG_v3.1.pdf). Reference is also given about the [S2](https://s2geometry.io/) which might be considered similar to QDGC as it divides the earth sphere and represents all data on three-dimensions. 
-
-The paper 'Assessing the state of the art in Discrete Global Grid Systems: OGC criteria and present functionality'[^4] seems to conclude that H3 is the closest followed by S2.
-
-The [DGGRID](https://www.discreteglobalgrids.org/) project from the Southern Oregon University has an important number of relevant resources and is refer as a possible FOSS solution. Among the DGGRID users [OpenStreetMap History eXplorer](https://hex.ohsome.org/) stands out.
-
-[^4]: Bondaruk, B., Roberts, S.A. and Robertson, C. (2020) ‘Assessing the state of the art in Discrete Global Grid Systems: OGC criteria and present functionality’, Geomatica, 74(1), pp. 9–30. doi:10.1139/geomat-2019-0015.
-
-## Conclusions and recommendations
-
-According to the information reviewed it is clear that for the purposes of scaling TC's methodology in an efficient and interoperable way a number of solutions are easily and accessible and most commonly free. From these and given the advantages (and popularity of its implementation) an hexagon-based grid is recommended and would work for both summarising data at a convenient resolution and sharing the information. Additionally, although not yet discussed, it has been shown that hexagonal grids outperform square grids when conducting more advanced spatial analysis, in particular network analysis due to its lesser ambiguity in the identification of neighbours (in regular hexagons grids all neighbours are identical each sharing one of the six equal length sides of the cells and with centroids at equal distance).
-
-![Fig.8 Nearest neighbour interaction comparison between squares and hexagons (source:1)](img/nn.png)
-
-Both the Uber H3 and the DGGRID have a number of openly accessible resources for a convenient implementation and integration with other platforms. A recent paper (2020) evaluating the compliance of these libraries against OGC specifications concludes that "the H3 library appears to be the most complete, lacking only criterion 7": Equal area precision. The method of evaluation considered the use of the libraries "as a comprehensive approach for geocoding, addressing, and discretizing of geospatial data, as well as effective ways for its analysis and display". The paper further suggests that "Further work developing operational DGGS that solve real world problems may promote greater community adoption and integration of DGGS data structures into commonly used geospatial platforms". Nevertheless, given the available explicit documentation and continuing development it can be inferred that the H3 grid system is likely to be implemented as the facto system by both the industry and scientific communities.
-
-![Fig.9 Hierarchical partition of space with (a) aperture 3, (b) aperture 4, and (c) aperture 7 hexagon levels (source:4)](img/hex347.png)
-This [interactive map](https://wolf-h3-viewer.glitch.me/) by [Cristian Lupașcu](https://github.com/clupasq) shows the hierarchical structure and resolution of the H3 grid system.
-
-### Extra resources
-
-[Research into innovative DGGS indexing](https://landscape-geoinformatics.ut.ee/dggs-en)
-
-[Discrete Global Grid Systems presented by OGC](https://www.youtube.com/watch?v=xh5csOiRVsk)
-
-[Spatial Pattern Analysis in Plant Ecology](http://nozdr.ru/data/media/biblio/kolxoz/B/Dale%20M.R.T.%20Spatial%20pattern%20analysis%20in%20plant%20ecology%20(CUP,%201999)(ISBN%200521452279)(337s)_B_.pdf)
-
-[Rectangular and hexagonal grids used for observation, experiment and simulation in ecology](https://www-sciencedirect-com.libproxy.ucl.ac.uk/science/article/pii/S0304380007001949#fig4)
-
-[Discrete Global Grid Systems: Operational Capability of the Current State of the Art](http://ceur-ws.org/Vol-2323/SKI-Canada-2019-7-6-1.pdf)
-
-[Wbmap Tiles - client-side raster reprojection capabilities from OSM (EPSG:3857)](https://openlayers.org/en/latest/examples/reprojection-by-code.html)
 
 
 

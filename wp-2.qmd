@@ -43,6 +43,12 @@ Each layer should be split by its fclass or type to count the specific unique fe
 8. Calculate the percentage of element in each grid cell
 9. Package result in CSV with WKT geometry (EPSG 4326)
 
+### Notes draft script 2022.07.05
+
+- Discuss the fclass partitions. An fclass like 'building' for an area like London can have as much as 317 classes. Does it worth to partition the data in so many classes. Perhaps it is better to choose top N and recode 'others'
+- An area like London is tessellated in more than 12 million hexagons
+- See summary by 'layer'. What geometries to select? Is removing NA a valid approach?
+
 
 ## Setup R environment
 ```{r}
@@ -71,19 +77,43 @@ lines : “way” features that are recognized as non-area.
 'Way' features can be recognised as having area (ref: https://gdal.org/drivers/vector/osm.html) and are of layer type 'multipolygons'
 
 ```{r}
+#| message: false
+#| warning: false
+#| quiet: true
 # 1. Download the data to osm-data folder
-oe_get("London", download_directory = "osm-data", stringsAsFactors = FALSE, skip_vectortranslate = TRUE)
+oe_get("London", download_directory = "osm-data", stringsAsFactors = FALSE, skip_vectortranslate = TRUE, extra_tags = c("railway","traffic", "transport"))
 ```
 
 ```{r}
 #st_layers("~/Documents/Q_GitHub/t_city/osm-data/geofabrik_London.osm.pbf")
 ```
 
+## Read multipolygons and lines
 ```{r}
+#| message: false
+#| warning: false
+#| quiet: true
 # read PBF data of layer type 'multipolygons'
 dir = "~/Documents/Q_GitHub/t_city/osm-data/geofabrik_London.osm.pbf"
 oe_read(dir, layer = "multipolygons") -> mpg
+oe_read(dir, layer = "lines", extra_tags = c("railway","traffic","transport")) -> lines
+oe_read(dir, layer = "multilinestrings") -> mlines
+oe_read(dir, layer = "other_relations") -> or
+
+# Tag:railway=rail https://wiki.openstreetmap.org/wiki/Tag:railway=rail
 ```
+
+```{r}
+#oe_get_keys(dir, values = TRUE)
+```
+
+## Exploratory data analysis
+
+### Multipolygons
+
+- building
+- landuse
+- natural=water
 
 ```{r}
 glimpse(mpg)
@@ -107,32 +137,71 @@ mpg %>%
   select(-c(osm_id, osm_way_id)) %>%
   summarise_all(list(~ n_distinct(.)))
 ```
+### Lines
 
+- highway
+- waterway
+- railway
+- traffic? (very few - check overpass turbo, mainly tags railways)
+- transport? (has very little usage)
 
 ```{r}
-# mpg %>%
-#   st_drop_geometry() %>%
-#   count(natural) %>%
-#   arrange(desc(n))
+glimpse(lines)
 ```
+
+```{r}
+# lines summary table: top 5 values by key (includes NA)
+lines %>%
+  st_drop_geometry() %>%
+  select(-c(osm_id, z_order)) %>%
+  pivot_longer(everything()) %>%
+  count(name, value) %>%
+  group_by(name) %>% 
+  slice_max(order_by = n, n = 6)
+```
+### Multilinestrings
+
+```{r}
+glimpse(mlines)
+```
+
+```{r}
+mlines %>%
+  st_drop_geometry() %>%
+  select(-c(osm_id)) %>%
+  pivot_longer(everything()) %>%
+  count(name, value) %>%
+  group_by(name) %>% 
+  slice_max(order_by = n, n = 6)
+```
+### Other_relations
+
+```{r}
+glimpse(or)
+```
+
+```{r}
+or %>%
+  st_drop_geometry() %>%
+  select(-c(osm_id)) %>%
+  pivot_longer(everything()) %>%
+  count(name, value) %>%
+  group_by(name) %>% 
+  slice_max(order_by = n, n = 6)
+```
+
+```{r}
+or %>%
+  filter(type == "public_transport") %>%
+  select(type) %>%
+  st_collection_extract("LINESTRING") %>%
+  plot()
+```
+
 
 ## Process alphanumeric variables
 
 ```{r}
-# define key: (building, landuse or natural=water)
-key <- "natural"
-
-# get vector of N highest occurrences
-# mpg %>%
-#   st_drop_geometry() %>%
-#   filter(!is.na(get(key))) %>%
-#   group_by(get(key)) %>%
-#   count() %>%
-#   arrange(desc(n)) %>%
-#   ungroup() %>%
-#   slice_head(n = 5) %>%
-#   pull(var="get(key)") -> value5
-
 # ref function creation: https://mran.microsoft.com/snapshot/2017-09-15/web/packages/dplyr/vignettes/programming.html
 # this function takes an sf dataframe, a key name and an h numerical to obtain a character of h highest values by key
 
@@ -151,23 +220,7 @@ values <- function(df, key, h) {
     pull(!!qkey) 
 }
 
-values_landuse <- values(mpg, landuse, 5)
-
-
-# # summary by unique values
-# mpg %>%
-#   # exclude NAs
-#   filter(!is.na(building)) %>%
-#   st_drop_geometry() %>%
-#   group_by(building) %>%
-#   count() %>%
-#   arrange(desc(n)) -> st
-# 
-# # vector of top 5 building classes
-# st %>%
-#   ungroup() %>%
-#   slice_head(n = 5) %>%
-#   pull(var="building") -> bclass5
+values_k <- values(mpg, landuse, 5)
 ```
 
 ```{r}
@@ -181,24 +234,12 @@ recother <- function(df, key) {
   
   df %>%
     filter(!is.na(!!qkey)) %>%
-    mutate(!!qkey := case_when(!!qkey %in% values_landuse ~ !!qkey,
+    mutate(!!qkey := case_when(!!qkey %in% values_k ~ !!qkey,
                                TRUE ~ "other")) %>%
     select(!!qkey)
 }
 
 recother(mpg, landuse) -> mpg_r
-
-# mpg %>%
-#   # filter non-building geometries
-#   filter(!is.na(building)) %>%
-#   select("building") %>%
-#   # recode 'other' classses
-#   mutate(building = case_when(building %in% bclass5 ~ building,
-#                               !building %in% bclass5 ~ "other")) -> mpg
-
-# mpg1 %>%
-#   slice(1:100) %>%
-#   mapview()
 ```
 
 ## Process geometries

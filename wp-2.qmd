@@ -81,7 +81,7 @@ lines : “way” features that are recognized as non-area.
 #| warning: false
 #| quiet: true
 # 1. Download the data to osm-data folder
-oe_get("London", download_directory = "osm-data", stringsAsFactors = FALSE, skip_vectortranslate = TRUE, extra_tags = c("railway","traffic", "transport"))
+oe_get("London", download_directory = "osm-data", stringsAsFactors = FALSE, skip_vectortranslate = TRUE, extra_tags = c("water","railway","traffic", "transport"))
 ```
 
 ```{r}
@@ -95,7 +95,7 @@ oe_get("London", download_directory = "osm-data", stringsAsFactors = FALSE, skip
 #| quiet: true
 # read PBF data of layer type 'multipolygons'
 dir = "~/Documents/Q_GitHub/t_city/osm-data/geofabrik_London.osm.pbf"
-oe_read(dir, layer = "multipolygons") -> mpg
+oe_read(dir, layer = "multipolygons", extra_tags = "water") -> mpg
 oe_read(dir, layer = "lines", extra_tags = c("railway","traffic","transport")) -> lines
 oe_read(dir, layer = "multilinestrings") -> mlines
 oe_read(dir, layer = "other_relations") -> or
@@ -113,6 +113,7 @@ oe_read(dir, layer = "other_relations") -> or
 
 - building
 - landuse
+- water (low usage)
 - natural=water
 
 ```{r}

@@ -49,6 +49,12 @@ Each layer should be split by its fclass or type to count the specific unique fe
 - An area like London is tessellated in more than 12 million hexagons
 - See summary by 'layer'. What geometries to select? Is removing NA a valid approach?
 
+Notes progress meeting;
+
+- Add layer 'natural'
+- Exclude layer 'traffic' and 'transport' (very low usage)
+- Absolute summary statistics by hexagon area (100%)
+
 
 ## Setup R environment
 ```{r}
@@ -114,7 +120,7 @@ oe_read(dir, layer = "other_relations") -> or
 - building
 - landuse
 - water (low usage)
-- natural=water
+- natural
 
 ```{r}
 glimpse(mpg)
@@ -253,7 +259,7 @@ invalid
 
 ```{r}
 # plot an example of invalid geometry
-mpg_r["112",] %>%
+mpg_r["243",] %>%
   plot(max.plot = 1)
 ```
 

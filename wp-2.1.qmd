@@ -102,12 +102,38 @@ for (i in keys) {
     # select key and keep osm id
     select(i, osm_id, osm_way_id) %>%
     # drop NA in key
-    drop_na(i) -> mpglist[[i]]
+    drop_na(i) %>%
+    # make valid polygons with self-intersection?
+    st_make_valid() -> vpol
+  
+  # id of remaining invalid geometries
+  which(st_is_valid(vpol, reason = TRUE) != "Valid Geometry") -> invalid
+  
+  vpol %>%
+    # remove invalid geometries
+    slice(-invalid) %>%
+    # calculate area
+    mutate(area = st_area(.)) -> vpol
+  
+  # get only the non-empty geometries
+  vpol[!st_is_empty(vpol), , drop=FALSE] -> mpglist[[i]]
 }
 ```
 
 ```{r}
-#mpglist["natural"]
+# # after st_make_valid for 920,405 polygons, 15 are not valid
+# mpg %>%
+#   filter(!is.na(building)) %>%
+#   st_make_valid() %>%
+#   st_is_valid() %>%
+#   table()
+# 
+#  FALSE   TRUE 
+#     15 920390
+```
+
+```{r}
+mpglist[["building"]]
 ```
 
 ## Lines
@@ -121,7 +147,7 @@ glimpse(lines)
 ```
 
 ```{r}
-# split lines into relevant polygonal keys
+# split lines into relevant linear keys
 # define keys
 keys <- c("railway", "highway", "waterway")
 
@@ -134,12 +160,14 @@ for (i in keys) {
     # select key and keep osm id
     select(i, osm_id) %>%
     # drop NA in key
-    drop_na(i) -> lineslist[[i]]
+    drop_na(i) %>%
+    # calculate length 
+    mutate(length = st_length(.)) -> lineslist[[i]]
 }
 ```
 
 ```{r}
-lineslist["highway"]
+lineslist[["highway"]] 
 ```
 
 

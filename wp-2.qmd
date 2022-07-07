@@ -54,6 +54,7 @@ Notes progress meeting;
 - Add layer 'natural'
 - Exclude layer 'traffic' and 'transport' (very low usage)
 - Absolute summary statistics by hexagon area (100%)
+- Define gridded study area at res = 6
 
 
 ## Setup R environment

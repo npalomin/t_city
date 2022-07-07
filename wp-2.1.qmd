@@ -1,0 +1,58 @@
+---
+title: "Create OSM Data Processing Script"
+format: html
+---
+
+## Set up environment
+
+```{r}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+#install.packages("remotes")
+#remotes::install_github("crazycapivara/h3-r")
+library(h3)
+library(osmextract)
+library(sf)
+library(tidyverse)
+library(mapview)
+```
+
+## Create gridded study area from point
+
+```{r}
+# Index a lat/lng point to an H3 index
+coords <- c(51.512468,-0.117449) # lat,lng
+# define resolution
+res <- 6
+# get hex id
+hexid6 <- geo_to_h3(coords, res)
+```
+
+```{r}
+# get hex polygon
+hexpol6 <- h3_to_geo_boundary_sf(hexid6) %>%
+  # add hexid column
+  mutate(hexid = hexid6)
+# get hex polygons with centres contained in a given polygon at res = 12
+hexid12 <- polyfill(hexpol6, res = 12)
+# get res =12 polygons
+hexpol12 <- h3_to_geo_boundary_sf(hexid12) %>%
+  # add hexid column
+  mutate(hexid = hexid12)
+```
+
+```{r}
+mapview(hexpol6) + mapview(hexpol12[1:1000,], col.regions="tomato")
+```
+
+```{r}
+plot(hexpol6, border="red", col=NA)
+plot(hexpol12, add = TRUE, lwd=0.05)
+```
+
+## Get OSM data for study area
+
+```{r}
+# hexpol6 is the polygonal boundary
+
+```
+

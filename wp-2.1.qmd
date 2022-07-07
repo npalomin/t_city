@@ -14,6 +14,7 @@ library(osmextract)
 library(sf)
 library(tidyverse)
 library(mapview)
+library(ggplot2)
 ```
 
 ## Create gridded study area from point
@@ -41,18 +42,122 @@ hexpol12 <- h3_to_geo_boundary_sf(hexid12) %>%
 ```
 
 ```{r}
-mapview(hexpol6) + mapview(hexpol12[1:1000,], col.regions="tomato")
+mapview(hexpol6, col.regions=NA) + mapview(hexpol12[1:1000,], col.regions="tomato")
 ```
 
 ```{r}
-plot(hexpol6, border="red", col=NA)
-plot(hexpol12, add = TRUE, lwd=0.05)
+hexpol6 %>%
+  st_transform(3857) %>%
+  ggplot() +
+  geom_sf(fill=NA) +
+  geom_sf(data = hexpol12, fill=NA) +
+  coord_sf(datum=3857, xlim = c(-5000, -4000), ylim = c(6708000, 6709000)) +
+  theme_minimal()
 ```
 
 ## Get OSM data for study area
 
 ```{r}
 # hexpol6 is the polygonal boundary
-
+# 1. Download the data to osm-data folder
+oe_get("London", download_directory = "osm-data-hex6", stringsAsFactors = FALSE, skip_vectortranslate = TRUE, extra_tags = c("water","railway"), boundary = hexpol6, boundary_type = "clipsrc")
 ```
 
+```{r}
+#| message: false
+#| warning: false
+#| quiet: true
+# read PBF data by layer types
+dir = "~/Documents/Q_GitHub/t_city/osm-data-hex6/geofabrik_London.osm.pbf"
+oe_read(dir, layer = "multipolygons", extra_tags = "water") -> mpg
+oe_read(dir, layer = "lines", extra_tags = c("railway")) -> lines
+#oe_read(dir, layer = "multilinestrings") -> mlines
+#oe_read(dir, layer = "other_relations") -> or
+```
+
+## Explore data and split data
+
+### Multipolygons
+
+- building  
+- landuse  
+- water  
+- natural  
+
+```{r}
+glimpse(mpg)
+```
+
+```{r}
+# split multipolygons into relevant polygonal keys
+# define keys
+keys <- c("building", "landuse", "water", "natural")
+
+# define dataframe
+df <- mpg
+
+mpglist <- list()
+for (i in keys) {
+  df %>%
+    # select key and keep osm id
+    select(i, osm_id, osm_way_id) %>%
+    # drop NA in key
+    drop_na(i) -> mpglist[[i]]
+}
+```
+
+```{r}
+#mpglist["natural"]
+```
+
+## Lines
+
+- railway  
+- roads (highway)  
+- waterway  
+
+```{r}
+glimpse(lines)
+```
+
+```{r}
+# split lines into relevant polygonal keys
+# define keys
+keys <- c("railway", "highway", "waterway")
+
+# define dataframe
+df <- lines
+
+lineslist <- list()
+for (i in keys) {
+  df %>%
+    # select key and keep osm id
+    select(i, osm_id) %>%
+    # drop NA in key
+    drop_na(i) -> lineslist[[i]]
+}
+```
+
+```{r}
+lineslist["highway"]
+```
+
+
+
+
+```{r}
+mpg %>%
+  st_drop_geometry() %>%
+  #select(osm_id) %>%
+  summarise(across(everything(), ~ sum(is.na(.))))
+```
+
+
+
+```{r}
+mpg %>%
+  slice(5000:5500) %>%
+  #select(1:10) %>%
+  filter(is.na(osm_id)) %>%
+  mapview()
+```

@@ -112,8 +112,8 @@ for (i in keys) {
   vpol %>%
     # remove invalid geometries
     slice(-invalid) %>%
-    # calculate area
-    mutate(area = st_area(.)) -> vpol
+    # calculate area (remove units and round to 1 digit)
+    mutate(osmf_area = round(as.numeric(st_area(.)),1)) -> vpol
   
   # get only the non-empty geometries
   vpol[!st_is_empty(vpol), , drop=FALSE] -> mpglist[[i]]
@@ -133,7 +133,8 @@ for (i in keys) {
 ```
 
 ```{r}
-mpglist[["building"]]
+# check polygon layers: "building", "landuse", "water", "natural"
+mpglist[["natural"]]
 ```
 
 ## Lines
@@ -162,15 +163,142 @@ for (i in keys) {
     # drop NA in key
     drop_na(i) %>%
     # calculate length 
-    mutate(length = st_length(.)) -> lineslist[[i]]
+    mutate(osmf_length = round(as.numeric(st_length(.)),1)) -> lineslist[[i]]
 }
 ```
 
+## Get statistics by hexagon
+
 ```{r}
-lineslist[["highway"]] 
+# set precision
+hexpol12 %>%
+  st_transform(crs=3857) %>%
+  st_set_precision(units::set_units(10, nm)) -> hexpol121
+
+# set precision and create objects by key
+mpglist[["natural"]] %>%
+  st_transform(crs=3857) %>%
+  st_set_precision(units::set_units(10, nm)) -> natural
+```
+
+```{r}
+# intersect hexagons with polygon layer
+st_intersection(hexpol121, natural) -> hp_natural
+
+#system.time({st_intersection(hexpol121, natural) -> hp_natural}) # ~ 70 seconds after st_precision
+```
+
+```{r}
+hp_natural %>%
+  st_drop_geometry() %>%
+  group_by(hexid) %>%
+  summarise(n = n()) %>%
+  arrange(desc(n))
+```
+```{r}
+hp_natural %>%
+  st_drop_geometry() %>%
+  filter(hexid == "8c194ad3569adff")
+```
+
+Need two operations
+
+- calculate osm_ids by hexid as variables
+- Summarise by equal hexid and equal value
+
+```{r}
+hp_natural %>%
+  st_drop_geometry() %>%
+  filter(hexid %in% c("8c194ad3344cbff","8c194ad3569adff")) %>%
+  select(hexid, osm_way_id) %>%
+  group_by(hexid) %>%
+  mutate(osm_nm = paste("osm_id", row_number())) %>%
+  # areas of values as variables
+  pivot_wider(names_from = osm_nm, values_from = osm_way_id)
+```
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(stringr)
+install.packages("english")
+library(english)
+
+a <- c("a", "a", "a", "a", "a", "a")
+x <- c("x", "y", "z", "h", "l", "m")
+m <- data.frame(a, x)
+
+m %>% 
+    group_by(a) %>%
+    mutate(rn = str_c("V", row_number()+1)) %>% 
+    ungroup %>%
+    rename(V1 = a) 
+%>%
+    pivot_wider(names_from = rn, values_from = x) %>%   
+    mutate(rn = as.character(english(row_number()))) %>%
+    column_to_rownames('rn')
+```
+
+```{r}
+m
 ```
 
 
+```{r}
+mapview(hp_natural[hp_natural$hexid == "8c194ad3569adff",]) + mapview(natural[natural$osm_way_id == "898056827",]) + mapview(natural[natural$osm_way_id == "188212033",])
+```
+
+
+```{r}
+# create statistics by hexagon
+hp_natural %>%
+  # calculate hexagons clipped area
+  mutate(hc_area = round(as.numeric(st_area(.)),1)) %>%
+  st_drop_geometry() %>%
+  # areas of values as variables
+  pivot_wider(names_from = "natural", values_from = "hc_area", values_fn = sum, values_fill = 0) %>%
+  # add prefix to columns 2 onwards
+  rename_with( ~ paste0("natural_", .x), .cols = 5:ncol(.)) %>%
+  mutate_all( ~ replace(., is.na(.), 0)) %>%
+  # add total area adding columns 5 onwards
+  mutate(total_area = rowSums(.[5:ncol(.)])) -> hp_nat_stats
+
+# hp_int_j %>%
+#   # add prefix to columns 2 onwards
+#   rename_with( ~ paste0("l_", .x), .cols = 2:ncol(.)) %>%
+#   mutate_all( ~ replace(., is.na(.), 0)) %>%
+#   # add total
+#   mutate(total = rowSums(.[2:ncol(.)])) %>%
+#   # add percentage by column
+#   mutate_at(vars(starts_with("l")) , funs(pc = ./total * 100)) -> hp_int_j1
+
+# join statistics to hexagons
+hexpol121 %>%
+  left_join(hp_nat_stats, by="hexid") %>%
+  # calculate hexagons area
+  mutate(hex_area = round(as.numeric(st_area(.)),1)) %>%
+  # add percentage by column
+  mutate_at(vars(starts_with("natural")), funs(pc = round(./(hex_area * 0.01),1)))
+```
+
+```{r}
+mapview(natural[natural$osm_way_id == "466975876",])
+```
+
+```{r}
+mapview(hp_natural[hp_natural$hexid == c("8c194ad31c50bff"), ]) + mapview(natural[natural$osm_id == "70347",]) + mapview(natural[natural$osm_id == "28934",])
+``` 
+
+
+```{r}
+# join statistics to hexagons
+gshex %>%
+  left_join(hp_int_j1, by="hexid") -> gshexsum
+```
+
+```{r}
+mapview(hp_natural[12500:12599,]) # + mapview(natural[natural$osm_id == 28934,])
+```
 
 
 ```{r}

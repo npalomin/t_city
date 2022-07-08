@@ -189,16 +189,20 @@ st_intersection(hexpol121, natural) -> hp_natural
 ```
 
 ```{r}
-hp_natural %>%
-  st_drop_geometry() %>%
-  group_by(hexid) %>%
-  summarise(n = n()) %>%
-  arrange(desc(n))
-```
-```{r}
-hp_natural %>%
-  st_drop_geometry() %>%
-  filter(hexid == "8c194ad3569adff")
+# some hexagons will intersect multiple osm features
+# hp_natural %>%
+#   st_drop_geometry() %>%
+#   group_by(hexid) %>%
+#   summarise(n = n()) %>%
+#   arrange(desc(n))
+
+# hp_natural %>%
+#   st_drop_geometry() %>%
+#   filter(hexid == "8c194ad3569adff")
+
+# osm features have either 'osm_id' OR 'osm_way_id'
+# hp_natural %>%
+#   filter(!is.na(osm_way_id) & !is.na(osm_id))
 ```
 
 Need two operations
@@ -207,44 +211,37 @@ Need two operations
 - Summarise by equal hexid and equal value
 
 ```{r}
+# create summary table of osm_ids by hexagon
 hp_natural %>%
   st_drop_geometry() %>%
-  filter(hexid %in% c("8c194ad3344cbff","8c194ad3569adff")) %>%
-  select(hexid, osm_way_id) %>%
+  # collapse ids to create a unique id label
+  mutate(osm_nid = case_when(is.na(osm_id) ~ osm_way_id,
+                             TRUE ~ osm_id)) %>%
+  select(hexid, osm_nid) %>%
   group_by(hexid) %>%
-  mutate(osm_nm = paste("osm_id", row_number())) %>%
-  # areas of values as variables
-  pivot_wider(names_from = osm_nm, values_from = osm_way_id)
+  mutate(osm_nm = paste0("osm_nid_", row_number(), sep = "")) %>%
+  # osm ids of values as variables
+  pivot_wider(names_from = osm_nm, values_from = osm_nid) -> h_natural_onid
+
+h_natural_onid %>%
+  filter(hexid == "8c194ad3569adff")
+
+# create summary table of osm areas by hexagon
+hp_natural %>%
+  st_drop_geometry() %>%
+  select(hexid, osmf_area) %>%
+  group_by(hexid) %>%
+  mutate(osm_nm = paste0("osm_nid_", row_number(), "_area", sep = "")) %>%
+  # osm areas of values as variables
+  pivot_wider(names_from = osm_nm, values_from = osmf_area) -> h_natural_onid_area
+
+# join tables
+h_natural_onid %>%
+  left_join(h_natural_onid_area, by = "hexid") -> h_natural_st
 ```
 
 ```{r}
-library(dplyr)
-library(tidyr)
-library(stringr)
-install.packages("english")
-library(english)
-
-a <- c("a", "a", "a", "a", "a", "a")
-x <- c("x", "y", "z", "h", "l", "m")
-m <- data.frame(a, x)
-
-m %>% 
-    group_by(a) %>%
-    mutate(rn = str_c("V", row_number()+1)) %>% 
-    ungroup %>%
-    rename(V1 = a) 
-%>%
-    pivot_wider(names_from = rn, values_from = x) %>%   
-    mutate(rn = as.character(english(row_number()))) %>%
-    column_to_rownames('rn')
-```
-
-```{r}
-m
-```
-
-
-```{r}
+# example of hexagon hexid == "8c194ad3569adff" intersecting 4 osm features
 mapview(hp_natural[hp_natural$hexid == "8c194ad3569adff",]) + mapview(natural[natural$osm_way_id == "898056827",]) + mapview(natural[natural$osm_way_id == "188212033",])
 ```
 
@@ -254,23 +251,15 @@ mapview(hp_natural[hp_natural$hexid == "8c194ad3569adff",]) + mapview(natural[na
 hp_natural %>%
   # calculate hexagons clipped area
   mutate(hc_area = round(as.numeric(st_area(.)),1)) %>%
-  st_drop_geometry() %>%
+  st_drop_geometry() %>% 
+  select(hexid, natural, hc_area) %>%
   # areas of values as variables
   pivot_wider(names_from = "natural", values_from = "hc_area", values_fn = sum, values_fill = 0) %>%
   # add prefix to columns 2 onwards
-  rename_with( ~ paste0("natural_", .x), .cols = 5:ncol(.)) %>%
+  rename_with( ~ paste0("natural_", .x), .cols = 2:ncol(.)) %>%
   mutate_all( ~ replace(., is.na(.), 0)) %>%
   # add total area adding columns 5 onwards
-  mutate(total_area = rowSums(.[5:ncol(.)])) -> hp_nat_stats
-
-# hp_int_j %>%
-#   # add prefix to columns 2 onwards
-#   rename_with( ~ paste0("l_", .x), .cols = 2:ncol(.)) %>%
-#   mutate_all( ~ replace(., is.na(.), 0)) %>%
-#   # add total
-#   mutate(total = rowSums(.[2:ncol(.)])) %>%
-#   # add percentage by column
-#   mutate_at(vars(starts_with("l")) , funs(pc = ./total * 100)) -> hp_int_j1
+  mutate(total_area = rowSums(.[2:ncol(.)])) -> hp_nat_stats
 
 # join statistics to hexagons
 hexpol121 %>%
@@ -278,7 +267,19 @@ hexpol121 %>%
   # calculate hexagons area
   mutate(hex_area = round(as.numeric(st_area(.)),1)) %>%
   # add percentage by column
-  mutate_at(vars(starts_with("natural")), funs(pc = round(./(hex_area * 0.01),1)))
+  mutate_at(vars(starts_with("natural")), funs(pc = round(./(hex_area * 0.01),1))) %>%
+  # join summary table of osm_ids by hexagon
+  left_join(h_natural_st, by="hexid") -> hex_natural
+```
+
+## Export csv
+```{r}
+st_write(hex_natural, "csv/hex_natural.csv", layer_options = c("GEOMETRY=AS_WKT","CREATE_CSVT=YES"), delete_dsn=TRUE)
+```
+
+```{r}
+# water AND wetland intersections
+mapview(hp_natural[hp_natural$osm_id == "70347" & hp_natural$hexid == "8c194ad31c50bff", ]) + mapview(hp_natural[hp_natural$osm_way_id == "466974085" & hp_natural$hexid == "8c194ad31c50bff", ])
 ```
 
 ```{r}

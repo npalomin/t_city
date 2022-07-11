@@ -183,6 +183,7 @@ mpglist[["natural"]] %>%
 
 ```{r}
 # intersect hexagons with polygon layer
+# use crs=3857 to speed up intersection
 st_intersection(hexpol121, natural) -> hp_natural
 
 #system.time({st_intersection(hexpol121, natural) -> hp_natural}) # ~ 70 seconds after st_precision
@@ -245,10 +246,11 @@ h_natural_onid %>%
 mapview(hp_natural[hp_natural$hexid == "8c194ad3569adff",]) + mapview(natural[natural$osm_way_id == "898056827",]) + mapview(natural[natural$osm_way_id == "188212033",])
 ```
 
-
 ```{r}
 # create statistics by hexagon
 hp_natural %>%
+  # transfrom CRS 3857 -> 4326
+  st_transform(4326) %>%
   # calculate hexagons clipped area
   mutate(hc_area = round(as.numeric(st_area(.)),1)) %>%
   st_drop_geometry() %>% 
@@ -264,6 +266,8 @@ hp_natural %>%
 # join statistics to hexagons
 hexpol121 %>%
   left_join(hp_nat_stats, by="hexid") %>%
+  # transfrom CRS 3857 -> 4326
+  st_transform(4326) %>%
   # calculate hexagons area
   mutate(hex_area = round(as.numeric(st_area(.)),1)) %>%
   # add percentage by column
@@ -281,6 +285,45 @@ st_write(hex_natural, "csv/hex_natural.csv", layer_options = c("GEOMETRY=AS_WKT"
 # water AND wetland intersections
 mapview(hp_natural[hp_natural$osm_id == "70347" & hp_natural$hexid == "8c194ad31c50bff", ]) + mapview(hp_natural[hp_natural$osm_way_id == "466974085" & hp_natural$hexid == "8c194ad31c50bff", ])
 ```
+
+## Codebook
+
+```{r}
+library(readr)
+hex_natural <- read_csv("csv/hex_natural.csv")
+```
+
+```{r}
+hex_natural %>%
+  colnames()
+```
+
+
+
+```{r}
+data.frame(variable_name = c(
+  "WKT",
+  "hexid",
+  "natural_water",
+  "total_area",
+  "hex_area",
+  "natural_water_pc",
+  "osm_nid_1",
+  "osm_nid_1_area"),
+  variable_description = c(
+    "Well-known text representing vector geometry objects",
+    "Unique haxagon identifier according to H3 indexing",
+    "{key_value} pair, key is the 'layer' and value is one of the 'classes' (class can be > 1)",
+    "Sum of all values areas (or classes areas) in square meters",
+    "Total H3 hexagon area of resolution 12 in square meters",
+    "{key_value} percentage, proportion of the 'value' area from 'hex_area'",
+    "{osm_nid_X}, OSM unique id, 'X' is a correlative of OSM feature(s). 'nid' is the merge of 'osm_id' and 'osm_way_id'",
+    "{osm_nid_X_area} is the area of the corresponding 'X' OSM feature(s)"
+  )) -> cbook
+cbook
+```
+
+
 
 ```{r}
 mapview(natural[natural$osm_way_id == "466975876",])

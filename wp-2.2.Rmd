@@ -1,0 +1,416 @@
+---
+title: "Create OSM Data Processing Script"
+author:
+  name: Nicolas Palominos
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    toc_depth: '3'
+    number_sections: no
+    self_contained: no
+    code_download: true
+    code_folding: hide
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+---
+
+## Set up environment
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+pkgs <- c("tidyverse","sf","osmextract", "remotes", "knitr")
+# If not already installed (run once, then comment lines with '#')
+# install.packages(pkgs)
+#remotes::install_github("crazycapivara/h3-r")
+# Core packages
+library(tidyverse)             
+library(sf)
+library(h3)
+library(osmextract)
+library(knitr)
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+options(scipen = 999)
+```
+
+## Create gridded study area from point
+
+```{r}
+# Index a lat/lng point to an H3 index
+# modify 'coords' for analysis on a different area
+# helper websites #
+# H3 interactive map: https://wolf-h3-viewer.glitch.me/
+# Point finder: http://bboxfinder.com/
+coords <- c(51.512468,-0.117449) # lat,lng EPSG: 4326 - WGS 84
+# define resolution (lower resolution to create a larger study area)
+# helper website
+# Table of Cell Areas for H3 Resolutions: https://h3geo.org/docs/core-library/restable/
+res <- 6
+# get hex id
+hexidsa <- geo_to_h3(coords, res)
+
+# get hex polygon geometry
+hexpolsa <- h3_to_geo_boundary_sf(hexidsa) %>%
+  # add hexid column
+  mutate(hexid = hexidsa)
+
+# get hex polygon geometries with centres contained in a given polygon at res = 12
+hexid12 <- polyfill(hexpolsa, res = 12)
+# get res = 12 polygons
+hexpol12 <- h3_to_geo_boundary_sf(hexid12) %>%
+  # add hexid column
+  mutate(hexid = hexid12)
+```
+
+## Get OSM data for study area
+
+```{r}
+# check/create Output directory
+mainDir <- getwd()
+subDir <- paste0("osm-data-",coords[1])
+
+if (file.exists(subDir)){
+    setwd(file.path(mainDir))
+} else {
+    dir.create(file.path(mainDir, subDir))
+    setwd(file.path(mainDir))
+}
+
+# get data
+# Download the data to osm-data folder. hexpolsa is the polygonal boundary
+oe_get("London", download_directory = subDir, stringsAsFactors = FALSE, extra_tags = c("water","railway"), download_only = TRUE, skip_vectortranslate = TRUE)
+```
+
+```{r}
+# st_layers("~/Documents/Q_GitHub/t_city/geofabrik_London.osm.pbf")
+# oe_get_keys("~/Documents/Q_GitHub/t_city/geofabrik_London.osm.pbf", layer = "multipolygons")
+```
+
+### Read pbf file by layer types
+
+```{r}
+pbf <- list.files(path = file.path(mainDir, subDir), pattern = "*.pbf")
+dir <- file.path(mainDir, subDir, pbf)
+
+# polygon geometries
+oe_read(dir, layer = "multipolygons", extra_tags = "water", boundary = hexpolsa, boundary_type = "spat") -> pols
+# lines geometries
+oe_read(dir, layer = "lines", extra_tags = "railway", boundary = hexpolsa, boundary_type = "spat") -> lines
+```
+
+## Create OSM data statistics
+
+### Explore data and split into relevant layers
+
+```{r}
+# polygons
+glimpse(pols)
+```
+
+```{r}
+# lines
+glimpse(lines)
+```
+
+```{r}
+# split polygons into relevant polygonal keys
+# define keys
+keys <- c("natural") # off-test: "building", "landuse", "water", 
+```
+
+```{r}
+# function to create list of objects according to relevant layers
+# define dataframe
+df <- pols
+
+polslist <- list()
+for (i in keys) {
+  df %>%
+    # collapse ids to create a unique id label
+    mutate(osm_nid = case_when(is.na(osm_id) ~ osm_way_id,
+                             TRUE ~ osm_id)) %>%
+    # select key and keep osm id
+    select(i, osm_nid) %>%
+    # drop NAs
+    drop_na(.) %>%
+    # make valid polygons (repair those with self-intersection?)
+    st_make_valid() -> vpol
+  
+  # id of remaining invalid geometries
+  which(st_is_valid(vpol, reason = TRUE) != "Valid Geometry") -> invalid
+  
+  # ghost integer to ease slice
+  c(invalid, 9999) -> invalid
+  
+  vpol %>%
+    # remove invalid geometries
+    slice(-invalid) %>%
+    # calculate area (remove units and round to 1 digit)
+    mutate(osmf_area = round(as.numeric(st_area(.)),1)) -> vpol
+  
+  # get only the non-empty geometries
+  vpol[!st_is_empty(vpol), , drop=FALSE] -> polslist[[i]]
+}
+```
+
+```{r}
+# check reduction of geometries 'not-valid' & 'not-repaired'
+# before st_make_valid
+pols %>%
+  select(natural) %>%
+  filter(!is.na(.)) %>%
+  nrow(.)
+# result: 285
+```
+
+```{r}
+# after st_make_valid
+length(polslist[["natural"]][["natural"]])
+# result: 285
+```
+
+```{r}
+# check extent of OSM features in relation to study area hexagon
+polslist[["natural"]] %>%
+  st_transform(27700) %>%
+  filter(osm_nid == 28934) %>%
+  ggplot() +
+  geom_sf() +
+  geom_sf(data = hexpolsa, fill=NA, col="tomato") +
+  theme_minimal() +
+  coord_sf(datum = 27700)
+```
+
+### Study area statistics by key 
+
+```{r}
+# vector of value counts > 0.05%
+polslist[["natural"]] %>%
+  st_drop_geometry() %>%
+  count(natural) %>%
+  # percentage
+  mutate(pc = 100* (n / sum(n))) %>%
+  arrange(desc(n)) %>%
+  filter(pc > 0.05) %>%
+  pull(natural) -> k_nat
+
+# reclassify values below threshold to 'other'
+# create 'key' object from list
+natural <- polslist[["natural"]] %>%
+  mutate(natural = case_when(natural %in% k_nat ~ natural,
+                             TRUE ~ "other"))
+```
+
+```{r}
+k_nat
+```
+
+```{r}
+natural %>%
+  st_drop_geometry() %>%
+  count(natural) %>%
+  arrange(desc(n)) %>%
+  knit_print()
+```
+
+## Get statistics by hexagon
+
+```{r}
+# set precision
+# use crs=3857 to speed up intersection
+hexpol12 %>%
+  st_transform(crs=3857) %>%
+  st_set_precision(units::set_units(10, nm)) -> hexpol12
+
+# set precision and create objects by key
+natural %>%
+  st_transform(crs=3857) %>%
+  st_set_precision(units::set_units(10, nm)) -> natural
+
+# intersect hexagons with polygon layer
+st_intersection(hexpol12, natural) -> hp_natural
+```
+
+```{r}
+hp_natural %>%
+  st_drop_geometry() %>%
+  count(natural) %>%
+  arrange(desc(n)) %>%
+  knit_print()
+```
+
+```{r}
+# features 'not touching' hexpol6 are read! e.g.: osm_nid = 316996080, natural=shrubbery
+# unique values in OSM 'unclipped' data are more than values clipped to hexpol12
+#mapview(natural) + mapview(hexpolsa, fill=NA)
+```
+
+### OSM legacy data
+
+```{r}
+# # collapse ids to create a unique id label
+# hp_natural %>%
+#   mutate(osm_nid = case_when(is.na(osm_id) ~ osm_way_id,
+#                              TRUE ~ osm_id)) -> hp_natural
+
+# create summary table of osm_ids by hexagon
+hp_natural %>%
+  st_drop_geometry() %>%
+  select(hexid, osm_nid) %>%
+  group_by(hexid) %>%
+  mutate(osm_nm = paste0("osm_nid_", row_number(), sep = "")) %>%
+  # osm ids of values as variables
+  pivot_wider(names_from = osm_nm, values_from = osm_nid) -> h_natural_onid
+
+# create summary table of osm areas by hexagon
+hp_natural %>%
+  st_drop_geometry() %>%
+  select(hexid, osmf_area) %>%
+  group_by(hexid) %>%
+  mutate(osm_nm = paste0("osm_nid_", row_number(), "_area", sep = "")) %>%
+  # osm areas of values as variables
+  pivot_wider(names_from = osm_nm, values_from = osmf_area) -> h_natural_onid_area
+
+# create summary table of osm features values by hexagon
+hp_natural %>%
+  st_drop_geometry() %>%
+  select(hexid, natural) %>%
+  group_by(hexid) %>%
+  mutate(osm_nm = paste0("osm_nid_", row_number(), "_value", sep = "")) %>%
+  # osm features values as variables
+  pivot_wider(names_from = osm_nm, values_from = natural) -> h_natural_onid_value
+
+# join tables
+h_natural_onid %>%
+  left_join(h_natural_onid_area, by = "hexid") %>%
+  left_join(h_natural_onid_value, by = "hexid") -> h_natural_st
+
+# see example of hexagon with most 'values'
+h_natural_st %>%
+  filter(!is.na(osm_nid_5_area))
+```
+Export OSM legacy data CSV file
+
+```{r}
+# layer (key) name
+layer <- natural %>%
+  st_drop_geometry() %>%
+  colnames() %>%
+  first()
+
+# check/create Output directory
+subDir <- paste0("csv-",coords[1])
+
+if (file.exists(subDir)){
+    setwd(file.path(mainDir))
+} else {
+    dir.create(file.path(mainDir, subDir))
+    setwd(file.path(mainDir))
+}
+
+# write csv of OSM legacy data
+write_csv(h_natural_st, file = paste0(mainDir, "/", subDir, "/", hexidsa, "-", layer, "-osm-legacy.csv"))
+```
+
+### Create statistics by hexagon
+
+```{r}
+# create statistics by hexagon
+hp_natural %>%
+  # transfrom CRS 3857 -> 4326
+  st_transform(4326) %>%
+  # calculate hexagons clipped area
+  mutate(hc_area = round(as.numeric(st_area(.)),1)) %>%
+  st_drop_geometry() %>% 
+  select(hexid, natural, hc_area) %>%
+  # areas of values as variables (areas of equal value are aggregated with 'values_fn = sum')
+  pivot_wider(names_from = "natural", values_from = "hc_area", values_fn = sum, values_fill = 0) %>%
+  # add prefix to columns 2 onwards
+  rename_with( ~ paste0("natural_", .x), .cols = 2:ncol(.)) %>%
+  mutate_all( ~ replace(., is.na(.), 0)) %>%
+  # add total area adding equal value columns
+  mutate(total_area = rowSums(select(., starts_with("natural"))),
+         # diversity = number of columns where area > 0
+         diversity = rowSums(select(., starts_with("natural")) != 0)) -> hp_natural_stats
+
+# join statistics to hexagons
+hexpol12 %>%
+  left_join(hp_natural_stats, by="hexid") %>%
+  # transfrom CRS 3857 -> 4326
+  st_transform(4326) %>%
+  # calculate hexagons area
+  mutate(hex_area = round(as.numeric(st_area(.)),1)) %>%
+  # add percentage by column
+  mutate_at(vars(starts_with("natural")), funs(pc = round(./(hex_area * 0.01),1))) -> hex_natural
+```
+
+Export hexagon CSV file  
+
+```{r}
+# write csv WKT hexagon statistics
+st_write(hex_natural, paste0(mainDir, "/", subDir, "/", hexidsa, "-", layer, "-hexstats.csv"), layer_options = c("GEOMETRY=AS_WKT","CREATE_CSVT=YES"), delete_dsn=TRUE)
+```
+
+## Codebooks
+```{r}
+data.frame(variable_name = c(
+  "WKT",
+  "hexid",
+  "natural_water",
+  "total_area",
+  "hex_area",
+  "natural_water_pc"),
+  variable_description = c(
+    "Well-known text representing vector geometry objects",
+    "Unique haxagon identifier according to H3 indexing",
+    "{key_value} pair, key is the 'layer' and value is one of the 'classes' (class can be > 1)",
+    "Sum of all values areas (or classes areas) in square meters",
+    "Total H3 hexagon area of resolution 12 in square meters",
+    "{key_value} percentage, proportion of the 'value' area from 'hex_area'"
+  )) -> cbook_hexstats
+
+data.frame(variable_name = c(
+  "hexid",
+  "osm_nid_1",
+  "osm_nid_1_area",
+  "osm_nid_1_value"),
+  variable_description = c(
+    "Unique haxagon identifier according to H3 indexing",
+    "{osm_nid_X}, OSM unique id, 'X' is a correlative of OSM feature(s). 'nid' is the merge of 'osm_id' and 'osm_way_id'",
+    "{osm_nid_X_area} is the area of the corresponding 'X' OSM feature(s)",
+    "{osm_nid_X_value} is the 'value' of the corresponding 'X' OSM feature(s)"
+    )) -> cbook_osm_legacy
+```
+
+```{r}
+cbook_hexstats %>%
+  knit_print()
+```
+
+```{r}
+cbook_osm_legacy %>%
+  knit_print()
+```
+
+```{css, echo = FALSE, class.source = 'foldable'}
+h1, h2, h3 {
+  color: #6EC0A5; 
+  font-family: "Trebuchet MS"
+}
+body {
+  font-family: "Trebuchet MS";
+  background-color: #FFFFF9; 
+}
+a {
+  color: #6EC0A5; 
+}
+.inverse {
+  background-color: #6EC0A5; 
+}
+.list-group-item.active, .list-group-item.active:focus, .list-group-item.active:hover {
+    z-index: 2;
+    color: #fff;
+    background-color: #6EC0A5;
+    border-color: #6EC0A5;
+}
+```

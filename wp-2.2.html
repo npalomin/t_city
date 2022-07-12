@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+<meta name="date" content="2022-07-12" />
+
+<title>Create OSM Data Processing Script</title>
+
+<script src="wp-2.2_files/header-attrs-2.11/header-attrs.js"></script>
+<script src="wp-2.2_files/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="wp-2.2_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="wp-2.2_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="wp-2.2_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="wp-2.2_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="wp-2.2_files/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="wp-2.2_files/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="wp-2.2_files/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="wp-2.2_files/navigation-1.1/tabsets.js"></script>
+<script src="wp-2.2_files/navigation-1.1/codefolding.js"></script>
+<script src="wp-2.2_files/navigation-1.1/sourceembed.js"></script>
+<link href="wp-2.2_files/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="wp-2.2_files/highlightjs-9.12.0/highlight.js"></script>
+<link href="wp-2.2_files/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="wp-2.2_files/pagedtable-1.1/js/pagedtable.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+<li role="separator" class="divider"></li>
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Create OSM Data Processing Script</h1>
+<h4 class="author">Nicolas Palominos</h4>
+<h4 class="date">2022-07-12</h4>
+
+</div>
+
+
+<div id="set-up-environment" class="section level2">
+<h2>Set up environment</h2>
+<pre class="r"><code>pkgs &lt;- c(&quot;tidyverse&quot;,&quot;sf&quot;,&quot;osmextract&quot;, &quot;remotes&quot;, &quot;knitr&quot;)
+# If not already installed (run once, then comment lines with &#39;#&#39;)
+# install.packages(pkgs)
+#remotes::install_github(&quot;crazycapivara/h3-r&quot;)
+# Core packages
+library(tidyverse)             
+library(sf)
+library(h3)
+library(osmextract)
+library(knitr)
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+options(scipen = 999)</code></pre>
+</div>
+<div id="create-gridded-study-area-from-point" class="section level2">
+<h2>Create gridded study area from point</h2>
+<pre class="r"><code># Index a lat/lng point to an H3 index
+# modify &#39;coords&#39; for analysis on a different area
+# helper websites #
+# H3 interactive map: https://wolf-h3-viewer.glitch.me/
+# Point finder: http://bboxfinder.com/
+coords &lt;- c(51.512468,-0.117449) # lat,lng EPSG: 4326 - WGS 84
+# define resolution (lower resolution to create a larger study area)
+# helper website
+# Table of Cell Areas for H3 Resolutions: https://h3geo.org/docs/core-library/restable/
+res &lt;- 6
+# get hex id
+hexidsa &lt;- geo_to_h3(coords, res)
+
+# get hex polygon geometry
+hexpolsa &lt;- h3_to_geo_boundary_sf(hexidsa) %&gt;%
+  # add hexid column
+  mutate(hexid = hexidsa)
+
+# get hex polygon geometries with centres contained in a given polygon at res = 12
+hexid12 &lt;- polyfill(hexpolsa, res = 12)
+# get res = 12 polygons
+hexpol12 &lt;- h3_to_geo_boundary_sf(hexid12) %&gt;%
+  # add hexid column
+  mutate(hexid = hexid12)</code></pre>
+</div>
+<div id="get-osm-data-for-study-area" class="section level2">
+<h2>Get OSM data for study area</h2>
+<pre class="r"><code># check/create Output directory
+mainDir &lt;- getwd()
+subDir &lt;- paste0(&quot;osm-data-&quot;,coords[1])
+
+if (file.exists(subDir)){
+    setwd(file.path(mainDir))
+} else {
+    dir.create(file.path(mainDir, subDir))
+    setwd(file.path(mainDir))
+}
+
+# get data
+# Download the data to osm-data folder. hexpolsa is the polygonal boundary
+oe_get(&quot;London&quot;, download_directory = subDir, stringsAsFactors = FALSE, extra_tags = c(&quot;water&quot;,&quot;railway&quot;), download_only = TRUE, skip_vectortranslate = TRUE)</code></pre>
+<pre><code>## [1] &quot;/Users/nicolas/Documents/Q_GitHub/t_city/osm-data-51.512468/geofabrik_London.osm.pbf&quot;</code></pre>
+<pre class="r"><code># st_layers(&quot;~/Documents/Q_GitHub/t_city/geofabrik_London.osm.pbf&quot;)
+# oe_get_keys(&quot;~/Documents/Q_GitHub/t_city/geofabrik_London.osm.pbf&quot;, layer = &quot;multipolygons&quot;)</code></pre>
+<div id="read-pbf-file-by-layer-types" class="section level3">
+<h3>Read pbf file by layer types</h3>
+<pre class="r"><code>pbf &lt;- list.files(path = file.path(mainDir, subDir), pattern = &quot;*.pbf&quot;)
+dir &lt;- file.path(mainDir, subDir, pbf)
+
+# polygon geometries
+oe_read(dir, layer = &quot;multipolygons&quot;, extra_tags = &quot;water&quot;, boundary = hexpolsa, boundary_type = &quot;spat&quot;) -&gt; pols</code></pre>
+<pre><code>## 0...10...20...30...40...50...60...70...80...90...100 - done.
+## Reading layer `multipolygons&#39; from data source 
+##   `/Users/nicolas/Documents/Q_GitHub/t_city/osm-data-51.512468/geofabrik_London.gpkg&#39; 
+##   using driver `GPKG&#39;
+## Simple feature collection with 47853 features and 26 fields
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: -0.5103751 ymin: 51.28676 xmax: 0.3340155 ymax: 51.69187
+## Geodetic CRS:  WGS 84</code></pre>
+<pre class="r"><code># lines geometries
+oe_read(dir, layer = &quot;lines&quot;, extra_tags = &quot;railway&quot;, boundary = hexpolsa, boundary_type = &quot;spat&quot;) -&gt; lines</code></pre>
+<pre><code>## 0...10...20...30...40...50...60...70...80...90...100 - done.
+## Reading layer `lines&#39; from data source 
+##   `/Users/nicolas/Documents/Q_GitHub/t_city/osm-data-51.512468/geofabrik_London.gpkg&#39; 
+##   using driver `GPKG&#39;
+## Simple feature collection with 52490 features and 10 fields
+## Geometry type: LINESTRING
+## Dimension:     XY
+## Bounding box:  xmin: -0.2482626 ymin: 51.35111 xmax: 0.1561341 ymax: 51.5691
+## Geodetic CRS:  WGS 84</code></pre>
+</div>
+</div>
+<div id="create-osm-data-statistics" class="section level2">
+<h2>Create OSM data statistics</h2>
+<div id="explore-data-and-split-into-relevant-layers"
+class="section level3">
+<h3>Explore data and split into relevant layers</h3>
+<pre class="r"><code># polygons
+glimpse(pols)</code></pre>
+<pre><code>## Rows: 47,853
+## Columns: 27
+## $ osm_id      &lt;chr&gt; &quot;2171&quot;, &quot;28934&quot;, &quot;51781&quot;, &quot;51800&quot;, &quot;51805&quot;, &quot;51806&quot;, &quot;5182…
+## $ osm_way_id  &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ name        &lt;chr&gt; &quot;South Bank Technopark&quot;, &quot;River Thames&quot;, &quot;City of Westmins…
+## $ type        &lt;chr&gt; &quot;multipolygon&quot;, &quot;multipolygon&quot;, &quot;boundary&quot;, &quot;boundary&quot;, &quot;b…
+## $ aeroway     &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ amenity     &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ admin_level &lt;chr&gt; NA, NA, &quot;8&quot;, &quot;6&quot;, &quot;8&quot;, &quot;8&quot;, &quot;8&quot;, &quot;8&quot;, NA, NA, NA, NA, NA, …
+## $ barrier     &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ boundary    &lt;chr&gt; NA, NA, &quot;administrative&quot;, &quot;administrative&quot;, &quot;administrativ…
+## $ building    &lt;chr&gt; &quot;yes&quot;, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, &quot;ye…
+## $ craft       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ geological  &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ historic    &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ land_area   &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ landuse     &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ leisure     &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, &quot;park&quot;, NA…
+## $ man_made    &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ military    &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ natural     &lt;chr&gt; NA, &quot;water&quot;, NA, NA, NA, NA, NA, NA, &quot;water&quot;, &quot;water&quot;, NA,…
+## $ office      &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ place       &lt;chr&gt; NA, NA, NA, NA, &quot;borough&quot;, NA, NA, NA, NA, NA, &quot;city&quot;, NA,…
+## $ shop        &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ sport       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ tourism     &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ water       &lt;chr&gt; NA, &quot;river&quot;, NA, NA, NA, NA, NA, NA, NA, NA, NA, &quot;river&quot;, …
+## $ other_tags  &lt;chr&gt; &quot;\&quot;operator\&quot;=&gt;\&quot;London South Bank University\&quot;,\&quot;wikidata…
+## $ geometry    &lt;MULTIPOLYGON [°]&gt; MULTIPOLYGON (((-0.1021346 ..., MULTIPOLYGON …</code></pre>
+<pre class="r"><code># lines
+glimpse(lines)</code></pre>
+<pre><code>## Rows: 52,490
+## Columns: 11
+## $ osm_id     &lt;chr&gt; &quot;330341&quot;, &quot;330437&quot;, &quot;330481&quot;, &quot;331357&quot;, &quot;331680&quot;, &quot;367991&quot;,…
+## $ name       &lt;chr&gt; &quot;Penton Rise&quot;, &quot;St. John Street&quot;, &quot;City Road&quot;, &quot;Gray&#39;s Inn …
+## $ highway    &lt;chr&gt; &quot;trunk&quot;, &quot;primary&quot;, &quot;trunk&quot;, &quot;trunk&quot;, &quot;primary&quot;, &quot;residenti…
+## $ waterway   &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ aerialway  &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ barrier    &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ man_made   &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ railway    &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ z_order    &lt;int&gt; 8, 7, 8, 8, 7, 3, 4, 4, 7, 7, 7, 3, 3, 0, 8, 3, 3, 4, 3, 3,…
+## $ other_tags &lt;chr&gt; &quot;\&quot;bicycle\&quot;=&gt;\&quot;yes\&quot;,\&quot;cycleway:left\&quot;=&gt;\&quot;lane\&quot;,\&quot;foot\&quot;=…
+## $ geometry   &lt;LINESTRING [°]&gt; LINESTRING (-0.114121 51.53..., LINESTRING (-0.1…</code></pre>
+<pre class="r"><code># split polygons into relevant polygonal keys
+# define keys
+keys &lt;- c(&quot;natural&quot;) # off-test: &quot;building&quot;, &quot;landuse&quot;, &quot;water&quot;, </code></pre>
+<pre class="r"><code># function to create list of objects according to relevant layers
+# define dataframe
+df &lt;- pols
+
+polslist &lt;- list()
+for (i in keys) {
+  df %&gt;%
+    # collapse ids to create a unique id label
+    mutate(osm_nid = case_when(is.na(osm_id) ~ osm_way_id,
+                             TRUE ~ osm_id)) %&gt;%
+    # select key and keep osm id
+    select(i, osm_nid) %&gt;%
+    # drop NAs
+    drop_na(.) %&gt;%
+    # make valid polygons (repair those with self-intersection?)
+    st_make_valid() -&gt; vpol
+  
+  # id of remaining invalid geometries
+  which(st_is_valid(vpol, reason = TRUE) != &quot;Valid Geometry&quot;) -&gt; invalid
+  
+  # ghost integer to ease slice
+  c(invalid, 9999) -&gt; invalid
+  
+  vpol %&gt;%
+    # remove invalid geometries
+    slice(-invalid) %&gt;%
+    # calculate area (remove units and round to 1 digit)
+    mutate(osmf_area = round(as.numeric(st_area(.)),1)) -&gt; vpol
+  
+  # get only the non-empty geometries
+  vpol[!st_is_empty(vpol), , drop=FALSE] -&gt; polslist[[i]]
+}</code></pre>
+<pre class="r"><code># check reduction of geometries &#39;not-valid&#39; &amp; &#39;not-repaired&#39;
+# before st_make_valid
+pols %&gt;%
+  select(natural) %&gt;%
+  filter(!is.na(.)) %&gt;%
+  nrow(.)</code></pre>
+<pre><code>## [1] 285</code></pre>
+<pre class="r"><code># result: 285</code></pre>
+<pre class="r"><code># after st_make_valid
+length(polslist[[&quot;natural&quot;]][[&quot;natural&quot;]])</code></pre>
+<pre><code>## [1] 285</code></pre>
+<pre class="r"><code># result: 285</code></pre>
+<pre class="r"><code># check extent of OSM features in relation to study area hexagon
+polslist[[&quot;natural&quot;]] %&gt;%
+  st_transform(27700) %&gt;%
+  filter(osm_nid == 28934) %&gt;%
+  ggplot() +
+  geom_sf() +
+  geom_sf(data = hexpolsa, fill=NA, col=&quot;tomato&quot;) +
+  theme_minimal() +
+  coord_sf(datum = 27700)</code></pre>
+<p><img src="wp-2.2_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+</div>
+<div id="study-area-statistics-by-key" class="section level3">
+<h3>Study area statistics by key</h3>
+<pre class="r"><code># vector of value counts &gt; 0.05%
+polslist[[&quot;natural&quot;]] %&gt;%
+  st_drop_geometry() %&gt;%
+  count(natural) %&gt;%
+  # percentage
+  mutate(pc = 100* (n / sum(n))) %&gt;%
+  arrange(desc(n)) %&gt;%
+  filter(pc &gt; 0.05) %&gt;%
+  pull(natural) -&gt; k_nat
+
+# reclassify values below threshold to &#39;other&#39;
+# create &#39;key&#39; object from list
+natural &lt;- polslist[[&quot;natural&quot;]] %&gt;%
+  mutate(natural = case_when(natural %in% k_nat ~ natural,
+                             TRUE ~ &quot;other&quot;))</code></pre>
+<pre class="r"><code>k_nat</code></pre>
+<pre><code>## [1] &quot;water&quot;     &quot;wood&quot;      &quot;scrub&quot;     &quot;wetland&quot;   &quot;beach&quot;     &quot;shrubbery&quot;
+## [7] &quot;mud&quot;       &quot;sand&quot;      &quot;rock&quot;</code></pre>
+<pre class="r"><code>natural %&gt;%
+  st_drop_geometry() %&gt;%
+  count(natural) %&gt;%
+  arrange(desc(n)) %&gt;%
+  knit_print()</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["natural"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"water","2":"134"},{"1":"wood","2":"73"},{"1":"scrub","2":"35"},{"1":"wetland","2":"23"},{"1":"beach","2":"10"},{"1":"shrubbery","2":"4"},{"1":"mud","2":"3"},{"1":"sand","2":"2"},{"1":"rock","2":"1"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+</div>
+</div>
+<div id="get-statistics-by-hexagon" class="section level2">
+<h2>Get statistics by hexagon</h2>
+<pre class="r"><code># set precision
+# use crs=3857 to speed up intersection
+hexpol12 %&gt;%
+  st_transform(crs=3857) %&gt;%
+  st_set_precision(units::set_units(10, nm)) -&gt; hexpol12
+
+# set precision and create objects by key
+natural %&gt;%
+  st_transform(crs=3857) %&gt;%
+  st_set_precision(units::set_units(10, nm)) -&gt; natural
+
+# intersect hexagons with polygon layer
+st_intersection(hexpol12, natural) -&gt; hp_natural</code></pre>
+<pre class="r"><code>hp_natural %&gt;%
+  st_drop_geometry() %&gt;%
+  count(natural) %&gt;%
+  arrange(desc(n)) %&gt;%
+  knit_print()</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["natural"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"water","2":"9811"},{"1":"wood","2":"1404"},{"1":"wetland","2":"1169"},{"1":"scrub","2":"102"},{"1":"mud","2":"86"},{"1":"beach","2":"25"},{"1":"rock","2":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code># features &#39;not touching&#39; hexpol6 are read! e.g.: osm_nid = 316996080, natural=shrubbery
+# unique values in OSM &#39;unclipped&#39; data are more than values clipped to hexpol12
+#mapview(natural) + mapview(hexpolsa, fill=NA)</code></pre>
+<div id="osm-legacy-data" class="section level3">
+<h3>OSM legacy data</h3>
+<pre class="r"><code># # collapse ids to create a unique id label
+# hp_natural %&gt;%
+#   mutate(osm_nid = case_when(is.na(osm_id) ~ osm_way_id,
+#                              TRUE ~ osm_id)) -&gt; hp_natural
+
+# create summary table of osm_ids by hexagon
+hp_natural %&gt;%
+  st_drop_geometry() %&gt;%
+  select(hexid, osm_nid) %&gt;%
+  group_by(hexid) %&gt;%
+  mutate(osm_nm = paste0(&quot;osm_nid_&quot;, row_number(), sep = &quot;&quot;)) %&gt;%
+  # osm ids of values as variables
+  pivot_wider(names_from = osm_nm, values_from = osm_nid) -&gt; h_natural_onid
+
+# create summary table of osm areas by hexagon
+hp_natural %&gt;%
+  st_drop_geometry() %&gt;%
+  select(hexid, osmf_area) %&gt;%
+  group_by(hexid) %&gt;%
+  mutate(osm_nm = paste0(&quot;osm_nid_&quot;, row_number(), &quot;_area&quot;, sep = &quot;&quot;)) %&gt;%
+  # osm areas of values as variables
+  pivot_wider(names_from = osm_nm, values_from = osmf_area) -&gt; h_natural_onid_area
+
+# create summary table of osm features values by hexagon
+hp_natural %&gt;%
+  st_drop_geometry() %&gt;%
+  select(hexid, natural) %&gt;%
+  group_by(hexid) %&gt;%
+  mutate(osm_nm = paste0(&quot;osm_nid_&quot;, row_number(), &quot;_value&quot;, sep = &quot;&quot;)) %&gt;%
+  # osm features values as variables
+  pivot_wider(names_from = osm_nm, values_from = natural) -&gt; h_natural_onid_value
+
+# join tables
+h_natural_onid %&gt;%
+  left_join(h_natural_onid_area, by = &quot;hexid&quot;) %&gt;%
+  left_join(h_natural_onid_value, by = &quot;hexid&quot;) -&gt; h_natural_st
+
+# see example of hexagon with most &#39;values&#39;
+h_natural_st %&gt;%
+  filter(!is.na(osm_nid_5_area))</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["hexid"],"name":[1],"type":["chr"],"align":["left"]},{"label":["osm_nid_1"],"name":[2],"type":["chr"],"align":["left"]},{"label":["osm_nid_2"],"name":[3],"type":["chr"],"align":["left"]},{"label":["osm_nid_3"],"name":[4],"type":["chr"],"align":["left"]},{"label":["osm_nid_4"],"name":[5],"type":["chr"],"align":["left"]},{"label":["osm_nid_5"],"name":[6],"type":["chr"],"align":["left"]},{"label":["osm_nid_1_area"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["osm_nid_2_area"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["osm_nid_3_area"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["osm_nid_4_area"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["osm_nid_5_area"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["osm_nid_1_value"],"name":[12],"type":["chr"],"align":["left"]},{"label":["osm_nid_2_value"],"name":[13],"type":["chr"],"align":["left"]},{"label":["osm_nid_3_value"],"name":[14],"type":["chr"],"align":["left"]},{"label":["osm_nid_4_value"],"name":[15],"type":["chr"],"align":["left"]},{"label":["osm_nid_5_value"],"name":[16],"type":["chr"],"align":["left"]}],"data":[{"1":"8c194ad3344cbff","2":"1036674194","3":"1036674195","4":"1036674196","5":"1036674197","6":"1036674198","7":"65.2","8":"55.6","9":"44.9","10":"89.6","11":"41.4","12":"scrub","13":"scrub","14":"scrub","15":"scrub","16":"scrub"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Export OSM legacy data CSV file</p>
+<pre class="r"><code># layer (key) name
+layer &lt;- natural %&gt;%
+  st_drop_geometry() %&gt;%
+  colnames() %&gt;%
+  first()
+
+# check/create Output directory
+subDir &lt;- paste0(&quot;csv-&quot;,coords[1])
+
+if (file.exists(subDir)){
+    setwd(file.path(mainDir))
+} else {
+    dir.create(file.path(mainDir, subDir))
+    setwd(file.path(mainDir))
+}
+
+# write csv of OSM legacy data
+write_csv(h_natural_st, file = paste0(mainDir, &quot;/&quot;, subDir, &quot;/&quot;, hexidsa, &quot;-&quot;, layer, &quot;-osm-legacy.csv&quot;))</code></pre>
+</div>
+<div id="create-statistics-by-hexagon" class="section level3">
+<h3>Create statistics by hexagon</h3>
+<pre class="r"><code># create statistics by hexagon
+hp_natural %&gt;%
+  # transfrom CRS 3857 -&gt; 4326
+  st_transform(4326) %&gt;%
+  # calculate hexagons clipped area
+  mutate(hc_area = round(as.numeric(st_area(.)),1)) %&gt;%
+  st_drop_geometry() %&gt;% 
+  select(hexid, natural, hc_area) %&gt;%
+  # areas of values as variables (areas of equal value are aggregated with &#39;values_fn = sum&#39;)
+  pivot_wider(names_from = &quot;natural&quot;, values_from = &quot;hc_area&quot;, values_fn = sum, values_fill = 0) %&gt;%
+  # add prefix to columns 2 onwards
+  rename_with( ~ paste0(&quot;natural_&quot;, .x), .cols = 2:ncol(.)) %&gt;%
+  mutate_all( ~ replace(., is.na(.), 0)) %&gt;%
+  # add total area adding equal value columns
+  mutate(total_area = rowSums(select(., starts_with(&quot;natural&quot;))),
+         # diversity = number of columns where area &gt; 0
+         diversity = rowSums(select(., starts_with(&quot;natural&quot;)) != 0)) -&gt; hp_natural_stats
+
+# join statistics to hexagons
+hexpol12 %&gt;%
+  left_join(hp_natural_stats, by=&quot;hexid&quot;) %&gt;%
+  # transfrom CRS 3857 -&gt; 4326
+  st_transform(4326) %&gt;%
+  # calculate hexagons area
+  mutate(hex_area = round(as.numeric(st_area(.)),1)) %&gt;%
+  # add percentage by column
+  mutate_at(vars(starts_with(&quot;natural&quot;)), funs(pc = round(./(hex_area * 0.01),1))) -&gt; hex_natural</code></pre>
+<p>Export hexagon CSV file</p>
+<pre class="r"><code># write csv WKT hexagon statistics
+st_write(hex_natural, paste0(mainDir, &quot;/&quot;, subDir, &quot;/&quot;, hexidsa, &quot;-&quot;, layer, &quot;-hexstats.csv&quot;), layer_options = c(&quot;GEOMETRY=AS_WKT&quot;,&quot;CREATE_CSVT=YES&quot;), delete_dsn=TRUE)</code></pre>
+<pre><code>## Deleting source `/Users/nicolas/Documents/Q_GitHub/t_city/csv-51.512468/86194ad37ffffff-natural-hexstats.csv&#39; using driver `CSV&#39;
+## Writing layer `86194ad37ffffff-natural-hexstats&#39; to data source 
+##   `/Users/nicolas/Documents/Q_GitHub/t_city/csv-51.512468/86194ad37ffffff-natural-hexstats.csv&#39; using driver `CSV&#39;
+## options:        GEOMETRY=AS_WKT CREATE_CSVT=YES 
+## Writing 117649 features with 18 fields and geometry type Polygon.</code></pre>
+</div>
+</div>
+<div id="codebooks" class="section level2">
+<h2>Codebooks</h2>
+<pre class="r"><code>data.frame(variable_name = c(
+  &quot;WKT&quot;,
+  &quot;hexid&quot;,
+  &quot;natural_water&quot;,
+  &quot;total_area&quot;,
+  &quot;hex_area&quot;,
+  &quot;natural_water_pc&quot;),
+  variable_description = c(
+    &quot;Well-known text representing vector geometry objects&quot;,
+    &quot;Unique haxagon identifier according to H3 indexing&quot;,
+    &quot;{key_value} pair, key is the &#39;layer&#39; and value is one of the &#39;classes&#39; (class can be &gt; 1)&quot;,
+    &quot;Sum of all values areas (or classes areas) in square meters&quot;,
+    &quot;Total H3 hexagon area of resolution 12 in square meters&quot;,
+    &quot;{key_value} percentage, proportion of the &#39;value&#39; area from &#39;hex_area&#39;&quot;
+  )) -&gt; cbook_hexstats
+
+data.frame(variable_name = c(
+  &quot;hexid&quot;,
+  &quot;osm_nid_1&quot;,
+  &quot;osm_nid_1_area&quot;,
+  &quot;osm_nid_1_value&quot;),
+  variable_description = c(
+    &quot;Unique haxagon identifier according to H3 indexing&quot;,
+    &quot;{osm_nid_X}, OSM unique id, &#39;X&#39; is a correlative of OSM feature(s). &#39;nid&#39; is the merge of &#39;osm_id&#39; and &#39;osm_way_id&#39;&quot;,
+    &quot;{osm_nid_X_area} is the area of the corresponding &#39;X&#39; OSM feature(s)&quot;,
+    &quot;{osm_nid_X_value} is the &#39;value&#39; of the corresponding &#39;X&#39; OSM feature(s)&quot;
+    )) -&gt; cbook_osm_legacy</code></pre>
+<pre class="r"><code>cbook_hexstats %&gt;%
+  knit_print()</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["variable_name"],"name":[1],"type":["chr"],"align":["left"]},{"label":["variable_description"],"name":[2],"type":["chr"],"align":["left"]}],"data":[{"1":"WKT","2":"Well-known text representing vector geometry objects"},{"1":"hexid","2":"Unique haxagon identifier according to H3 indexing"},{"1":"natural_water","2":"{key_value} pair, key is the 'layer' and value is one of the 'classes' (class can be > 1)"},{"1":"total_area","2":"Sum of all values areas (or classes areas) in square meters"},{"1":"hex_area","2":"Total H3 hexagon area of resolution 12 in square meters"},{"1":"natural_water_pc","2":"{key_value} percentage, proportion of the 'value' area from 'hex_area'"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<pre class="r"><code>cbook_osm_legacy %&gt;%
+  knit_print()</code></pre>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["variable_name"],"name":[1],"type":["chr"],"align":["left"]},{"label":["variable_description"],"name":[2],"type":["chr"],"align":["left"]}],"data":[{"1":"hexid","2":"Unique haxagon identifier according to H3 indexing"},{"1":"osm_nid_1","2":"{osm_nid_X}, OSM unique id, 'X' is a correlative of OSM feature(s). 'nid' is the merge of 'osm_id' and 'osm_way_id'"},{"1":"osm_nid_1_area","2":"{osm_nid_X_area} is the area of the corresponding 'X' OSM feature(s)"},{"1":"osm_nid_1_value","2":"{osm_nid_X_value} is the 'value' of the corresponding 'X' OSM feature(s)"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<style type="text/css">
+h1, h2, h3 {
+  color: #6EC0A5; 
+  font-family: "Trebuchet MS"
+}
+body {
+  font-family: "Trebuchet MS";
+  background-color: #FFFFF9; 
+}
+a {
+  color: #6EC0A5; 
+}
+.inverse {
+  background-color: #6EC0A5; 
+}
+.list-group-item.active, .list-group-item.active:focus, .list-group-item.active:hover {
+    z-index: 2;
+    color: #fff;
+    background-color: #6EC0A5;
+    border-color: #6EC0A5;
+}
+</style>
+</div>
+
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiQ3JlYXRlIE9TTSBEYXRhIFByb2Nlc3NpbmcgU2NyaXB0IgphdXRob3I6CiAgbmFtZTogTmljb2xhcyBQYWxvbWlub3MKb3V0cHV0OiAKICBodG1sX2RvY3VtZW50OgogICAgZGZfcHJpbnQ6IHBhZ2VkCiAgICB0b2M6IHRydWUKICAgIHRvY19mbG9hdDogdHJ1ZQogICAgdG9jX2RlcHRoOiAnMycKICAgIG51bWJlcl9zZWN0aW9uczogbm8KICAgIHNlbGZfY29udGFpbmVkOiBubwogICAgY29kZV9kb3dubG9hZDogdHJ1ZQogICAgY29kZV9mb2xkaW5nOiBoaWRlCmRhdGU6ICJgciBmb3JtYXQoU3lzLnRpbWUoKSwgJyVZLSVtLSVkJylgIgotLS0KCiMjIFNldCB1cCBlbnZpcm9ubWVudAoKYGBge3IgZWNobz1UUlVFLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQpwa2dzIDwtIGMoInRpZHl2ZXJzZSIsInNmIiwib3NtZXh0cmFjdCIsICJyZW1vdGVzIiwgImtuaXRyIikKIyBJZiBub3QgYWxyZWFkeSBpbnN0YWxsZWQgKHJ1biBvbmNlLCB0aGVuIGNvbW1lbnQgbGluZXMgd2l0aCAnIycpCiMgaW5zdGFsbC5wYWNrYWdlcyhwa2dzKQojcmVtb3Rlczo6aW5zdGFsbF9naXRodWIoImNyYXp5Y2FwaXZhcmEvaDMtciIpCiMgQ29yZSBwYWNrYWdlcwpsaWJyYXJ5KHRpZHl2ZXJzZSkgICAgICAgICAgICAgCmxpYnJhcnkoc2YpCmxpYnJhcnkoaDMpCmxpYnJhcnkob3NtZXh0cmFjdCkKbGlicmFyeShrbml0cikKbGlicmFyeShnZ3Bsb3QyKQprbml0cjo6b3B0c19jaHVuayRzZXQoZWNobyA9IFRSVUUsIG1lc3NhZ2UgPSBGQUxTRSwgd2FybmluZyA9IEZBTFNFKQpvcHRpb25zKHNjaXBlbiA9IDk5OSkKYGBgCgojIyBDcmVhdGUgZ3JpZGRlZCBzdHVkeSBhcmVhIGZyb20gcG9pbnQKCmBgYHtyfQojIEluZGV4IGEgbGF0L2xuZyBwb2ludCB0byBhbiBIMyBpbmRleAojIG1vZGlmeSAnY29vcmRzJyBmb3IgYW5hbHlzaXMgb24gYSBkaWZmZXJlbnQgYXJlYQojIGhlbHBlciB3ZWJzaXRlcyAjCiMgSDMgaW50ZXJhY3RpdmUgbWFwOiBodHRwczovL3dvbGYtaDMtdmlld2VyLmdsaXRjaC5tZS8KIyBQb2ludCBmaW5kZXI6IGh0dHA6Ly9iYm94ZmluZGVyLmNvbS8KY29vcmRzIDwtIGMoNTEuNTEyNDY4LC0wLjExNzQ0OSkgIyBsYXQsbG5nIEVQU0c6IDQzMjYgLSBXR1MgODQKIyBkZWZpbmUgcmVzb2x1dGlvbiAobG93ZXIgcmVzb2x1dGlvbiB0byBjcmVhdGUgYSBsYXJnZXIgc3R1ZHkgYXJlYSkKIyBoZWxwZXIgd2Vic2l0ZQojIFRhYmxlIG9mIENlbGwgQXJlYXMgZm9yIEgzIFJlc29sdXRpb25zOiBodHRwczovL2gzZ2VvLm9yZy9kb2NzL2NvcmUtbGlicmFyeS9yZXN0YWJsZS8KcmVzIDwtIDYKIyBnZXQgaGV4IGlkCmhleGlkc2EgPC0gZ2VvX3RvX2gzKGNvb3JkcywgcmVzKQoKIyBnZXQgaGV4IHBvbHlnb24gZ2VvbWV0cnkKaGV4cG9sc2EgPC0gaDNfdG9fZ2VvX2JvdW5kYXJ5X3NmKGhleGlkc2EpICU+JQogICMgYWRkIGhleGlkIGNvbHVtbgogIG11dGF0ZShoZXhpZCA9IGhleGlkc2EpCgojIGdldCBoZXggcG9seWdvbiBnZW9tZXRyaWVzIHdpdGggY2VudHJlcyBjb250YWluZWQgaW4gYSBnaXZlbiBwb2x5Z29uIGF0IHJlcyA9IDEyCmhleGlkMTIgPC0gcG9seWZpbGwoaGV4cG9sc2EsIHJlcyA9IDEyKQojIGdldCByZXMgPSAxMiBwb2x5Z29ucwpoZXhwb2wxMiA8LSBoM190b19nZW9fYm91bmRhcnlfc2YoaGV4aWQxMikgJT4lCiAgIyBhZGQgaGV4aWQgY29sdW1uCiAgbXV0YXRlKGhleGlkID0gaGV4aWQxMikKYGBgCgojIyBHZXQgT1NNIGRhdGEgZm9yIHN0dWR5IGFyZWEKCmBgYHtyfQojIGNoZWNrL2NyZWF0ZSBPdXRwdXQgZGlyZWN0b3J5Cm1haW5EaXIgPC0gZ2V0d2QoKQpzdWJEaXIgPC0gcGFzdGUwKCJvc20tZGF0YS0iLGNvb3Jkc1sxXSkKCmlmIChmaWxlLmV4aXN0cyhzdWJEaXIpKXsKICAgIHNldHdkKGZpbGUucGF0aChtYWluRGlyKSkKfSBlbHNlIHsKICAgIGRpci5jcmVhdGUoZmlsZS5wYXRoKG1haW5EaXIsIHN1YkRpcikpCiAgICBzZXR3ZChmaWxlLnBhdGgobWFpbkRpcikpCn0KCiMgZ2V0IGRhdGEKIyBEb3dubG9hZCB0aGUgZGF0YSB0byBvc20tZGF0YSBmb2xkZXIuIGhleHBvbHNhIGlzIHRoZSBwb2x5Z29uYWwgYm91bmRhcnkKb2VfZ2V0KCJMb25kb24iLCBkb3dubG9hZF9kaXJlY3RvcnkgPSBzdWJEaXIsIHN0cmluZ3NBc0ZhY3RvcnMgPSBGQUxTRSwgZXh0cmFfdGFncyA9IGMoIndhdGVyIiwicmFpbHdheSIpLCBkb3dubG9hZF9vbmx5ID0gVFJVRSwgc2tpcF92ZWN0b3J0cmFuc2xhdGUgPSBUUlVFKQpgYGAKCmBgYHtyfQojIHN0X2xheWVycygifi9Eb2N1bWVudHMvUV9HaXRIdWIvdF9jaXR5L2dlb2ZhYnJpa19Mb25kb24ub3NtLnBiZiIpCiMgb2VfZ2V0X2tleXMoIn4vRG9jdW1lbnRzL1FfR2l0SHViL3RfY2l0eS9nZW9mYWJyaWtfTG9uZG9uLm9zbS5wYmYiLCBsYXllciA9ICJtdWx0aXBvbHlnb25zIikKYGBgCgojIyMgUmVhZCBwYmYgZmlsZSBieSBsYXllciB0eXBlcwoKYGBge3J9CnBiZiA8LSBsaXN0LmZpbGVzKHBhdGggPSBmaWxlLnBhdGgobWFpbkRpciwgc3ViRGlyKSwgcGF0dGVybiA9ICIqLnBiZiIpCmRpciA8LSBmaWxlLnBhdGgobWFpbkRpciwgc3ViRGlyLCBwYmYpCgojIHBvbHlnb24gZ2VvbWV0cmllcwpvZV9yZWFkKGRpciwgbGF5ZXIgPSAibXVsdGlwb2x5Z29ucyIsIGV4dHJhX3RhZ3MgPSAid2F0ZXIiLCBib3VuZGFyeSA9IGhleHBvbHNhLCBib3VuZGFyeV90eXBlID0gInNwYXQiKSAtPiBwb2xzCiMgbGluZXMgZ2VvbWV0cmllcwpvZV9yZWFkKGRpciwgbGF5ZXIgPSAibGluZXMiLCBleHRyYV90YWdzID0gInJhaWx3YXkiLCBib3VuZGFyeSA9IGhleHBvbHNhLCBib3VuZGFyeV90eXBlID0gInNwYXQiKSAtPiBsaW5lcwpgYGAKCiMjIENyZWF0ZSBPU00gZGF0YSBzdGF0aXN0aWNzCgojIyMgRXhwbG9yZSBkYXRhIGFuZCBzcGxpdCBpbnRvIHJlbGV2YW50IGxheWVycwoKYGBge3J9CiMgcG9seWdvbnMKZ2xpbXBzZShwb2xzKQpgYGAKCmBgYHtyfQojIGxpbmVzCmdsaW1wc2UobGluZXMpCmBgYAoKYGBge3J9CiMgc3BsaXQgcG9seWdvbnMgaW50byByZWxldmFudCBwb2x5Z29uYWwga2V5cwojIGRlZmluZSBrZXlzCmtleXMgPC0gYygibmF0dXJhbCIpICMgb2ZmLXRlc3Q6ICJidWlsZGluZyIsICJsYW5kdXNlIiwgIndhdGVyIiwgCmBgYAoKYGBge3J9CiMgZnVuY3Rpb24gdG8gY3JlYXRlIGxpc3Qgb2Ygb2JqZWN0cyBhY2NvcmRpbmcgdG8gcmVsZXZhbnQgbGF5ZXJzCiMgZGVmaW5lIGRhdGFmcmFtZQpkZiA8LSBwb2xzCgpwb2xzbGlzdCA8LSBsaXN0KCkKZm9yIChpIGluIGtleXMpIHsKICBkZiAlPiUKICAgICMgY29sbGFwc2UgaWRzIHRvIGNyZWF0ZSBhIHVuaXF1ZSBpZCBsYWJlbAogICAgbXV0YXRlKG9zbV9uaWQgPSBjYXNlX3doZW4oaXMubmEob3NtX2lkKSB+IG9zbV93YXlfaWQsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgVFJVRSB+IG9zbV9pZCkpICU+JQogICAgIyBzZWxlY3Qga2V5IGFuZCBrZWVwIG9zbSBpZAogICAgc2VsZWN0KGksIG9zbV9uaWQpICU+JQogICAgIyBkcm9wIE5BcwogICAgZHJvcF9uYSguKSAlPiUKICAgICMgbWFrZSB2YWxpZCBwb2x5Z29ucyAocmVwYWlyIHRob3NlIHdpdGggc2VsZi1pbnRlcnNlY3Rpb24/KQogICAgc3RfbWFrZV92YWxpZCgpIC0+IHZwb2wKICAKICAjIGlkIG9mIHJlbWFpbmluZyBpbnZhbGlkIGdlb21ldHJpZXMKICB3aGljaChzdF9pc192YWxpZCh2cG9sLCByZWFzb24gPSBUUlVFKSAhPSAiVmFsaWQgR2VvbWV0cnkiKSAtPiBpbnZhbGlkCiAgCiAgIyBnaG9zdCBpbnRlZ2VyIHRvIGVhc2Ugc2xpY2UKICBjKGludmFsaWQsIDk5OTkpIC0+IGludmFsaWQKICAKICB2cG9sICU+JQogICAgIyByZW1vdmUgaW52YWxpZCBnZW9tZXRyaWVzCiAgICBzbGljZSgtaW52YWxpZCkgJT4lCiAgICAjIGNhbGN1bGF0ZSBhcmVhIChyZW1vdmUgdW5pdHMgYW5kIHJvdW5kIHRvIDEgZGlnaXQpCiAgICBtdXRhdGUob3NtZl9hcmVhID0gcm91bmQoYXMubnVtZXJpYyhzdF9hcmVhKC4pKSwxKSkgLT4gdnBvbAogIAogICMgZ2V0IG9ubHkgdGhlIG5vbi1lbXB0eSBnZW9tZXRyaWVzCiAgdnBvbFshc3RfaXNfZW1wdHkodnBvbCksICwgZHJvcD1GQUxTRV0gLT4gcG9sc2xpc3RbW2ldXQp9CmBgYAoKYGBge3J9CiMgY2hlY2sgcmVkdWN0aW9uIG9mIGdlb21ldHJpZXMgJ25vdC12YWxpZCcgJiAnbm90LXJlcGFpcmVkJwojIGJlZm9yZSBzdF9tYWtlX3ZhbGlkCnBvbHMgJT4lCiAgc2VsZWN0KG5hdHVyYWwpICU+JQogIGZpbHRlcighaXMubmEoLikpICU+JQogIG5yb3coLikKIyByZXN1bHQ6IDI4NQpgYGAKCmBgYHtyfQojIGFmdGVyIHN0X21ha2VfdmFsaWQKbGVuZ3RoKHBvbHNsaXN0W1sibmF0dXJhbCJdXVtbIm5hdHVyYWwiXV0pCiMgcmVzdWx0OiAyODUKYGBgCgpgYGB7cn0KIyBjaGVjayBleHRlbnQgb2YgT1NNIGZlYXR1cmVzIGluIHJlbGF0aW9uIHRvIHN0dWR5IGFyZWEgaGV4YWdvbgpwb2xzbGlzdFtbIm5hdHVyYWwiXV0gJT4lCiAgc3RfdHJhbnNmb3JtKDI3NzAwKSAlPiUKICBmaWx0ZXIob3NtX25pZCA9PSAyODkzNCkgJT4lCiAgZ2dwbG90KCkgKwogIGdlb21fc2YoKSArCiAgZ2VvbV9zZihkYXRhID0gaGV4cG9sc2EsIGZpbGw9TkEsIGNvbD0idG9tYXRvIikgKwogIHRoZW1lX21pbmltYWwoKSArCiAgY29vcmRfc2YoZGF0dW0gPSAyNzcwMCkKYGBgCgojIyMgU3R1ZHkgYXJlYSBzdGF0aXN0aWNzIGJ5IGtleSAKCmBgYHtyfQojIHZlY3RvciBvZiB2YWx1ZSBjb3VudHMgPiAwLjA1JQpwb2xzbGlzdFtbIm5hdHVyYWwiXV0gJT4lCiAgc3RfZHJvcF9nZW9tZXRyeSgpICU+JQogIGNvdW50KG5hdHVyYWwpICU+JQogICMgcGVyY2VudGFnZQogIG11dGF0ZShwYyA9IDEwMCogKG4gLyBzdW0obikpKSAlPiUKICBhcnJhbmdlKGRlc2MobikpICU+JQogIGZpbHRlcihwYyA+IDAuMDUpICU+JQogIHB1bGwobmF0dXJhbCkgLT4ga19uYXQKCiMgcmVjbGFzc2lmeSB2YWx1ZXMgYmVsb3cgdGhyZXNob2xkIHRvICdvdGhlcicKIyBjcmVhdGUgJ2tleScgb2JqZWN0IGZyb20gbGlzdApuYXR1cmFsIDwtIHBvbHNsaXN0W1sibmF0dXJhbCJdXSAlPiUKICBtdXRhdGUobmF0dXJhbCA9IGNhc2Vfd2hlbihuYXR1cmFsICVpbiUga19uYXQgfiBuYXR1cmFsLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgIFRSVUUgfiAib3RoZXIiKSkKYGBgCgpgYGB7cn0Ka19uYXQKYGBgCgpgYGB7cn0KbmF0dXJhbCAlPiUKICBzdF9kcm9wX2dlb21ldHJ5KCkgJT4lCiAgY291bnQobmF0dXJhbCkgJT4lCiAgYXJyYW5nZShkZXNjKG4pKSAlPiUKICBrbml0X3ByaW50KCkKYGBgCgojIyBHZXQgc3RhdGlzdGljcyBieSBoZXhhZ29uCgpgYGB7cn0KIyBzZXQgcHJlY2lzaW9uCiMgdXNlIGNycz0zODU3IHRvIHNwZWVkIHVwIGludGVyc2VjdGlvbgpoZXhwb2wxMiAlPiUKICBzdF90cmFuc2Zvcm0oY3JzPTM4NTcpICU+JQogIHN0X3NldF9wcmVjaXNpb24odW5pdHM6OnNldF91bml0cygxMCwgbm0pKSAtPiBoZXhwb2wxMgoKIyBzZXQgcHJlY2lzaW9uIGFuZCBjcmVhdGUgb2JqZWN0cyBieSBrZXkKbmF0dXJhbCAlPiUKICBzdF90cmFuc2Zvcm0oY3JzPTM4NTcpICU+JQogIHN0X3NldF9wcmVjaXNpb24odW5pdHM6OnNldF91bml0cygxMCwgbm0pKSAtPiBuYXR1cmFsCgojIGludGVyc2VjdCBoZXhhZ29ucyB3aXRoIHBvbHlnb24gbGF5ZXIKc3RfaW50ZXJzZWN0aW9uKGhleHBvbDEyLCBuYXR1cmFsKSAtPiBocF9uYXR1cmFsCmBgYAoKYGBge3J9CmhwX25hdHVyYWwgJT4lCiAgc3RfZHJvcF9nZW9tZXRyeSgpICU+JQogIGNvdW50KG5hdHVyYWwpICU+JQogIGFycmFuZ2UoZGVzYyhuKSkgJT4lCiAga25pdF9wcmludCgpCmBgYAoKYGBge3J9CiMgZmVhdHVyZXMgJ25vdCB0b3VjaGluZycgaGV4cG9sNiBhcmUgcmVhZCEgZS5nLjogb3NtX25pZCA9IDMxNjk5NjA4MCwgbmF0dXJhbD1zaHJ1YmJlcnkKIyB1bmlxdWUgdmFsdWVzIGluIE9TTSAndW5jbGlwcGVkJyBkYXRhIGFyZSBtb3JlIHRoYW4gdmFsdWVzIGNsaXBwZWQgdG8gaGV4cG9sMTIKI21hcHZpZXcobmF0dXJhbCkgKyBtYXB2aWV3KGhleHBvbHNhLCBmaWxsPU5BKQpgYGAKCiMjIyBPU00gbGVnYWN5IGRhdGEKCmBgYHtyfQojICMgY29sbGFwc2UgaWRzIHRvIGNyZWF0ZSBhIHVuaXF1ZSBpZCBsYWJlbAojIGhwX25hdHVyYWwgJT4lCiMgICBtdXRhdGUob3NtX25pZCA9IGNhc2Vfd2hlbihpcy5uYShvc21faWQpIH4gb3NtX3dheV9pZCwKIyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFRSVUUgfiBvc21faWQpKSAtPiBocF9uYXR1cmFsCgojIGNyZWF0ZSBzdW1tYXJ5IHRhYmxlIG9mIG9zbV9pZHMgYnkgaGV4YWdvbgpocF9uYXR1cmFsICU+JQogIHN0X2Ryb3BfZ2VvbWV0cnkoKSAlPiUKICBzZWxlY3QoaGV4aWQsIG9zbV9uaWQpICU+JQogIGdyb3VwX2J5KGhleGlkKSAlPiUKICBtdXRhdGUob3NtX25tID0gcGFzdGUwKCJvc21fbmlkXyIsIHJvd19udW1iZXIoKSwgc2VwID0gIiIpKSAlPiUKICAjIG9zbSBpZHMgb2YgdmFsdWVzIGFzIHZhcmlhYmxlcwogIHBpdm90X3dpZGVyKG5hbWVzX2Zyb20gPSBvc21fbm0sIHZhbHVlc19mcm9tID0gb3NtX25pZCkgLT4gaF9uYXR1cmFsX29uaWQKCiMgY3JlYXRlIHN1bW1hcnkgdGFibGUgb2Ygb3NtIGFyZWFzIGJ5IGhleGFnb24KaHBfbmF0dXJhbCAlPiUKICBzdF9kcm9wX2dlb21ldHJ5KCkgJT4lCiAgc2VsZWN0KGhleGlkLCBvc21mX2FyZWEpICU+JQogIGdyb3VwX2J5KGhleGlkKSAlPiUKICBtdXRhdGUob3NtX25tID0gcGFzdGUwKCJvc21fbmlkXyIsIHJvd19udW1iZXIoKSwgIl9hcmVhIiwgc2VwID0gIiIpKSAlPiUKICAjIG9zbSBhcmVhcyBvZiB2YWx1ZXMgYXMgdmFyaWFibGVzCiAgcGl2b3Rfd2lkZXIobmFtZXNfZnJvbSA9IG9zbV9ubSwgdmFsdWVzX2Zyb20gPSBvc21mX2FyZWEpIC0+IGhfbmF0dXJhbF9vbmlkX2FyZWEKCiMgY3JlYXRlIHN1bW1hcnkgdGFibGUgb2Ygb3NtIGZlYXR1cmVzIHZhbHVlcyBieSBoZXhhZ29uCmhwX25hdHVyYWwgJT4lCiAgc3RfZHJvcF9nZW9tZXRyeSgpICU+JQogIHNlbGVjdChoZXhpZCwgbmF0dXJhbCkgJT4lCiAgZ3JvdXBfYnkoaGV4aWQpICU+JQogIG11dGF0ZShvc21fbm0gPSBwYXN0ZTAoIm9zbV9uaWRfIiwgcm93X251bWJlcigpLCAiX3ZhbHVlIiwgc2VwID0gIiIpKSAlPiUKICAjIG9zbSBmZWF0dXJlcyB2YWx1ZXMgYXMgdmFyaWFibGVzCiAgcGl2b3Rfd2lkZXIobmFtZXNfZnJvbSA9IG9zbV9ubSwgdmFsdWVzX2Zyb20gPSBuYXR1cmFsKSAtPiBoX25hdHVyYWxfb25pZF92YWx1ZQoKIyBqb2luIHRhYmxlcwpoX25hdHVyYWxfb25pZCAlPiUKICBsZWZ0X2pvaW4oaF9uYXR1cmFsX29uaWRfYXJlYSwgYnkgPSAiaGV4aWQiKSAlPiUKICBsZWZ0X2pvaW4oaF9uYXR1cmFsX29uaWRfdmFsdWUsIGJ5ID0gImhleGlkIikgLT4gaF9uYXR1cmFsX3N0CgojIHNlZSBleGFtcGxlIG9mIGhleGFnb24gd2l0aCBtb3N0ICd2YWx1ZXMnCmhfbmF0dXJhbF9zdCAlPiUKICBmaWx0ZXIoIWlzLm5hKG9zbV9uaWRfNV9hcmVhKSkKYGBgCkV4cG9ydCBPU00gbGVnYWN5IGRhdGEgQ1NWIGZpbGUKCmBgYHtyfQojIGxheWVyIChrZXkpIG5hbWUKbGF5ZXIgPC0gbmF0dXJhbCAlPiUKICBzdF9kcm9wX2dlb21ldHJ5KCkgJT4lCiAgY29sbmFtZXMoKSAlPiUKICBmaXJzdCgpCgojIGNoZWNrL2NyZWF0ZSBPdXRwdXQgZGlyZWN0b3J5CnN1YkRpciA8LSBwYXN0ZTAoImNzdi0iLGNvb3Jkc1sxXSkKCmlmIChmaWxlLmV4aXN0cyhzdWJEaXIpKXsKICAgIHNldHdkKGZpbGUucGF0aChtYWluRGlyKSkKfSBlbHNlIHsKICAgIGRpci5jcmVhdGUoZmlsZS5wYXRoKG1haW5EaXIsIHN1YkRpcikpCiAgICBzZXR3ZChmaWxlLnBhdGgobWFpbkRpcikpCn0KCiMgd3JpdGUgY3N2IG9mIE9TTSBsZWdhY3kgZGF0YQp3cml0ZV9jc3YoaF9uYXR1cmFsX3N0LCBmaWxlID0gcGFzdGUwKG1haW5EaXIsICIvIiwgc3ViRGlyLCAiLyIsIGhleGlkc2EsICItIiwgbGF5ZXIsICItb3NtLWxlZ2FjeS5jc3YiKSkKYGBgCgojIyMgQ3JlYXRlIHN0YXRpc3RpY3MgYnkgaGV4YWdvbgoKYGBge3J9CiMgY3JlYXRlIHN0YXRpc3RpY3MgYnkgaGV4YWdvbgpocF9uYXR1cmFsICU+JQogICMgdHJhbnNmcm9tIENSUyAzODU3IC0+IDQzMjYKICBzdF90cmFuc2Zvcm0oNDMyNikgJT4lCiAgIyBjYWxjdWxhdGUgaGV4YWdvbnMgY2xpcHBlZCBhcmVhCiAgbXV0YXRlKGhjX2FyZWEgPSByb3VuZChhcy5udW1lcmljKHN0X2FyZWEoLikpLDEpKSAlPiUKICBzdF9kcm9wX2dlb21ldHJ5KCkgJT4lIAogIHNlbGVjdChoZXhpZCwgbmF0dXJhbCwgaGNfYXJlYSkgJT4lCiAgIyBhcmVhcyBvZiB2YWx1ZXMgYXMgdmFyaWFibGVzIChhcmVhcyBvZiBlcXVhbCB2YWx1ZSBhcmUgYWdncmVnYXRlZCB3aXRoICd2YWx1ZXNfZm4gPSBzdW0nKQogIHBpdm90X3dpZGVyKG5hbWVzX2Zyb20gPSAibmF0dXJhbCIsIHZhbHVlc19mcm9tID0gImhjX2FyZWEiLCB2YWx1ZXNfZm4gPSBzdW0sIHZhbHVlc19maWxsID0gMCkgJT4lCiAgIyBhZGQgcHJlZml4IHRvIGNvbHVtbnMgMiBvbndhcmRzCiAgcmVuYW1lX3dpdGgoIH4gcGFzdGUwKCJuYXR1cmFsXyIsIC54KSwgLmNvbHMgPSAyOm5jb2woLikpICU+JQogIG11dGF0ZV9hbGwoIH4gcmVwbGFjZSguLCBpcy5uYSguKSwgMCkpICU+JQogICMgYWRkIHRvdGFsIGFyZWEgYWRkaW5nIGVxdWFsIHZhbHVlIGNvbHVtbnMKICBtdXRhdGUodG90YWxfYXJlYSA9IHJvd1N1bXMoc2VsZWN0KC4sIHN0YXJ0c193aXRoKCJuYXR1cmFsIikpKSwKICAgICAgICAgIyBkaXZlcnNpdHkgPSBudW1iZXIgb2YgY29sdW1ucyB3aGVyZSBhcmVhID4gMAogICAgICAgICBkaXZlcnNpdHkgPSByb3dTdW1zKHNlbGVjdCguLCBzdGFydHNfd2l0aCgibmF0dXJhbCIpKSAhPSAwKSkgLT4gaHBfbmF0dXJhbF9zdGF0cwoKIyBqb2luIHN0YXRpc3RpY3MgdG8gaGV4YWdvbnMKaGV4cG9sMTIgJT4lCiAgbGVmdF9qb2luKGhwX25hdHVyYWxfc3RhdHMsIGJ5PSJoZXhpZCIpICU+JQogICMgdHJhbnNmcm9tIENSUyAzODU3IC0+IDQzMjYKICBzdF90cmFuc2Zvcm0oNDMyNikgJT4lCiAgIyBjYWxjdWxhdGUgaGV4YWdvbnMgYXJlYQogIG11dGF0ZShoZXhfYXJlYSA9IHJvdW5kKGFzLm51bWVyaWMoc3RfYXJlYSguKSksMSkpICU+JQogICMgYWRkIHBlcmNlbnRhZ2UgYnkgY29sdW1uCiAgbXV0YXRlX2F0KHZhcnMoc3RhcnRzX3dpdGgoIm5hdHVyYWwiKSksIGZ1bnMocGMgPSByb3VuZCguLyhoZXhfYXJlYSAqIDAuMDEpLDEpKSkgLT4gaGV4X25hdHVyYWwKYGBgCgpFeHBvcnQgaGV4YWdvbiBDU1YgZmlsZSAgCgpgYGB7cn0KIyB3cml0ZSBjc3YgV0tUIGhleGFnb24gc3RhdGlzdGljcwpzdF93cml0ZShoZXhfbmF0dXJhbCwgcGFzdGUwKG1haW5EaXIsICIvIiwgc3ViRGlyLCAiLyIsIGhleGlkc2EsICItIiwgbGF5ZXIsICItaGV4c3RhdHMuY3N2IiksIGxheWVyX29wdGlvbnMgPSBjKCJHRU9NRVRSWT1BU19XS1QiLCJDUkVBVEVfQ1NWVD1ZRVMiKSwgZGVsZXRlX2Rzbj1UUlVFKQpgYGAKCiMjIENvZGVib29rcwpgYGB7cn0KZGF0YS5mcmFtZSh2YXJpYWJsZV9uYW1lID0gYygKICAiV0tUIiwKICAiaGV4aWQiLAogICJuYXR1cmFsX3dhdGVyIiwKICAidG90YWxfYXJlYSIsCiAgImhleF9hcmVhIiwKICAibmF0dXJhbF93YXRlcl9wYyIpLAogIHZhcmlhYmxlX2Rlc2NyaXB0aW9uID0gYygKICAgICJXZWxsLWtub3duIHRleHQgcmVwcmVzZW50aW5nIHZlY3RvciBnZW9tZXRyeSBvYmplY3RzIiwKICAgICJVbmlxdWUgaGF4YWdvbiBpZGVudGlmaWVyIGFjY29yZGluZyB0byBIMyBpbmRleGluZyIsCiAgICAie2tleV92YWx1ZX0gcGFpciwga2V5IGlzIHRoZSAnbGF5ZXInIGFuZCB2YWx1ZSBpcyBvbmUgb2YgdGhlICdjbGFzc2VzJyAoY2xhc3MgY2FuIGJlID4gMSkiLAogICAgIlN1bSBvZiBhbGwgdmFsdWVzIGFyZWFzIChvciBjbGFzc2VzIGFyZWFzKSBpbiBzcXVhcmUgbWV0ZXJzIiwKICAgICJUb3RhbCBIMyBoZXhhZ29uIGFyZWEgb2YgcmVzb2x1dGlvbiAxMiBpbiBzcXVhcmUgbWV0ZXJzIiwKICAgICJ7a2V5X3ZhbHVlfSBwZXJjZW50YWdlLCBwcm9wb3J0aW9uIG9mIHRoZSAndmFsdWUnIGFyZWEgZnJvbSAnaGV4X2FyZWEnIgogICkpIC0+IGNib29rX2hleHN0YXRzCgpkYXRhLmZyYW1lKHZhcmlhYmxlX25hbWUgPSBjKAogICJoZXhpZCIsCiAgIm9zbV9uaWRfMSIsCiAgIm9zbV9uaWRfMV9hcmVhIiwKICAib3NtX25pZF8xX3ZhbHVlIiksCiAgdmFyaWFibGVfZGVzY3JpcHRpb24gPSBjKAogICAgIlVuaXF1ZSBoYXhhZ29uIGlkZW50aWZpZXIgYWNjb3JkaW5nIHRvIEgzIGluZGV4aW5nIiwKICAgICJ7b3NtX25pZF9YfSwgT1NNIHVuaXF1ZSBpZCwgJ1gnIGlzIGEgY29ycmVsYXRpdmUgb2YgT1NNIGZlYXR1cmUocykuICduaWQnIGlzIHRoZSBtZXJnZSBvZiAnb3NtX2lkJyBhbmQgJ29zbV93YXlfaWQnIiwKICAgICJ7b3NtX25pZF9YX2FyZWF9IGlzIHRoZSBhcmVhIG9mIHRoZSBjb3JyZXNwb25kaW5nICdYJyBPU00gZmVhdHVyZShzKSIsCiAgICAie29zbV9uaWRfWF92YWx1ZX0gaXMgdGhlICd2YWx1ZScgb2YgdGhlIGNvcnJlc3BvbmRpbmcgJ1gnIE9TTSBmZWF0dXJlKHMpIgogICAgKSkgLT4gY2Jvb2tfb3NtX2xlZ2FjeQpgYGAKCmBgYHtyfQpjYm9va19oZXhzdGF0cyAlPiUKICBrbml0X3ByaW50KCkKYGBgCgpgYGB7cn0KY2Jvb2tfb3NtX2xlZ2FjeSAlPiUKICBrbml0X3ByaW50KCkKYGBgCgpgYGB7Y3NzLCBlY2hvID0gRkFMU0UsIGNsYXNzLnNvdXJjZSA9ICdmb2xkYWJsZSd9CmgxLCBoMiwgaDMgewogIGNvbG9yOiAjNkVDMEE1OyAKICBmb250LWZhbWlseTogIlRyZWJ1Y2hldCBNUyIKfQpib2R5IHsKICBmb250LWZhbWlseTogIlRyZWJ1Y2hldCBNUyI7CiAgYmFja2dyb3VuZC1jb2xvcjogI0ZGRkZGOTsgCn0KYSB7CiAgY29sb3I6ICM2RUMwQTU7IAp9Ci5pbnZlcnNlIHsKICBiYWNrZ3JvdW5kLWNvbG9yOiAjNkVDMEE1OyAKfQoubGlzdC1ncm91cC1pdGVtLmFjdGl2ZSwgLmxpc3QtZ3JvdXAtaXRlbS5hY3RpdmU6Zm9jdXMsIC5saXN0LWdyb3VwLWl0ZW0uYWN0aXZlOmhvdmVyIHsKICAgIHotaW5kZXg6IDI7CiAgICBjb2xvcjogI2ZmZjsKICAgIGJhY2tncm91bmQtY29sb3I6ICM2RUMwQTU7CiAgICBib3JkZXItY29sb3I6ICM2RUMwQTU7Cn0KYGBg</div>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("wp-2.2.Rmd");
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

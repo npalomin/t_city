@@ -6,15 +6,25 @@ format: html
 ## Set up environment
 
 ```{r}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
-#install.packages("remotes")
+pkgs <- c("tidyverse","sf","osmextract", "remotes", "knitr")
+# If not already installed (run once, then comment lines with '#')
+# install.packages(pkgs)
 #remotes::install_github("crazycapivara/h3-r")
+# Core packages
+library(tidyverse)             
+library(sf)
 library(h3)
 library(osmextract)
-library(sf)
-library(tidyverse)
-library(mapview)
-library(ggplot2)
+library(knitr)
+
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+# #install.packages("remotes")
+# #remotes::install_github("crazycapivara/h3-r")
+# library(h3)
+# library(osmextract)
+# library(sf)
+# library(tidyverse)
+# library(mapview)
 ```
 
 ## Create gridded study area from point
@@ -236,6 +246,16 @@ hp_natural %>%
   # osm areas of values as variables
   pivot_wider(names_from = osm_nm, values_from = osmf_area) -> h_natural_onid_area
 
+# create summary table of osm features values by hexagon
+hp_natural %>%
+  st_drop_geometry() %>%
+  select(hexid, natural) %>%
+  group_by(hexid) %>%
+  mutate(osm_nm = paste0("osm_nid_", row_number(), "_value", sep = "")) %>%
+  # osm features values as variables
+  pivot_wider(names_from = osm_nm, values_from = natural) -> h_natural_onid_value
+h_natural_onid_value
+
 # join tables
 h_natural_onid %>%
   left_join(h_natural_onid_area, by = "hexid") -> h_natural_st
@@ -325,6 +345,7 @@ cbook
 
 
 
+
 ```{r}
 mapview(natural[natural$osm_way_id == "466975876",])
 ```
@@ -361,3 +382,6 @@ mpg %>%
   filter(is.na(osm_id)) %>%
   mapview()
 ```
+
+
+

@@ -6,6 +6,42 @@ date: '2022-06-22'
 
 Original Publish Date: 2022-06-22 <br> Updated on: `r format(Sys.time(), '%Y-%m-%d')`
 
+## WP 2, review 2
+
+date: 2022-07-12
+
+### Key points
+- record osm values of osm features by hexagon?
+- R compiler for reproducibility?
+- Percentage Cover for Linear Features? - PENDANT
+
+
+### Actions
+
+- The criteria for re-classifying the values is > 0.05% of the count classified as 'other'
+- Two files 1 spatial file with the hex stats, another file indexed by hex id with the osm legacy data
+- Add 'value' column for osm legacy file
+- Create a 'not-valid' geometries reference statistic
+- Next meeting to review progress 2022-07-19
+
+- Higher complexity related to data handling and managing 'OSM' values variety might requiere between 1 -2 extra days
+
+## WP 2, review 1 
+
+date: 2022-07-05
+
+- Discuss the fclass partitions. An fclass like 'building' for an area like London can have as much as 317 classes. Does it worth to partition the data in so many classes. Perhaps it is better to choose top N and recode 'others'
+- An area like London is tessellated in more than 12 million hexagons
+- See summary by 'layer'. What geometries to select? Is removing NA a valid approach?
+
+### Actions
+
+- Add layer 'natural'
+- Exclude layer 'traffic' and 'transport' (very low usage)
+- Absolute summary statistics by hexagon area (100%)
+- Define gridded study area at res = 6
+- Check handliing of 'not-valid' geometries
+
 
 ## WP 2, Kick-off meeting
 

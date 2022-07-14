@@ -8,32 +8,40 @@ output:
     toc: true
     toc_float: true
     toc_depth: '3'
-    number_sections: no
+    number_sections: yes
     self_contained: no
     code_download: true
     code_folding: hide
+    highlight: tango
 date: "`r format(Sys.time(), '%Y-%m-%d')`"
 ---
 
-## Set up environment
+# Set up environment
 
 ```{r echo=TRUE, message=FALSE, warning=FALSE}
-pkgs <- c("tidyverse","sf","osmextract", "remotes", "knitr")
 # If not already installed (run once, then comment lines with '#')
-# install.packages(pkgs)
+#install.packages("knitr")
+library(knitr)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, class.source = "numberLines lineAnchors")
+```
+
+```{r echo=TRUE, message=FALSE, warning=FALSE}
+pkgs <- c("tidyverse","sf","osmextract","ggplot2","kableExtra")
+# If not already installed (run once, then comment lines with '#')
+#install.packages(pkgs)
 #remotes::install_github("crazycapivara/h3-r")
 # Core packages
 library(tidyverse)             
 library(sf)
 library(h3)
 library(osmextract)
-library(knitr)
 library(ggplot2)
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+library(kableExtra)
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, class.source = "numberLines lineAnchors")
 options(scipen = 999)
 ```
 
-## Create gridded study area from point
+# Create hex grid from point
 
 ```{r}
 # Index a lat/lng point to an H3 index
@@ -62,12 +70,12 @@ hexpol12 <- h3_to_geo_boundary_sf(hexid12) %>%
   mutate(hexid = hexid12)
 ```
 
-## Get OSM data for study area
+# Get OSM data for study area
 
 ```{r}
 # check/create Output directory
 mainDir <- getwd()
-subDir <- paste0("osm-data-",coords[1])
+subDir <- paste0("osm-data-",hexidsa)
 
 if (file.exists(subDir)){
     setwd(file.path(mainDir))
@@ -77,7 +85,7 @@ if (file.exists(subDir)){
 }
 
 # get data
-# Download the data to osm-data folder. hexpolsa is the polygonal boundary
+# Download the data to osm-data folder. 
 oe_get("London", download_directory = subDir, stringsAsFactors = FALSE, extra_tags = c("water","railway"), download_only = TRUE, skip_vectortranslate = TRUE)
 ```
 
@@ -86,21 +94,22 @@ oe_get("London", download_directory = subDir, stringsAsFactors = FALSE, extra_ta
 # oe_get_keys("~/Documents/Q_GitHub/t_city/geofabrik_London.osm.pbf", layer = "multipolygons")
 ```
 
-### Read pbf file by layer types
+## Read pbf file by layer types
 
 ```{r}
 pbf <- list.files(path = file.path(mainDir, subDir), pattern = "*.pbf")
 dir <- file.path(mainDir, subDir, pbf)
 
+# hexpolsa is the polygonal boundary
 # polygon geometries
 oe_read(dir, layer = "multipolygons", extra_tags = "water", boundary = hexpolsa, boundary_type = "spat") -> pols
 # lines geometries
 oe_read(dir, layer = "lines", extra_tags = "railway", boundary = hexpolsa, boundary_type = "spat") -> lines
 ```
 
-## Create OSM data statistics
+# Create OSM data statistics
 
-### Explore data and split into relevant layers
+## Explore data and split into relevant layers
 
 ```{r}
 # polygons
@@ -140,7 +149,7 @@ for (i in keys) {
   which(st_is_valid(vpol, reason = TRUE) != "Valid Geometry") -> invalid
   
   # ghost integer to ease slice
-  c(invalid, 9999) -> invalid
+  c(invalid, 999999) -> invalid
   
   vpol %>%
     # remove invalid geometries
@@ -181,7 +190,7 @@ polslist[["natural"]] %>%
   coord_sf(datum = 27700)
 ```
 
-### Study area statistics by key 
+## Study area statistics by key 
 
 ```{r}
 # vector of value counts > 0.05%
@@ -190,7 +199,13 @@ polslist[["natural"]] %>%
   count(natural) %>%
   # percentage
   mutate(pc = 100* (n / sum(n))) %>%
-  arrange(desc(n)) %>%
+  arrange(desc(n)) -> s_nat
+
+s_nat %>%
+  kable(digits = 2) %>%
+  kable_styling()
+
+s_nat %>%
   filter(pc > 0.05) %>%
   pull(natural) -> k_nat
 
@@ -210,10 +225,11 @@ natural %>%
   st_drop_geometry() %>%
   count(natural) %>%
   arrange(desc(n)) %>%
-  knit_print()
+  kable() %>%
+  kable_styling()
 ```
 
-## Get statistics by hexagon
+# Create statistics by hexagon
 
 ```{r}
 # set precision
@@ -225,7 +241,9 @@ hexpol12 %>%
 # set precision and create objects by key
 natural %>%
   st_transform(crs=3857) %>%
-  st_set_precision(units::set_units(10, nm)) -> natural
+  st_set_precision(units::set_units(10, nm)) %>%
+  # after crs transformation is necessary to make valid again
+  st_make_valid() -> natural
 
 # intersect hexagons with polygon layer
 st_intersection(hexpol12, natural) -> hp_natural
@@ -236,7 +254,8 @@ hp_natural %>%
   st_drop_geometry() %>%
   count(natural) %>%
   arrange(desc(n)) %>%
-  knit_print()
+  kable() %>%
+  kable_styling()
 ```
 
 ```{r}
@@ -245,7 +264,7 @@ hp_natural %>%
 #mapview(natural) + mapview(hexpolsa, fill=NA)
 ```
 
-### OSM legacy data
+## OSM legacy data
 
 ```{r}
 # # collapse ids to create a unique id label
@@ -287,8 +306,9 @@ h_natural_onid %>%
 
 # see example of hexagon with most 'values'
 h_natural_st %>%
-  filter(!is.na(osm_nid_5_area))
+  filter(!is.na(osm_nid_5_area)) 
 ```
+
 Export OSM legacy data CSV file
 
 ```{r}
@@ -299,7 +319,7 @@ layer <- natural %>%
   first()
 
 # check/create Output directory
-subDir <- paste0("csv-",coords[1])
+subDir <- paste0("csv-",hexidsa)
 
 if (file.exists(subDir)){
     setwd(file.path(mainDir))
@@ -312,7 +332,7 @@ if (file.exists(subDir)){
 write_csv(h_natural_st, file = paste0(mainDir, "/", subDir, "/", hexidsa, "-", layer, "-osm-legacy.csv"))
 ```
 
-### Create statistics by hexagon
+## Create statistics by hexagon
 
 ```{r}
 # create statistics by hexagon
@@ -351,7 +371,7 @@ Export hexagon CSV file
 st_write(hex_natural, paste0(mainDir, "/", subDir, "/", hexidsa, "-", layer, "-hexstats.csv"), layer_options = c("GEOMETRY=AS_WKT","CREATE_CSVT=YES"), delete_dsn=TRUE)
 ```
 
-## Codebooks
+# Codebooks
 ```{r}
 data.frame(variable_name = c(
   "WKT",
@@ -384,12 +404,14 @@ data.frame(variable_name = c(
 
 ```{r}
 cbook_hexstats %>%
-  knit_print()
+  kable() %>%
+  kable_styling()
 ```
 
 ```{r}
 cbook_osm_legacy %>%
-  knit_print()
+  kable() %>%
+  kable_styling()
 ```
 
 ```{css, echo = FALSE, class.source = 'foldable'}
@@ -412,5 +434,31 @@ a {
     color: #fff;
     background-color: #6EC0A5;
     border-color: #6EC0A5;
+}
+
+.tocify ul, .tocify li {
+    background-color: transparent;
+}
+
+pre.numberSource code > span {
+    left: -1.5em;
+}
+h1 {
+  font-size: 190%;
+}
+h2 {
+  font-size: 160%;
+}
+h3 {
+  font-size: 150%;
+}
+h4 {
+  font-size: 130%;
+}
+h5 {
+  font-size: 110%;
+}
+h6 {
+   font-size: 90%;
 }
 ```

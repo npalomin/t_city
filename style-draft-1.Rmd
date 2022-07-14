@@ -1,0 +1,45 @@
+---
+title: "Counter for chunks"
+author: "Romain Lesur"
+output: 
+  html_document:
+    code_download: true
+    code_folding: hide
+    highlight: tango
+---
+
+Syntax highlighting style. Supported styles include "default", "tango", "pygments", "kate", "monochrome", "espresso", "zenburn", "haddock", and "textmate"
+
+<style>
+
+pre.numberSource code > span {
+    left: -2em;
+}
+
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  class.source = "numberLines lineAnchors"
+  )
+```
+
+```{r}
+summary(cars)
+```
+
+```{r head-cars}
+head(cars)
+```
+
+```{r}
+5 + 5
+3 * 9
+```
+
+```{r}
+x <- 5
+x * 3
+```
+
+?rmarkdown::html_document

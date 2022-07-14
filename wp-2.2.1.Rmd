@@ -18,7 +18,7 @@ date: "`r format(Sys.time(), '%Y-%m-%d')`"
 
 # Set up environment
 
-```{r}
+```{r, echo = FALSE, class.source = 'foldable'}
 using<-function(...) {
     libs<-unlist(list(...))
     req<-unlist(lapply(libs,require,character.only=TRUE))
@@ -29,29 +29,14 @@ using<-function(...) {
     }
 }
 
-using("osmextract","kableExtra","h3","ggplot2","sf","tidyverse","knitr")
+# h3 from github repo
+if(!require(h3)){
+    remotes::install_github("crazycapivara/h3-r")
+}
 ```
 
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-# If not already installed (run once, then comment lines with '#')
-#install.packages("knitr")
-library(knitr)
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, class.source = "numberLines lineAnchors")
-```
-
-```{r echo=TRUE, message=FALSE, warning=FALSE}
-pkgs <- c("osmextract","kableExtra")
-# If not already installed (run once, then comment lines with '#')
-install.packages(pkgs)
-remotes::install_github("crazycapivara/h3-r")
-# Core packages
-library(tidyverse)             
-library(sf)
-library(h3)
-library(osmextract)
-library(ggplot2)
-library(kableExtra)
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+using("osmextract","kableExtra","ggplot2","sf","tidyverse","knitr","h3")
 options(scipen = 999)
 ```
 

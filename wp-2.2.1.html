@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+<meta name="date" content="2022-07-14" />
+
+<title>Create OSM Data Processing Script</title>
+
+<script src="wp-2.2.1_files/header-attrs-2.11/header-attrs.js"></script>
+<script src="wp-2.2.1_files/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="wp-2.2.1_files/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="wp-2.2.1_files/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="wp-2.2.1_files/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="wp-2.2.1_files/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="wp-2.2.1_files/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="wp-2.2.1_files/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="wp-2.2.1_files/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="wp-2.2.1_files/navigation-1.1/tabsets.js"></script>
+<script src="wp-2.2.1_files/navigation-1.1/codefolding.js"></script>
+<script src="wp-2.2.1_files/navigation-1.1/sourceembed.js"></script>
+<link href="wp-2.2.1_files/pagedtable-1.1/css/pagedtable.css" rel="stylesheet" />
+<script src="wp-2.2.1_files/pagedtable-1.1/js/pagedtable.js"></script>
+<script src="wp-2.2.1_files/kePrint-0.0.1/kePrint.js"></script>
+<link href="wp-2.2.1_files/lightable-0.0.1/lightable.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  background-color: #f8f8f8; }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ef2929; } /* Alert */
+code span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #c4a000; } /* Attribute */
+code span.bn { color: #0000cf; } /* BaseN */
+code span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4e9a06; } /* Char */
+code span.cn { color: #000000; } /* Constant */
+code span.co { color: #8f5902; font-style: italic; } /* Comment */
+code span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code span.dt { color: #204a87; } /* DataType */
+code span.dv { color: #0000cf; } /* DecVal */
+code span.er { color: #a40000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #0000cf; } /* Float */
+code span.fu { color: #000000; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code span.ot { color: #8f5902; } /* Other */
+code span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code span.sc { color: #000000; } /* SpecialChar */
+code span.ss { color: #4e9a06; } /* SpecialString */
+code span.st { color: #4e9a06; } /* String */
+code span.va { color: #000000; } /* Variable */
+code span.vs { color: #4e9a06; } /* VerbatimString */
+code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+
+.sourceCode .row {
+  width: 100%;
+}
+.sourceCode {
+  overflow-x: auto;
+}
+.code-folding-btn {
+  margin-right: -30px;
+}
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+<style type="text/css">
+#rmd-source-code {
+  display: none;
+}
+</style>
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div id="header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+<li role="separator" class="divider"></li>
+<li><a id="rmd-download-source" href="#">Download Rmd</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">Create OSM Data Processing Script</h1>
+<h4 class="author">Nicolas Palominos</h4>
+<h4 class="date">2022-07-14</h4>
+
+</div>
+
+
+<div id="set-up-environment" class="section level1" number="1">
+<h1><span class="header-section-number">1</span> Set up environment</h1>
+<pre><code>## Loading required package: h3</code></pre>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">using</span>(<span class="st">&quot;osmextract&quot;</span>,<span class="st">&quot;kableExtra&quot;</span>,<span class="st">&quot;ggplot2&quot;</span>,<span class="st">&quot;sf&quot;</span>,<span class="st">&quot;tidyverse&quot;</span>,<span class="st">&quot;knitr&quot;</span>,<span class="st">&quot;h3&quot;</span>)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">options</span>(<span class="at">scipen =</span> <span class="dv">999</span>)</span></code></pre></div>
+</div>
+<div id="create-hex-grid-from-point" class="section level1" number="2">
+<h1><span class="header-section-number">2</span> Create hex grid from
+point</h1>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Index a lat/lng point to an H3 index</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co"># modify &#39;coords&#39; for analysis on a different area</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># helper websites #</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co"># H3 interactive map: https://wolf-h3-viewer.glitch.me/</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Point finder: http://bboxfinder.com/</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>coords <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">51.512468</span>,<span class="sc">-</span><span class="fl">0.117449</span>) <span class="co"># lat,lng EPSG: 4326 - WGS 84</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co"># define resolution (lower resolution to create a larger study area)</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co"># helper website</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Table of Cell Areas for H3 Resolutions: https://h3geo.org/docs/core-library/restable/</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="dv">6</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co"># get hex id</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>hexidsa <span class="ot">&lt;-</span> <span class="fu">geo_to_h3</span>(coords, res)</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="co"># get hex polygon geometry</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>hexpolsa <span class="ot">&lt;-</span> <span class="fu">h3_to_geo_boundary_sf</span>(hexidsa) <span class="sc">%&gt;%</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># add hexid column</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">hexid =</span> hexidsa)</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co"># get hex polygon geometries with centres contained in a given polygon at res = 12</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>hexid12 <span class="ot">&lt;-</span> <span class="fu">polyfill</span>(hexpolsa, <span class="at">res =</span> <span class="dv">12</span>)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="co"># get res = 12 polygons</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>hexpol12 <span class="ot">&lt;-</span> <span class="fu">h3_to_geo_boundary_sf</span>(hexid12) <span class="sc">%&gt;%</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  <span class="co"># add hexid column</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">hexid =</span> hexid12)</span></code></pre></div>
+</div>
+<div id="get-osm-data-for-study-area" class="section level1" number="3">
+<h1><span class="header-section-number">3</span> Get OSM data for study
+area</h1>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># check/create Output directory</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>mainDir <span class="ot">&lt;-</span> <span class="fu">getwd</span>()</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>subDir <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;osm-data-&quot;</span>,hexidsa)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">file.exists</span>(subDir)){</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setwd</span>(<span class="fu">file.path</span>(mainDir))</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">dir.create</span>(<span class="fu">file.path</span>(mainDir, subDir))</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setwd</span>(<span class="fu">file.path</span>(mainDir))</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co"># get data</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Download the data to osm-data folder. </span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="fu">oe_get</span>(<span class="st">&quot;London&quot;</span>, <span class="at">download_directory =</span> subDir, <span class="at">stringsAsFactors =</span> <span class="cn">FALSE</span>, <span class="at">extra_tags =</span> <span class="fu">c</span>(<span class="st">&quot;water&quot;</span>,<span class="st">&quot;railway&quot;</span>), <span class="at">download_only =</span> <span class="cn">TRUE</span>, <span class="at">skip_vectortranslate =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>## No exact match found for place = London and provider = geofabrik. Best match is Jordan. 
+## Checking the other providers.</code></pre>
+<pre><code>## An exact string match was found using provider = bbbike.</code></pre>
+<pre><code>## The chosen file was already detected in the download directory. Skip downloading.</code></pre>
+<pre><code>## [1] &quot;/Users/nicolas/Documents/Q_GitHub/t_city/osm-data-86194ad37ffffff/geofabrik_London.osm.pbf&quot;</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># st_layers(&quot;~/Documents/Q_GitHub/t_city/geofabrik_London.osm.pbf&quot;)</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># oe_get_keys(&quot;~/Documents/Q_GitHub/t_city/geofabrik_London.osm.pbf&quot;, layer = &quot;multipolygons&quot;)</span></span></code></pre></div>
+<div id="read-pbf-file-by-layer-types" class="section level2"
+number="3.1">
+<h2><span class="header-section-number">3.1</span> Read pbf file by
+layer types</h2>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>pbf <span class="ot">&lt;-</span> <span class="fu">list.files</span>(<span class="at">path =</span> <span class="fu">file.path</span>(mainDir, subDir), <span class="at">pattern =</span> <span class="st">&quot;*.pbf&quot;</span>)</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>dir <span class="ot">&lt;-</span> <span class="fu">file.path</span>(mainDir, subDir, pbf)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># hexpolsa is the polygonal boundary</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="co"># polygon geometries</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="fu">oe_read</span>(dir, <span class="at">layer =</span> <span class="st">&quot;multipolygons&quot;</span>, <span class="at">extra_tags =</span> <span class="st">&quot;water&quot;</span>, <span class="at">boundary =</span> hexpolsa, <span class="at">boundary_type =</span> <span class="st">&quot;spat&quot;</span>) <span class="ot">-&gt;</span> pols</span></code></pre></div>
+<pre><code>## Start with the vectortranslate operations on the input file!</code></pre>
+<pre><code>## 0...10...20...30...40...50...60...70...80...90...100 - done.</code></pre>
+<pre><code>## Warning in CPL_gdalvectortranslate(source, destination, options, oo, doo, : GDAL
+## Message 1: organizePolygons() received an unexpected geometry. Either a polygon
+## with interior rings, or a polygon with less than 4 points, or a non-Polygon
+## geometry. Return arguments as a collection.</code></pre>
+<pre><code>## Finished the vectortranslate operations on the input file!</code></pre>
+<pre><code>## Reading layer `multipolygons&#39; from data source 
+##   `/Users/nicolas/Documents/Q_GitHub/t_city/osm-data-86194ad37ffffff/geofabrik_London.gpkg&#39; 
+##   using driver `GPKG&#39;
+## Simple feature collection with 47853 features and 26 fields
+## Geometry type: MULTIPOLYGON
+## Dimension:     XY
+## Bounding box:  xmin: -0.5103751 ymin: 51.28676 xmax: 0.3340155 ymax: 51.69187
+## Geodetic CRS:  WGS 84</code></pre>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># lines geometries</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">oe_read</span>(dir, <span class="at">layer =</span> <span class="st">&quot;lines&quot;</span>, <span class="at">extra_tags =</span> <span class="st">&quot;railway&quot;</span>, <span class="at">boundary =</span> hexpolsa, <span class="at">boundary_type =</span> <span class="st">&quot;spat&quot;</span>) <span class="ot">-&gt;</span> lines</span></code></pre></div>
+<pre><code>## Start with the vectortranslate operations on the input file!</code></pre>
+<pre><code>## 0...10...20...30...40...50...60...70...80...90...100 - done.</code></pre>
+<pre><code>## Finished the vectortranslate operations on the input file!</code></pre>
+<pre><code>## Reading layer `lines&#39; from data source 
+##   `/Users/nicolas/Documents/Q_GitHub/t_city/osm-data-86194ad37ffffff/geofabrik_London.gpkg&#39; 
+##   using driver `GPKG&#39;
+## Simple feature collection with 52490 features and 10 fields
+## Geometry type: LINESTRING
+## Dimension:     XY
+## Bounding box:  xmin: -0.2482626 ymin: 51.35111 xmax: 0.1561341 ymax: 51.5691
+## Geodetic CRS:  WGS 84</code></pre>
+</div>
+</div>
+<div id="create-osm-data-statistics" class="section level1" number="4">
+<h1><span class="header-section-number">4</span> Create OSM data
+statistics</h1>
+<div id="explore-data-and-split-into-relevant-layers"
+class="section level2" number="4.1">
+<h2><span class="header-section-number">4.1</span> Explore data and
+split into relevant layers</h2>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># polygons</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(pols)</span></code></pre></div>
+<pre><code>## Rows: 47,853
+## Columns: 27
+## $ osm_id      &lt;chr&gt; &quot;2171&quot;, &quot;28934&quot;, &quot;51781&quot;, &quot;51800&quot;, &quot;51805&quot;, &quot;51806&quot;, &quot;5182…
+## $ osm_way_id  &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ name        &lt;chr&gt; &quot;South Bank Technopark&quot;, &quot;River Thames&quot;, &quot;City of Westmins…
+## $ type        &lt;chr&gt; &quot;multipolygon&quot;, &quot;multipolygon&quot;, &quot;boundary&quot;, &quot;boundary&quot;, &quot;b…
+## $ aeroway     &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ amenity     &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ admin_level &lt;chr&gt; NA, NA, &quot;8&quot;, &quot;6&quot;, &quot;8&quot;, &quot;8&quot;, &quot;8&quot;, &quot;8&quot;, NA, NA, NA, NA, NA, …
+## $ barrier     &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ boundary    &lt;chr&gt; NA, NA, &quot;administrative&quot;, &quot;administrative&quot;, &quot;administrativ…
+## $ building    &lt;chr&gt; &quot;yes&quot;, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, &quot;ye…
+## $ craft       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ geological  &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ historic    &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ land_area   &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ landuse     &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ leisure     &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, &quot;park&quot;, NA…
+## $ man_made    &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ military    &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ natural     &lt;chr&gt; NA, &quot;water&quot;, NA, NA, NA, NA, NA, NA, &quot;water&quot;, &quot;water&quot;, NA,…
+## $ office      &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ place       &lt;chr&gt; NA, NA, NA, NA, &quot;borough&quot;, NA, NA, NA, NA, NA, &quot;city&quot;, NA,…
+## $ shop        &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ sport       &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ tourism     &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA…
+## $ water       &lt;chr&gt; NA, &quot;river&quot;, NA, NA, NA, NA, NA, NA, NA, NA, NA, &quot;river&quot;, …
+## $ other_tags  &lt;chr&gt; &quot;\&quot;operator\&quot;=&gt;\&quot;London South Bank University\&quot;,\&quot;wikidata…
+## $ geometry    &lt;MULTIPOLYGON [°]&gt; MULTIPOLYGON (((-0.1021346 ..., MULTIPOLYGON …</code></pre>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># lines</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">glimpse</span>(lines)</span></code></pre></div>
+<pre><code>## Rows: 52,490
+## Columns: 11
+## $ osm_id     &lt;chr&gt; &quot;330341&quot;, &quot;330437&quot;, &quot;330481&quot;, &quot;331357&quot;, &quot;331680&quot;, &quot;367991&quot;,…
+## $ name       &lt;chr&gt; &quot;Penton Rise&quot;, &quot;St. John Street&quot;, &quot;City Road&quot;, &quot;Gray&#39;s Inn …
+## $ highway    &lt;chr&gt; &quot;trunk&quot;, &quot;primary&quot;, &quot;trunk&quot;, &quot;trunk&quot;, &quot;primary&quot;, &quot;residenti…
+## $ waterway   &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ aerialway  &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ barrier    &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ man_made   &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ railway    &lt;chr&gt; NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,…
+## $ z_order    &lt;int&gt; 8, 7, 8, 8, 7, 3, 4, 4, 7, 7, 7, 3, 3, 0, 8, 3, 3, 4, 3, 3,…
+## $ other_tags &lt;chr&gt; &quot;\&quot;bicycle\&quot;=&gt;\&quot;yes\&quot;,\&quot;cycleway:left\&quot;=&gt;\&quot;lane\&quot;,\&quot;foot\&quot;=…
+## $ geometry   &lt;LINESTRING [°]&gt; LINESTRING (-0.114121 51.53..., LINESTRING (-0.1…</code></pre>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># split polygons into relevant polygonal keys</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="co"># define keys</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>keys <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;natural&quot;</span>) <span class="co"># off-test: &quot;building&quot;, &quot;landuse&quot;, &quot;water&quot;, </span></span></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># function to create list of objects according to relevant layers</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="co"># define dataframe</span></span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> pols</span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>polslist <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (i <span class="cf">in</span> keys) {</span>
+<span id="cb26-7"><a href="#cb26-7" aria-hidden="true" tabindex="-1"></a>  df <span class="sc">%&gt;%</span></span>
+<span id="cb26-8"><a href="#cb26-8" aria-hidden="true" tabindex="-1"></a>    <span class="co"># collapse ids to create a unique id label</span></span>
+<span id="cb26-9"><a href="#cb26-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">osm_nid =</span> <span class="fu">case_when</span>(<span class="fu">is.na</span>(osm_id) <span class="sc">~</span> osm_way_id,</span>
+<span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>                             <span class="cn">TRUE</span> <span class="sc">~</span> osm_id)) <span class="sc">%&gt;%</span></span>
+<span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># select key and keep osm id</span></span>
+<span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">select</span>(i, osm_nid) <span class="sc">%&gt;%</span></span>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># drop NAs</span></span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">drop_na</span>(.) <span class="sc">%&gt;%</span></span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>    <span class="co"># make valid polygons (repair those with self-intersection?)</span></span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">st_make_valid</span>() <span class="ot">-&gt;</span> vpol</span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># id of remaining invalid geometries</span></span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">which</span>(<span class="fu">st_is_valid</span>(vpol, <span class="at">reason =</span> <span class="cn">TRUE</span>) <span class="sc">!=</span> <span class="st">&quot;Valid Geometry&quot;</span>) <span class="ot">-&gt;</span> invalid</span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># ghost integer to ease slice</span></span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">c</span>(invalid, <span class="dv">999999</span>) <span class="ot">-&gt;</span> invalid</span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>  vpol <span class="sc">%&gt;%</span></span>
+<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a>    <span class="co"># remove invalid geometries</span></span>
+<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">slice</span>(<span class="sc">-</span>invalid) <span class="sc">%&gt;%</span></span>
+<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a>    <span class="co"># calculate area (remove units and round to 1 digit)</span></span>
+<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">osmf_area =</span> <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">st_area</span>(.)),<span class="dv">1</span>)) <span class="ot">-&gt;</span> vpol</span>
+<span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># get only the non-empty geometries</span></span>
+<span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a>  vpol[<span class="sc">!</span><span class="fu">st_is_empty</span>(vpol), , drop<span class="ot">=</span><span class="cn">FALSE</span>] <span class="ot">-&gt;</span> polslist[[i]]</span>
+<span id="cb26-32"><a href="#cb26-32" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<pre><code>## Note: Using an external vector in selections is ambiguous.
+## ℹ Use `all_of(i)` instead of `i` to silence this message.
+## ℹ See &lt;https://tidyselect.r-lib.org/reference/faq-external-vector.html&gt;.
+## This message is displayed once per session.</code></pre>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># check reduction of geometries &#39;not-valid&#39; &amp; &#39;not-repaired&#39;</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="co"># before st_make_valid</span></span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>pols <span class="sc">%&gt;%</span></span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(natural) <span class="sc">%&gt;%</span></span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(natural)) <span class="sc">%&gt;%</span></span>
+<span id="cb28-6"><a href="#cb28-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">nrow</span>(.)</span></code></pre></div>
+<pre><code>## [1] 285</code></pre>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co"># result: 285</span></span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co"># after st_make_valid</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="fu">length</span>(polslist[[<span class="st">&quot;natural&quot;</span>]][[<span class="st">&quot;natural&quot;</span>]])</span></code></pre></div>
+<pre><code>## [1] 285</code></pre>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># result: 285</span></span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># check extent of OSM features in relation to study area hexagon</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>polslist[[<span class="st">&quot;natural&quot;</span>]] <span class="sc">%&gt;%</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="dv">27700</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(osm_nid <span class="sc">==</span> <span class="dv">28934</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>() <span class="sc">+</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>() <span class="sc">+</span></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_sf</span>(<span class="at">data =</span> hexpolsa, <span class="at">fill=</span><span class="cn">NA</span>, <span class="at">col=</span><span class="st">&quot;tomato&quot;</span>) <span class="sc">+</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">coord_sf</span>(<span class="at">datum =</span> <span class="dv">27700</span>)</span></code></pre></div>
+<p><img src="wp-2.2.1_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+</div>
+<div id="study-area-statistics-by-key" class="section level2"
+number="4.2">
+<h2><span class="header-section-number">4.2</span> Study area statistics
+by key</h2>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># vector of value counts &gt; 0.05%</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>polslist[[<span class="st">&quot;natural&quot;</span>]] <span class="sc">%&gt;%</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(natural) <span class="sc">%&gt;%</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># percentage</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">pc =</span> <span class="dv">100</span><span class="sc">*</span> (n <span class="sc">/</span> <span class="fu">sum</span>(n))) <span class="sc">%&gt;%</span></span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n)) <span class="ot">-&gt;</span> s_nat</span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a>s_nat <span class="sc">%&gt;%</span></span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>(<span class="at">digits =</span> <span class="dv">2</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>()</span></code></pre></div>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+natural
+</th>
+<th style="text-align:right;">
+n
+</th>
+<th style="text-align:right;">
+pc
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+water
+</td>
+<td style="text-align:right;">
+134
+</td>
+<td style="text-align:right;">
+47.02
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wood
+</td>
+<td style="text-align:right;">
+73
+</td>
+<td style="text-align:right;">
+25.61
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+scrub
+</td>
+<td style="text-align:right;">
+35
+</td>
+<td style="text-align:right;">
+12.28
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wetland
+</td>
+<td style="text-align:right;">
+23
+</td>
+<td style="text-align:right;">
+8.07
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+beach
+</td>
+<td style="text-align:right;">
+10
+</td>
+<td style="text-align:right;">
+3.51
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+shrubbery
+</td>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:right;">
+1.40
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mud
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+1.05
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+sand
+</td>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:right;">
+0.70
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rock
+</td>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:right;">
+0.35
+</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb36"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>s_nat <span class="sc">%&gt;%</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(pc <span class="sc">&gt;</span> <span class="fl">0.05</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(natural) <span class="ot">-&gt;</span> k_nat</span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb36-5"><a href="#cb36-5" aria-hidden="true" tabindex="-1"></a><span class="co"># reclassify values below threshold to &#39;other&#39;</span></span>
+<span id="cb36-6"><a href="#cb36-6" aria-hidden="true" tabindex="-1"></a><span class="co"># create &#39;key&#39; object from list</span></span>
+<span id="cb36-7"><a href="#cb36-7" aria-hidden="true" tabindex="-1"></a>natural <span class="ot">&lt;-</span> polslist[[<span class="st">&quot;natural&quot;</span>]] <span class="sc">%&gt;%</span></span>
+<span id="cb36-8"><a href="#cb36-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">natural =</span> <span class="fu">case_when</span>(natural <span class="sc">%in%</span> k_nat <span class="sc">~</span> natural,</span>
+<span id="cb36-9"><a href="#cb36-9" aria-hidden="true" tabindex="-1"></a>                             <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">&quot;other&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>k_nat</span></code></pre></div>
+<pre><code>## [1] &quot;water&quot;     &quot;wood&quot;      &quot;scrub&quot;     &quot;wetland&quot;   &quot;beach&quot;     &quot;shrubbery&quot;
+## [7] &quot;mud&quot;       &quot;sand&quot;      &quot;rock&quot;</code></pre>
+</div>
+</div>
+<div id="create-statistics-by-hexagon" class="section level1"
+number="5">
+<h1><span class="header-section-number">5</span> Create statistics by
+hexagon</h1>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># set precision</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a><span class="co"># use crs=3857 to speed up intersection</span></span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>hexpol12 <span class="sc">%&gt;%</span></span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs=</span><span class="dv">3857</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_set_precision</span>(units<span class="sc">::</span><span class="fu">set_units</span>(<span class="dv">10</span>, nm)) <span class="ot">-&gt;</span> hexpol12</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a><span class="co"># set precision and create objects by key</span></span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>natural <span class="sc">%&gt;%</span></span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="at">crs=</span><span class="dv">3857</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_set_precision</span>(units<span class="sc">::</span><span class="fu">set_units</span>(<span class="dv">10</span>, nm)) <span class="sc">%&gt;%</span></span>
+<span id="cb39-11"><a href="#cb39-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># after crs transformation is necessary to make valid again</span></span>
+<span id="cb39-12"><a href="#cb39-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_make_valid</span>() <span class="ot">-&gt;</span> natural</span>
+<span id="cb39-13"><a href="#cb39-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb39-14"><a href="#cb39-14" aria-hidden="true" tabindex="-1"></a><span class="co"># intersect hexagons with polygon layer</span></span>
+<span id="cb39-15"><a href="#cb39-15" aria-hidden="true" tabindex="-1"></a><span class="fu">st_intersection</span>(hexpol12, natural) <span class="ot">-&gt;</span> hp_natural</span></code></pre></div>
+<pre><code>## Warning: attribute variables are assumed to be spatially constant throughout all
+## geometries</code></pre>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>hp_natural <span class="sc">%&gt;%</span></span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(natural) <span class="sc">%&gt;%</span></span>
+<span id="cb41-4"><a href="#cb41-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n)) <span class="sc">%&gt;%</span></span>
+<span id="cb41-5"><a href="#cb41-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb41-6"><a href="#cb41-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>()</span></code></pre></div>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+natural
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+water
+</td>
+<td style="text-align:right;">
+9811
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wood
+</td>
+<td style="text-align:right;">
+1404
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wetland
+</td>
+<td style="text-align:right;">
+1169
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+scrub
+</td>
+<td style="text-align:right;">
+102
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mud
+</td>
+<td style="text-align:right;">
+86
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+beach
+</td>
+<td style="text-align:right;">
+25
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rock
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb42"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a><span class="co"># features &#39;not touching&#39; hexpol6 are read! e.g.: osm_nid = 316996080, natural=shrubbery</span></span>
+<span id="cb42-2"><a href="#cb42-2" aria-hidden="true" tabindex="-1"></a><span class="co"># unique values in OSM &#39;unclipped&#39; data are more than values clipped to hexpol12</span></span>
+<span id="cb42-3"><a href="#cb42-3" aria-hidden="true" tabindex="-1"></a><span class="co">#mapview(natural) + mapview(hexpolsa, fill=NA)</span></span></code></pre></div>
+<div id="osm-legacy-data" class="section level2" number="5.1">
+<h2><span class="header-section-number">5.1</span> OSM legacy data</h2>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create summary table of osm_ids by hexagon</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>hp_natural <span class="sc">%&gt;%</span></span>
+<span id="cb43-3"><a href="#cb43-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb43-4"><a href="#cb43-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(hexid, osm_nid) <span class="sc">%&gt;%</span></span>
+<span id="cb43-5"><a href="#cb43-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hexid) <span class="sc">%&gt;%</span></span>
+<span id="cb43-6"><a href="#cb43-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">osm_nm =</span> <span class="fu">paste0</span>(<span class="st">&quot;osm_nid_&quot;</span>, <span class="fu">row_number</span>(), <span class="at">sep =</span> <span class="st">&quot;&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb43-7"><a href="#cb43-7" aria-hidden="true" tabindex="-1"></a>  <span class="co"># osm ids of values as variables</span></span>
+<span id="cb43-8"><a href="#cb43-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> osm_nm, <span class="at">values_from =</span> osm_nid) <span class="ot">-&gt;</span> h_natural_onid</span>
+<span id="cb43-9"><a href="#cb43-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-10"><a href="#cb43-10" aria-hidden="true" tabindex="-1"></a><span class="co"># create summary table of osm areas by hexagon</span></span>
+<span id="cb43-11"><a href="#cb43-11" aria-hidden="true" tabindex="-1"></a>hp_natural <span class="sc">%&gt;%</span></span>
+<span id="cb43-12"><a href="#cb43-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb43-13"><a href="#cb43-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(hexid, osmf_area) <span class="sc">%&gt;%</span></span>
+<span id="cb43-14"><a href="#cb43-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hexid) <span class="sc">%&gt;%</span></span>
+<span id="cb43-15"><a href="#cb43-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">osm_nm =</span> <span class="fu">paste0</span>(<span class="st">&quot;osm_nid_&quot;</span>, <span class="fu">row_number</span>(), <span class="st">&quot;_area&quot;</span>, <span class="at">sep =</span> <span class="st">&quot;&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb43-16"><a href="#cb43-16" aria-hidden="true" tabindex="-1"></a>  <span class="co"># osm areas of values as variables</span></span>
+<span id="cb43-17"><a href="#cb43-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> osm_nm, <span class="at">values_from =</span> osmf_area) <span class="ot">-&gt;</span> h_natural_onid_area</span>
+<span id="cb43-18"><a href="#cb43-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-19"><a href="#cb43-19" aria-hidden="true" tabindex="-1"></a><span class="co"># create summary table of osm features values by hexagon</span></span>
+<span id="cb43-20"><a href="#cb43-20" aria-hidden="true" tabindex="-1"></a>hp_natural <span class="sc">%&gt;%</span></span>
+<span id="cb43-21"><a href="#cb43-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb43-22"><a href="#cb43-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(hexid, natural) <span class="sc">%&gt;%</span></span>
+<span id="cb43-23"><a href="#cb43-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(hexid) <span class="sc">%&gt;%</span></span>
+<span id="cb43-24"><a href="#cb43-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">osm_nm =</span> <span class="fu">paste0</span>(<span class="st">&quot;osm_nid_&quot;</span>, <span class="fu">row_number</span>(), <span class="st">&quot;_value&quot;</span>, <span class="at">sep =</span> <span class="st">&quot;&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb43-25"><a href="#cb43-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># osm features values as variables</span></span>
+<span id="cb43-26"><a href="#cb43-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> osm_nm, <span class="at">values_from =</span> natural) <span class="ot">-&gt;</span> h_natural_onid_value</span>
+<span id="cb43-27"><a href="#cb43-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-28"><a href="#cb43-28" aria-hidden="true" tabindex="-1"></a><span class="co"># join tables</span></span>
+<span id="cb43-29"><a href="#cb43-29" aria-hidden="true" tabindex="-1"></a>h_natural_onid <span class="sc">%&gt;%</span></span>
+<span id="cb43-30"><a href="#cb43-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(h_natural_onid_area, <span class="at">by =</span> <span class="st">&quot;hexid&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb43-31"><a href="#cb43-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(h_natural_onid_value, <span class="at">by =</span> <span class="st">&quot;hexid&quot;</span>) <span class="ot">-&gt;</span> h_natural_st</span>
+<span id="cb43-32"><a href="#cb43-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb43-33"><a href="#cb43-33" aria-hidden="true" tabindex="-1"></a><span class="co"># see example of hexagon with most &#39;values&#39;</span></span>
+<span id="cb43-34"><a href="#cb43-34" aria-hidden="true" tabindex="-1"></a>h_natural_st <span class="sc">%&gt;%</span></span>
+<span id="cb43-35"><a href="#cb43-35" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(osm_nid_5_area)) </span></code></pre></div>
+<div data-pagedtable="false">
+<script data-pagedtable-source type="application/json">
+{"columns":[{"label":["hexid"],"name":[1],"type":["chr"],"align":["left"]},{"label":["osm_nid_1"],"name":[2],"type":["chr"],"align":["left"]},{"label":["osm_nid_2"],"name":[3],"type":["chr"],"align":["left"]},{"label":["osm_nid_3"],"name":[4],"type":["chr"],"align":["left"]},{"label":["osm_nid_4"],"name":[5],"type":["chr"],"align":["left"]},{"label":["osm_nid_5"],"name":[6],"type":["chr"],"align":["left"]},{"label":["osm_nid_1_area"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["osm_nid_2_area"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["osm_nid_3_area"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["osm_nid_4_area"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["osm_nid_5_area"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["osm_nid_1_value"],"name":[12],"type":["chr"],"align":["left"]},{"label":["osm_nid_2_value"],"name":[13],"type":["chr"],"align":["left"]},{"label":["osm_nid_3_value"],"name":[14],"type":["chr"],"align":["left"]},{"label":["osm_nid_4_value"],"name":[15],"type":["chr"],"align":["left"]},{"label":["osm_nid_5_value"],"name":[16],"type":["chr"],"align":["left"]}],"data":[{"1":"8c194ad3344cbff","2":"1036674194","3":"1036674195","4":"1036674196","5":"1036674197","6":"1036674198","7":"65.2","8":"55.6","9":"44.9","10":"89.6","11":"41.4","12":"scrub","13":"scrub","14":"scrub","15":"scrub","16":"scrub"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
+  </script>
+</div>
+<p>Export OSM legacy data CSV file</p>
+<div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a><span class="co"># layer (key) name</span></span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>layer <span class="ot">&lt;-</span> natural <span class="sc">%&gt;%</span></span>
+<span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">colnames</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">first</span>()</span>
+<span id="cb44-6"><a href="#cb44-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-7"><a href="#cb44-7" aria-hidden="true" tabindex="-1"></a><span class="co"># check/create Output directory</span></span>
+<span id="cb44-8"><a href="#cb44-8" aria-hidden="true" tabindex="-1"></a>subDir <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;csv-&quot;</span>,hexidsa)</span>
+<span id="cb44-9"><a href="#cb44-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-10"><a href="#cb44-10" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (<span class="fu">file.exists</span>(subDir)){</span>
+<span id="cb44-11"><a href="#cb44-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setwd</span>(<span class="fu">file.path</span>(mainDir))</span>
+<span id="cb44-12"><a href="#cb44-12" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb44-13"><a href="#cb44-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">dir.create</span>(<span class="fu">file.path</span>(mainDir, subDir))</span>
+<span id="cb44-14"><a href="#cb44-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">setwd</span>(<span class="fu">file.path</span>(mainDir))</span>
+<span id="cb44-15"><a href="#cb44-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb44-16"><a href="#cb44-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb44-17"><a href="#cb44-17" aria-hidden="true" tabindex="-1"></a><span class="co"># write csv of OSM legacy data</span></span>
+<span id="cb44-18"><a href="#cb44-18" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(h_natural_st, <span class="at">file =</span> <span class="fu">paste0</span>(mainDir, <span class="st">&quot;/&quot;</span>, subDir, <span class="st">&quot;/&quot;</span>, hexidsa, <span class="st">&quot;-&quot;</span>, layer, <span class="st">&quot;-osm-legacy.csv&quot;</span>))</span></code></pre></div>
+</div>
+<div id="create-statistics-by-hexagon-1" class="section level2"
+number="5.2">
+<h2><span class="header-section-number">5.2</span> Create statistics by
+hexagon</h2>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create statistics by hexagon</span></span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>hp_natural <span class="sc">%&gt;%</span></span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>  <span class="co"># transfrom CRS 3857 -&gt; 4326</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="dv">4326</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>  <span class="co"># calculate hexagons clipped area</span></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">hc_area =</span> <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">st_area</span>(.)),<span class="dv">1</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(hexid, natural, hc_area) <span class="sc">%&gt;%</span></span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a>  <span class="co"># areas of values as variables (areas of equal value are aggregated with &#39;values_fn = sum&#39;)</span></span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> <span class="st">&quot;natural&quot;</span>, <span class="at">values_from =</span> <span class="st">&quot;hc_area&quot;</span>, <span class="at">values_fn =</span> sum, <span class="at">values_fill =</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a>  <span class="co"># add prefix to columns 2 onwards</span></span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename_with</span>( <span class="sc">~</span> <span class="fu">paste0</span>(<span class="st">&quot;natural_&quot;</span>, .x), <span class="at">.cols =</span> <span class="dv">2</span><span class="sc">:</span><span class="fu">ncol</span>(.)) <span class="sc">%&gt;%</span></span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate_all</span>( <span class="sc">~</span> <span class="fu">replace</span>(., <span class="fu">is.na</span>(.), <span class="dv">0</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a>  <span class="co"># add total area adding equal value columns</span></span>
+<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">total_area =</span> <span class="fu">rowSums</span>(<span class="fu">select</span>(., <span class="fu">starts_with</span>(<span class="st">&quot;natural&quot;</span>))),</span>
+<span id="cb45-16"><a href="#cb45-16" aria-hidden="true" tabindex="-1"></a>         <span class="co"># diversity = number of columns where area &gt; 0</span></span>
+<span id="cb45-17"><a href="#cb45-17" aria-hidden="true" tabindex="-1"></a>         <span class="at">diversity =</span> <span class="fu">rowSums</span>(<span class="fu">select</span>(., <span class="fu">starts_with</span>(<span class="st">&quot;natural&quot;</span>)) <span class="sc">!=</span> <span class="dv">0</span>)) <span class="ot">-&gt;</span> hp_natural_stats</span>
+<span id="cb45-18"><a href="#cb45-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-19"><a href="#cb45-19" aria-hidden="true" tabindex="-1"></a><span class="co"># join statistics to hexagons</span></span>
+<span id="cb45-20"><a href="#cb45-20" aria-hidden="true" tabindex="-1"></a>hexpol12 <span class="sc">%&gt;%</span></span>
+<span id="cb45-21"><a href="#cb45-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(hp_natural_stats, <span class="at">by=</span><span class="st">&quot;hexid&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb45-22"><a href="#cb45-22" aria-hidden="true" tabindex="-1"></a>  <span class="co"># transfrom CRS 3857 -&gt; 4326</span></span>
+<span id="cb45-23"><a href="#cb45-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_transform</span>(<span class="dv">4326</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb45-24"><a href="#cb45-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># calculate hexagons area</span></span>
+<span id="cb45-25"><a href="#cb45-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">hex_area =</span> <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">st_area</span>(.)),<span class="dv">1</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb45-26"><a href="#cb45-26" aria-hidden="true" tabindex="-1"></a>  <span class="co"># add percentage by column</span></span>
+<span id="cb45-27"><a href="#cb45-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate_at</span>(<span class="fu">vars</span>(<span class="fu">starts_with</span>(<span class="st">&quot;natural&quot;</span>)), <span class="fu">funs</span>(<span class="at">pc =</span> <span class="fu">round</span>(.<span class="sc">/</span>(hex_area <span class="sc">*</span> <span class="fl">0.01</span>),<span class="dv">1</span>))) <span class="ot">-&gt;</span> hex_natural</span></code></pre></div>
+<pre><code>## Warning: `funs()` was deprecated in dplyr 0.8.0.
+## Please use a list of either functions or lambdas: 
+## 
+##   # Simple named list: 
+##   list(mean = mean, median = median)
+## 
+##   # Auto named with `tibble::lst()`: 
+##   tibble::lst(mean, median)
+## 
+##   # Using lambdas
+##   list(~ mean(., trim = .2), ~ median(., na.rm = TRUE))
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was generated.</code></pre>
+<p>Export hexagon CSV file</p>
+<div class="sourceCode" id="cb47"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a><span class="co"># write csv WKT hexagon statistics</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="fu">st_write</span>(hex_natural, <span class="fu">paste0</span>(mainDir, <span class="st">&quot;/&quot;</span>, subDir, <span class="st">&quot;/&quot;</span>, hexidsa, <span class="st">&quot;-&quot;</span>, layer, <span class="st">&quot;-hexstats.csv&quot;</span>), <span class="at">layer_options =</span> <span class="fu">c</span>(<span class="st">&quot;GEOMETRY=AS_WKT&quot;</span>,<span class="st">&quot;CREATE_CSVT=YES&quot;</span>), <span class="at">delete_dsn=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<pre><code>## Deleting source `/Users/nicolas/Documents/Q_GitHub/t_city/csv-86194ad37ffffff/86194ad37ffffff-natural-hexstats.csv&#39; using driver `CSV&#39;
+## Writing layer `86194ad37ffffff-natural-hexstats&#39; to data source 
+##   `/Users/nicolas/Documents/Q_GitHub/t_city/csv-86194ad37ffffff/86194ad37ffffff-natural-hexstats.csv&#39; using driver `CSV&#39;
+## options:        GEOMETRY=AS_WKT CREATE_CSVT=YES 
+## Writing 117649 features with 18 fields and geometry type Polygon.</code></pre>
+</div>
+</div>
+<div id="codebooks" class="section level1" number="6">
+<h1><span class="header-section-number">6</span> Codebooks</h1>
+<div class="sourceCode" id="cb49"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="at">variable_name =</span> <span class="fu">c</span>(</span>
+<span id="cb49-2"><a href="#cb49-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;WKT&quot;</span>,</span>
+<span id="cb49-3"><a href="#cb49-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;hexid&quot;</span>,</span>
+<span id="cb49-4"><a href="#cb49-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;natural_water&quot;</span>,</span>
+<span id="cb49-5"><a href="#cb49-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;total_area&quot;</span>,</span>
+<span id="cb49-6"><a href="#cb49-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;hex_area&quot;</span>,</span>
+<span id="cb49-7"><a href="#cb49-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;natural_water_pc&quot;</span>),</span>
+<span id="cb49-8"><a href="#cb49-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">variable_description =</span> <span class="fu">c</span>(</span>
+<span id="cb49-9"><a href="#cb49-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Well-known text representing vector geometry objects&quot;</span>,</span>
+<span id="cb49-10"><a href="#cb49-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Unique haxagon identifier according to H3 indexing&quot;</span>,</span>
+<span id="cb49-11"><a href="#cb49-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;{key_value} pair, key is the &#39;layer&#39; and value is one of the &#39;classes&#39; (class can be &gt; 1)&quot;</span>,</span>
+<span id="cb49-12"><a href="#cb49-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Sum of all values areas (or classes areas) in square meters&quot;</span>,</span>
+<span id="cb49-13"><a href="#cb49-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Total H3 hexagon area of resolution 12 in square meters&quot;</span>,</span>
+<span id="cb49-14"><a href="#cb49-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;{key_value} percentage, proportion of the &#39;value&#39; area from &#39;hex_area&#39;&quot;</span></span>
+<span id="cb49-15"><a href="#cb49-15" aria-hidden="true" tabindex="-1"></a>  )) <span class="ot">-&gt;</span> cbook_hexstats</span>
+<span id="cb49-16"><a href="#cb49-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb49-17"><a href="#cb49-17" aria-hidden="true" tabindex="-1"></a><span class="fu">data.frame</span>(<span class="at">variable_name =</span> <span class="fu">c</span>(</span>
+<span id="cb49-18"><a href="#cb49-18" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;hexid&quot;</span>,</span>
+<span id="cb49-19"><a href="#cb49-19" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;osm_nid_1&quot;</span>,</span>
+<span id="cb49-20"><a href="#cb49-20" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;osm_nid_1_area&quot;</span>,</span>
+<span id="cb49-21"><a href="#cb49-21" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;osm_nid_1_value&quot;</span>),</span>
+<span id="cb49-22"><a href="#cb49-22" aria-hidden="true" tabindex="-1"></a>  <span class="at">variable_description =</span> <span class="fu">c</span>(</span>
+<span id="cb49-23"><a href="#cb49-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;Unique haxagon identifier according to H3 indexing&quot;</span>,</span>
+<span id="cb49-24"><a href="#cb49-24" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;{osm_nid_X}, OSM unique id, &#39;X&#39; is a correlative of OSM feature(s). &#39;nid&#39; is the merge of &#39;osm_id&#39; and &#39;osm_way_id&#39;&quot;</span>,</span>
+<span id="cb49-25"><a href="#cb49-25" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;{osm_nid_X_area} is the area of the corresponding &#39;X&#39; OSM feature(s)&quot;</span>,</span>
+<span id="cb49-26"><a href="#cb49-26" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;{osm_nid_X_value} is the &#39;value&#39; of the corresponding &#39;X&#39; OSM feature(s)&quot;</span></span>
+<span id="cb49-27"><a href="#cb49-27" aria-hidden="true" tabindex="-1"></a>    )) <span class="ot">-&gt;</span> cbook_osm_legacy</span></code></pre></div>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb50-1"><a href="#cb50-1" aria-hidden="true" tabindex="-1"></a>cbook_hexstats <span class="sc">%&gt;%</span></span>
+<span id="cb50-2"><a href="#cb50-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb50-3"><a href="#cb50-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>()</span></code></pre></div>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+variable_name
+</th>
+<th style="text-align:left;">
+variable_description
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+WKT
+</td>
+<td style="text-align:left;">
+Well-known text representing vector geometry objects
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hexid
+</td>
+<td style="text-align:left;">
+Unique haxagon identifier according to H3 indexing
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+natural_water
+</td>
+<td style="text-align:left;">
+{key_value} pair, key is the ‘layer’ and value is one of the ‘classes’
+(class can be &gt; 1)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+total_area
+</td>
+<td style="text-align:left;">
+Sum of all values areas (or classes areas) in square meters
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+hex_area
+</td>
+<td style="text-align:left;">
+Total H3 hexagon area of resolution 12 in square meters
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+natural_water_pc
+</td>
+<td style="text-align:left;">
+{key_value} percentage, proportion of the ‘value’ area from ‘hex_area’
+</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb51"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb51-1"><a href="#cb51-1" aria-hidden="true" tabindex="-1"></a>cbook_osm_legacy <span class="sc">%&gt;%</span></span>
+<span id="cb51-2"><a href="#cb51-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb51-3"><a href="#cb51-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">kable_styling</span>()</span></code></pre></div>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+variable_name
+</th>
+<th style="text-align:left;">
+variable_description
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+hexid
+</td>
+<td style="text-align:left;">
+Unique haxagon identifier according to H3 indexing
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+osm_nid_1
+</td>
+<td style="text-align:left;">
+{osm_nid_X}, OSM unique id, ‘X’ is a correlative of OSM feature(s).
+‘nid’ is the merge of ‘osm_id’ and ‘osm_way_id’
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+osm_nid_1_area
+</td>
+<td style="text-align:left;">
+{osm_nid_X_area} is the area of the corresponding ‘X’ OSM feature(s)
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+osm_nid_1_value
+</td>
+<td style="text-align:left;">
+{osm_nid_X_value} is the ‘value’ of the corresponding ‘X’ OSM feature(s)
+</td>
+</tr>
+</tbody>
+</table>
+<style type="text/css">
+h1, h2, h3 {
+  color: #6EC0A5; 
+  font-family: "Trebuchet MS"
+}
+body {
+  font-family: "Trebuchet MS";
+  background-color: #FFFFF9; 
+}
+a {
+  color: #6EC0A5; 
+}
+.inverse {
+  background-color: #6EC0A5; 
+}
+.list-group-item.active, .list-group-item.active:focus, .list-group-item.active:hover {
+    z-index: 2;
+    color: #fff;
+    background-color: #6EC0A5;
+    border-color: #6EC0A5;
+}
+
+.tocify ul, .tocify li {
+    background-color: transparent;
+}
+
+pre.numberSource code > span {
+    left: -1.5em;
+}
+h1 {
+  font-size: 190%;
+}
+h2 {
+  font-size: 160%;
+}
+h3 {
+  font-size: 150%;
+}
+h4 {
+  font-size: 130%;
+}
+h5 {
+  font-size: 110%;
+}
+h6 {
+   font-size: 90%;
+}
+</style>
+</div>
+
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiQ3JlYXRlIE9TTSBEYXRhIFByb2Nlc3NpbmcgU2NyaXB0IgphdXRob3I6CiAgbmFtZTogTmljb2xhcyBQYWxvbWlub3MKb3V0cHV0OiAKICBodG1sX2RvY3VtZW50OgogICAgZGZfcHJpbnQ6IHBhZ2VkCiAgICB0b2M6IHRydWUKICAgIHRvY19mbG9hdDogdHJ1ZQogICAgdG9jX2RlcHRoOiAnMycKICAgIG51bWJlcl9zZWN0aW9uczogeWVzCiAgICBzZWxmX2NvbnRhaW5lZDogbm8KICAgIGNvZGVfZG93bmxvYWQ6IHRydWUKICAgIGNvZGVfZm9sZGluZzogaGlkZQogICAgaGlnaGxpZ2h0OiB0YW5nbwpkYXRlOiAiYHIgZm9ybWF0KFN5cy50aW1lKCksICclWS0lbS0lZCcpYCIKLS0tCgojIFNldCB1cCBlbnZpcm9ubWVudAoKYGBge3IsIGVjaG8gPSBGQUxTRSwgY2xhc3Muc291cmNlID0gJ2ZvbGRhYmxlJ30KdXNpbmc8LWZ1bmN0aW9uKC4uLikgewogICAgbGliczwtdW5saXN0KGxpc3QoLi4uKSkKICAgIHJlcTwtdW5saXN0KGxhcHBseShsaWJzLHJlcXVpcmUsY2hhcmFjdGVyLm9ubHk9VFJVRSkpCiAgICBuZWVkPC1saWJzW3JlcT09RkFMU0VdCiAgICBpZihsZW5ndGgobmVlZCk+MCl7IAogICAgICAgIGluc3RhbGwucGFja2FnZXMobmVlZCkKICAgICAgICBsYXBwbHkobmVlZCxyZXF1aXJlLGNoYXJhY3Rlci5vbmx5PVRSVUUpCiAgICB9Cn0KCiMgaDMgZnJvbSBnaXRodWIgcmVwbwppZighcmVxdWlyZShoMykpewogICAgcmVtb3Rlczo6aW5zdGFsbF9naXRodWIoImNyYXp5Y2FwaXZhcmEvaDMtciIpCn0KYGBgCgpgYGB7ciwgZWNobz1UUlVFLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQp1c2luZygib3NtZXh0cmFjdCIsImthYmxlRXh0cmEiLCJnZ3Bsb3QyIiwic2YiLCJ0aWR5dmVyc2UiLCJrbml0ciIsImgzIikKb3B0aW9ucyhzY2lwZW4gPSA5OTkpCmBgYAoKIyBDcmVhdGUgaGV4IGdyaWQgZnJvbSBwb2ludAoKYGBge3J9CiMgSW5kZXggYSBsYXQvbG5nIHBvaW50IHRvIGFuIEgzIGluZGV4CiMgbW9kaWZ5ICdjb29yZHMnIGZvciBhbmFseXNpcyBvbiBhIGRpZmZlcmVudCBhcmVhCiMgaGVscGVyIHdlYnNpdGVzICMKIyBIMyBpbnRlcmFjdGl2ZSBtYXA6IGh0dHBzOi8vd29sZi1oMy12aWV3ZXIuZ2xpdGNoLm1lLwojIFBvaW50IGZpbmRlcjogaHR0cDovL2Jib3hmaW5kZXIuY29tLwpjb29yZHMgPC0gYyg1MS41MTI0NjgsLTAuMTE3NDQ5KSAjIGxhdCxsbmcgRVBTRzogNDMyNiAtIFdHUyA4NAojIGRlZmluZSByZXNvbHV0aW9uIChsb3dlciByZXNvbHV0aW9uIHRvIGNyZWF0ZSBhIGxhcmdlciBzdHVkeSBhcmVhKQojIGhlbHBlciB3ZWJzaXRlCiMgVGFibGUgb2YgQ2VsbCBBcmVhcyBmb3IgSDMgUmVzb2x1dGlvbnM6IGh0dHBzOi8vaDNnZW8ub3JnL2RvY3MvY29yZS1saWJyYXJ5L3Jlc3RhYmxlLwpyZXMgPC0gNgojIGdldCBoZXggaWQKaGV4aWRzYSA8LSBnZW9fdG9faDMoY29vcmRzLCByZXMpCgojIGdldCBoZXggcG9seWdvbiBnZW9tZXRyeQpoZXhwb2xzYSA8LSBoM190b19nZW9fYm91bmRhcnlfc2YoaGV4aWRzYSkgJT4lCiAgIyBhZGQgaGV4aWQgY29sdW1uCiAgbXV0YXRlKGhleGlkID0gaGV4aWRzYSkKCiMgZ2V0IGhleCBwb2x5Z29uIGdlb21ldHJpZXMgd2l0aCBjZW50cmVzIGNvbnRhaW5lZCBpbiBhIGdpdmVuIHBvbHlnb24gYXQgcmVzID0gMTIKaGV4aWQxMiA8LSBwb2x5ZmlsbChoZXhwb2xzYSwgcmVzID0gMTIpCiMgZ2V0IHJlcyA9IDEyIHBvbHlnb25zCmhleHBvbDEyIDwtIGgzX3RvX2dlb19ib3VuZGFyeV9zZihoZXhpZDEyKSAlPiUKICAjIGFkZCBoZXhpZCBjb2x1bW4KICBtdXRhdGUoaGV4aWQgPSBoZXhpZDEyKQpgYGAKCiMgR2V0IE9TTSBkYXRhIGZvciBzdHVkeSBhcmVhCgpgYGB7cn0KIyBjaGVjay9jcmVhdGUgT3V0cHV0IGRpcmVjdG9yeQptYWluRGlyIDwtIGdldHdkKCkKc3ViRGlyIDwtIHBhc3RlMCgib3NtLWRhdGEtIixoZXhpZHNhKQoKaWYgKGZpbGUuZXhpc3RzKHN1YkRpcikpewogICAgc2V0d2QoZmlsZS5wYXRoKG1haW5EaXIpKQp9IGVsc2UgewogICAgZGlyLmNyZWF0ZShmaWxlLnBhdGgobWFpbkRpciwgc3ViRGlyKSkKICAgIHNldHdkKGZpbGUucGF0aChtYWluRGlyKSkKfQoKIyBnZXQgZGF0YQojIERvd25sb2FkIHRoZSBkYXRhIHRvIG9zbS1kYXRhIGZvbGRlci4gCm9lX2dldCgiTG9uZG9uIiwgZG93bmxvYWRfZGlyZWN0b3J5ID0gc3ViRGlyLCBzdHJpbmdzQXNGYWN0b3JzID0gRkFMU0UsIGV4dHJhX3RhZ3MgPSBjKCJ3YXRlciIsInJhaWx3YXkiKSwgZG93bmxvYWRfb25seSA9IFRSVUUsIHNraXBfdmVjdG9ydHJhbnNsYXRlID0gVFJVRSkKYGBgCgpgYGB7cn0KIyBzdF9sYXllcnMoIn4vRG9jdW1lbnRzL1FfR2l0SHViL3RfY2l0eS9nZW9mYWJyaWtfTG9uZG9uLm9zbS5wYmYiKQojIG9lX2dldF9rZXlzKCJ+L0RvY3VtZW50cy9RX0dpdEh1Yi90X2NpdHkvZ2VvZmFicmlrX0xvbmRvbi5vc20ucGJmIiwgbGF5ZXIgPSAibXVsdGlwb2x5Z29ucyIpCmBgYAoKIyMgUmVhZCBwYmYgZmlsZSBieSBsYXllciB0eXBlcwoKYGBge3J9CnBiZiA8LSBsaXN0LmZpbGVzKHBhdGggPSBmaWxlLnBhdGgobWFpbkRpciwgc3ViRGlyKSwgcGF0dGVybiA9ICIqLnBiZiIpCmRpciA8LSBmaWxlLnBhdGgobWFpbkRpciwgc3ViRGlyLCBwYmYpCgojIGhleHBvbHNhIGlzIHRoZSBwb2x5Z29uYWwgYm91bmRhcnkKIyBwb2x5Z29uIGdlb21ldHJpZXMKb2VfcmVhZChkaXIsIGxheWVyID0gIm11bHRpcG9seWdvbnMiLCBleHRyYV90YWdzID0gIndhdGVyIiwgYm91bmRhcnkgPSBoZXhwb2xzYSwgYm91bmRhcnlfdHlwZSA9ICJzcGF0IikgLT4gcG9scwojIGxpbmVzIGdlb21ldHJpZXMKb2VfcmVhZChkaXIsIGxheWVyID0gImxpbmVzIiwgZXh0cmFfdGFncyA9ICJyYWlsd2F5IiwgYm91bmRhcnkgPSBoZXhwb2xzYSwgYm91bmRhcnlfdHlwZSA9ICJzcGF0IikgLT4gbGluZXMKYGBgCgojIENyZWF0ZSBPU00gZGF0YSBzdGF0aXN0aWNzCgojIyBFeHBsb3JlIGRhdGEgYW5kIHNwbGl0IGludG8gcmVsZXZhbnQgbGF5ZXJzCgpgYGB7cn0KIyBwb2x5Z29ucwpnbGltcHNlKHBvbHMpCmBgYAoKYGBge3J9CiMgbGluZXMKZ2xpbXBzZShsaW5lcykKYGBgCgpgYGB7cn0KIyBzcGxpdCBwb2x5Z29ucyBpbnRvIHJlbGV2YW50IHBvbHlnb25hbCBrZXlzCiMgZGVmaW5lIGtleXMKa2V5cyA8LSBjKCJuYXR1cmFsIikgIyBvZmYtdGVzdDogImJ1aWxkaW5nIiwgImxhbmR1c2UiLCAid2F0ZXIiLCAKYGBgCgpgYGB7cn0KIyBmdW5jdGlvbiB0byBjcmVhdGUgbGlzdCBvZiBvYmplY3RzIGFjY29yZGluZyB0byByZWxldmFudCBsYXllcnMKIyBkZWZpbmUgZGF0YWZyYW1lCmRmIDwtIHBvbHMKCnBvbHNsaXN0IDwtIGxpc3QoKQpmb3IgKGkgaW4ga2V5cykgewogIGRmICU+JQogICAgIyBjb2xsYXBzZSBpZHMgdG8gY3JlYXRlIGEgdW5pcXVlIGlkIGxhYmVsCiAgICBtdXRhdGUob3NtX25pZCA9IGNhc2Vfd2hlbihpcy5uYShvc21faWQpIH4gb3NtX3dheV9pZCwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICBUUlVFIH4gb3NtX2lkKSkgJT4lCiAgICAjIHNlbGVjdCBrZXkgYW5kIGtlZXAgb3NtIGlkCiAgICBzZWxlY3QoaSwgb3NtX25pZCkgJT4lCiAgICAjIGRyb3AgTkFzCiAgICBkcm9wX25hKC4pICU+JQogICAgIyBtYWtlIHZhbGlkIHBvbHlnb25zIChyZXBhaXIgdGhvc2Ugd2l0aCBzZWxmLWludGVyc2VjdGlvbj8pCiAgICBzdF9tYWtlX3ZhbGlkKCkgLT4gdnBvbAogIAogICMgaWQgb2YgcmVtYWluaW5nIGludmFsaWQgZ2VvbWV0cmllcwogIHdoaWNoKHN0X2lzX3ZhbGlkKHZwb2wsIHJlYXNvbiA9IFRSVUUpICE9ICJWYWxpZCBHZW9tZXRyeSIpIC0+IGludmFsaWQKICAKICAjIGdob3N0IGludGVnZXIgdG8gZWFzZSBzbGljZQogIGMoaW52YWxpZCwgOTk5OTk5KSAtPiBpbnZhbGlkCiAgCiAgdnBvbCAlPiUKICAgICMgcmVtb3ZlIGludmFsaWQgZ2VvbWV0cmllcwogICAgc2xpY2UoLWludmFsaWQpICU+JQogICAgIyBjYWxjdWxhdGUgYXJlYSAocmVtb3ZlIHVuaXRzIGFuZCByb3VuZCB0byAxIGRpZ2l0KQogICAgbXV0YXRlKG9zbWZfYXJlYSA9IHJvdW5kKGFzLm51bWVyaWMoc3RfYXJlYSguKSksMSkpIC0+IHZwb2wKICAKICAjIGdldCBvbmx5IHRoZSBub24tZW1wdHkgZ2VvbWV0cmllcwogIHZwb2xbIXN0X2lzX2VtcHR5KHZwb2wpLCAsIGRyb3A9RkFMU0VdIC0+IHBvbHNsaXN0W1tpXV0KfQpgYGAKCmBgYHtyfQojIGNoZWNrIHJlZHVjdGlvbiBvZiBnZW9tZXRyaWVzICdub3QtdmFsaWQnICYgJ25vdC1yZXBhaXJlZCcKIyBiZWZvcmUgc3RfbWFrZV92YWxpZApwb2xzICU+JQogIHNlbGVjdChuYXR1cmFsKSAlPiUKICBmaWx0ZXIoIWlzLm5hKG5hdHVyYWwpKSAlPiUKICBucm93KC4pCiMgcmVzdWx0OiAyODUKYGBgCgpgYGB7cn0KIyBhZnRlciBzdF9tYWtlX3ZhbGlkCmxlbmd0aChwb2xzbGlzdFtbIm5hdHVyYWwiXV1bWyJuYXR1cmFsIl1dKQojIHJlc3VsdDogMjg1CmBgYAoKYGBge3J9CiMgY2hlY2sgZXh0ZW50IG9mIE9TTSBmZWF0dXJlcyBpbiByZWxhdGlvbiB0byBzdHVkeSBhcmVhIGhleGFnb24KcG9sc2xpc3RbWyJuYXR1cmFsIl1dICU+JQogIHN0X3RyYW5zZm9ybSgyNzcwMCkgJT4lCiAgZmlsdGVyKG9zbV9uaWQgPT0gMjg5MzQpICU+JQogIGdncGxvdCgpICsKICBnZW9tX3NmKCkgKwogIGdlb21fc2YoZGF0YSA9IGhleHBvbHNhLCBmaWxsPU5BLCBjb2w9InRvbWF0byIpICsKICB0aGVtZV9taW5pbWFsKCkgKwogIGNvb3JkX3NmKGRhdHVtID0gMjc3MDApCmBgYAoKIyMgU3R1ZHkgYXJlYSBzdGF0aXN0aWNzIGJ5IGtleSAKCmBgYHtyfQojIHZlY3RvciBvZiB2YWx1ZSBjb3VudHMgPiAwLjA1JQpwb2xzbGlzdFtbIm5hdHVyYWwiXV0gJT4lCiAgc3RfZHJvcF9nZW9tZXRyeSgpICU+JQogIGNvdW50KG5hdHVyYWwpICU+JQogICMgcGVyY2VudGFnZQogIG11dGF0ZShwYyA9IDEwMCogKG4gLyBzdW0obikpKSAlPiUKICBhcnJhbmdlKGRlc2MobikpIC0+IHNfbmF0CgpzX25hdCAlPiUKICBrYWJsZShkaWdpdHMgPSAyKSAlPiUKICBrYWJsZV9zdHlsaW5nKCkKCnNfbmF0ICU+JQogIGZpbHRlcihwYyA+IDAuMDUpICU+JQogIHB1bGwobmF0dXJhbCkgLT4ga19uYXQKCiMgcmVjbGFzc2lmeSB2YWx1ZXMgYmVsb3cgdGhyZXNob2xkIHRvICdvdGhlcicKIyBjcmVhdGUgJ2tleScgb2JqZWN0IGZyb20gbGlzdApuYXR1cmFsIDwtIHBvbHNsaXN0W1sibmF0dXJhbCJdXSAlPiUKICBtdXRhdGUobmF0dXJhbCA9IGNhc2Vfd2hlbihuYXR1cmFsICVpbiUga19uYXQgfiBuYXR1cmFsLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgIFRSVUUgfiAib3RoZXIiKSkKYGBgCgpgYGB7cn0Ka19uYXQKYGBgCgojIENyZWF0ZSBzdGF0aXN0aWNzIGJ5IGhleGFnb24KCmBgYHtyfQojIHNldCBwcmVjaXNpb24KIyB1c2UgY3JzPTM4NTcgdG8gc3BlZWQgdXAgaW50ZXJzZWN0aW9uCmhleHBvbDEyICU+JQogIHN0X3RyYW5zZm9ybShjcnM9Mzg1NykgJT4lCiAgc3Rfc2V0X3ByZWNpc2lvbih1bml0czo6c2V0X3VuaXRzKDEwLCBubSkpIC0+IGhleHBvbDEyCgojIHNldCBwcmVjaXNpb24gYW5kIGNyZWF0ZSBvYmplY3RzIGJ5IGtleQpuYXR1cmFsICU+JQogIHN0X3RyYW5zZm9ybShjcnM9Mzg1NykgJT4lCiAgc3Rfc2V0X3ByZWNpc2lvbih1bml0czo6c2V0X3VuaXRzKDEwLCBubSkpICU+JQogICMgYWZ0ZXIgY3JzIHRyYW5zZm9ybWF0aW9uIGlzIG5lY2Vzc2FyeSB0byBtYWtlIHZhbGlkIGFnYWluCiAgc3RfbWFrZV92YWxpZCgpIC0+IG5hdHVyYWwKCiMgaW50ZXJzZWN0IGhleGFnb25zIHdpdGggcG9seWdvbiBsYXllcgpzdF9pbnRlcnNlY3Rpb24oaGV4cG9sMTIsIG5hdHVyYWwpIC0+IGhwX25hdHVyYWwKYGBgCgpgYGB7cn0KaHBfbmF0dXJhbCAlPiUKICBzdF9kcm9wX2dlb21ldHJ5KCkgJT4lCiAgY291bnQobmF0dXJhbCkgJT4lCiAgYXJyYW5nZShkZXNjKG4pKSAlPiUKICBrYWJsZSgpICU+JQogIGthYmxlX3N0eWxpbmcoKQpgYGAKCmBgYHtyfQojIGZlYXR1cmVzICdub3QgdG91Y2hpbmcnIGhleHBvbDYgYXJlIHJlYWQhIGUuZy46IG9zbV9uaWQgPSAzMTY5OTYwODAsIG5hdHVyYWw9c2hydWJiZXJ5CiMgdW5pcXVlIHZhbHVlcyBpbiBPU00gJ3VuY2xpcHBlZCcgZGF0YSBhcmUgbW9yZSB0aGFuIHZhbHVlcyBjbGlwcGVkIHRvIGhleHBvbDEyCiNtYXB2aWV3KG5hdHVyYWwpICsgbWFwdmlldyhoZXhwb2xzYSwgZmlsbD1OQSkKYGBgCgojIyBPU00gbGVnYWN5IGRhdGEKCmBgYHtyfQojIGNyZWF0ZSBzdW1tYXJ5IHRhYmxlIG9mIG9zbV9pZHMgYnkgaGV4YWdvbgpocF9uYXR1cmFsICU+JQogIHN0X2Ryb3BfZ2VvbWV0cnkoKSAlPiUKICBzZWxlY3QoaGV4aWQsIG9zbV9uaWQpICU+JQogIGdyb3VwX2J5KGhleGlkKSAlPiUKICBtdXRhdGUob3NtX25tID0gcGFzdGUwKCJvc21fbmlkXyIsIHJvd19udW1iZXIoKSwgc2VwID0gIiIpKSAlPiUKICAjIG9zbSBpZHMgb2YgdmFsdWVzIGFzIHZhcmlhYmxlcwogIHBpdm90X3dpZGVyKG5hbWVzX2Zyb20gPSBvc21fbm0sIHZhbHVlc19mcm9tID0gb3NtX25pZCkgLT4gaF9uYXR1cmFsX29uaWQKCiMgY3JlYXRlIHN1bW1hcnkgdGFibGUgb2Ygb3NtIGFyZWFzIGJ5IGhleGFnb24KaHBfbmF0dXJhbCAlPiUKICBzdF9kcm9wX2dlb21ldHJ5KCkgJT4lCiAgc2VsZWN0KGhleGlkLCBvc21mX2FyZWEpICU+JQogIGdyb3VwX2J5KGhleGlkKSAlPiUKICBtdXRhdGUob3NtX25tID0gcGFzdGUwKCJvc21fbmlkXyIsIHJvd19udW1iZXIoKSwgIl9hcmVhIiwgc2VwID0gIiIpKSAlPiUKICAjIG9zbSBhcmVhcyBvZiB2YWx1ZXMgYXMgdmFyaWFibGVzCiAgcGl2b3Rfd2lkZXIobmFtZXNfZnJvbSA9IG9zbV9ubSwgdmFsdWVzX2Zyb20gPSBvc21mX2FyZWEpIC0+IGhfbmF0dXJhbF9vbmlkX2FyZWEKCiMgY3JlYXRlIHN1bW1hcnkgdGFibGUgb2Ygb3NtIGZlYXR1cmVzIHZhbHVlcyBieSBoZXhhZ29uCmhwX25hdHVyYWwgJT4lCiAgc3RfZHJvcF9nZW9tZXRyeSgpICU+JQogIHNlbGVjdChoZXhpZCwgbmF0dXJhbCkgJT4lCiAgZ3JvdXBfYnkoaGV4aWQpICU+JQogIG11dGF0ZShvc21fbm0gPSBwYXN0ZTAoIm9zbV9uaWRfIiwgcm93X251bWJlcigpLCAiX3ZhbHVlIiwgc2VwID0gIiIpKSAlPiUKICAjIG9zbSBmZWF0dXJlcyB2YWx1ZXMgYXMgdmFyaWFibGVzCiAgcGl2b3Rfd2lkZXIobmFtZXNfZnJvbSA9IG9zbV9ubSwgdmFsdWVzX2Zyb20gPSBuYXR1cmFsKSAtPiBoX25hdHVyYWxfb25pZF92YWx1ZQoKIyBqb2luIHRhYmxlcwpoX25hdHVyYWxfb25pZCAlPiUKICBsZWZ0X2pvaW4oaF9uYXR1cmFsX29uaWRfYXJlYSwgYnkgPSAiaGV4aWQiKSAlPiUKICBsZWZ0X2pvaW4oaF9uYXR1cmFsX29uaWRfdmFsdWUsIGJ5ID0gImhleGlkIikgLT4gaF9uYXR1cmFsX3N0CgojIHNlZSBleGFtcGxlIG9mIGhleGFnb24gd2l0aCBtb3N0ICd2YWx1ZXMnCmhfbmF0dXJhbF9zdCAlPiUKICBmaWx0ZXIoIWlzLm5hKG9zbV9uaWRfNV9hcmVhKSkgCmBgYAoKRXhwb3J0IE9TTSBsZWdhY3kgZGF0YSBDU1YgZmlsZQoKYGBge3J9CiMgbGF5ZXIgKGtleSkgbmFtZQpsYXllciA8LSBuYXR1cmFsICU+JQogIHN0X2Ryb3BfZ2VvbWV0cnkoKSAlPiUKICBjb2xuYW1lcygpICU+JQogIGZpcnN0KCkKCiMgY2hlY2svY3JlYXRlIE91dHB1dCBkaXJlY3RvcnkKc3ViRGlyIDwtIHBhc3RlMCgiY3N2LSIsaGV4aWRzYSkKCmlmIChmaWxlLmV4aXN0cyhzdWJEaXIpKXsKICAgIHNldHdkKGZpbGUucGF0aChtYWluRGlyKSkKfSBlbHNlIHsKICAgIGRpci5jcmVhdGUoZmlsZS5wYXRoKG1haW5EaXIsIHN1YkRpcikpCiAgICBzZXR3ZChmaWxlLnBhdGgobWFpbkRpcikpCn0KCiMgd3JpdGUgY3N2IG9mIE9TTSBsZWdhY3kgZGF0YQp3cml0ZV9jc3YoaF9uYXR1cmFsX3N0LCBmaWxlID0gcGFzdGUwKG1haW5EaXIsICIvIiwgc3ViRGlyLCAiLyIsIGhleGlkc2EsICItIiwgbGF5ZXIsICItb3NtLWxlZ2FjeS5jc3YiKSkKYGBgCgojIyBDcmVhdGUgc3RhdGlzdGljcyBieSBoZXhhZ29uCgpgYGB7cn0KIyBjcmVhdGUgc3RhdGlzdGljcyBieSBoZXhhZ29uCmhwX25hdHVyYWwgJT4lCiAgIyB0cmFuc2Zyb20gQ1JTIDM4NTcgLT4gNDMyNgogIHN0X3RyYW5zZm9ybSg0MzI2KSAlPiUKICAjIGNhbGN1bGF0ZSBoZXhhZ29ucyBjbGlwcGVkIGFyZWEKICBtdXRhdGUoaGNfYXJlYSA9IHJvdW5kKGFzLm51bWVyaWMoc3RfYXJlYSguKSksMSkpICU+JQogIHN0X2Ryb3BfZ2VvbWV0cnkoKSAlPiUgCiAgc2VsZWN0KGhleGlkLCBuYXR1cmFsLCBoY19hcmVhKSAlPiUKICAjIGFyZWFzIG9mIHZhbHVlcyBhcyB2YXJpYWJsZXMgKGFyZWFzIG9mIGVxdWFsIHZhbHVlIGFyZSBhZ2dyZWdhdGVkIHdpdGggJ3ZhbHVlc19mbiA9IHN1bScpCiAgcGl2b3Rfd2lkZXIobmFtZXNfZnJvbSA9ICJuYXR1cmFsIiwgdmFsdWVzX2Zyb20gPSAiaGNfYXJlYSIsIHZhbHVlc19mbiA9IHN1bSwgdmFsdWVzX2ZpbGwgPSAwKSAlPiUKICAjIGFkZCBwcmVmaXggdG8gY29sdW1ucyAyIG9ud2FyZHMKICByZW5hbWVfd2l0aCggfiBwYXN0ZTAoIm5hdHVyYWxfIiwgLngpLCAuY29scyA9IDI6bmNvbCguKSkgJT4lCiAgbXV0YXRlX2FsbCggfiByZXBsYWNlKC4sIGlzLm5hKC4pLCAwKSkgJT4lCiAgIyBhZGQgdG90YWwgYXJlYSBhZGRpbmcgZXF1YWwgdmFsdWUgY29sdW1ucwogIG11dGF0ZSh0b3RhbF9hcmVhID0gcm93U3VtcyhzZWxlY3QoLiwgc3RhcnRzX3dpdGgoIm5hdHVyYWwiKSkpLAogICAgICAgICAjIGRpdmVyc2l0eSA9IG51bWJlciBvZiBjb2x1bW5zIHdoZXJlIGFyZWEgPiAwCiAgICAgICAgIGRpdmVyc2l0eSA9IHJvd1N1bXMoc2VsZWN0KC4sIHN0YXJ0c193aXRoKCJuYXR1cmFsIikpICE9IDApKSAtPiBocF9uYXR1cmFsX3N0YXRzCgojIGpvaW4gc3RhdGlzdGljcyB0byBoZXhhZ29ucwpoZXhwb2wxMiAlPiUKICBsZWZ0X2pvaW4oaHBfbmF0dXJhbF9zdGF0cywgYnk9ImhleGlkIikgJT4lCiAgIyB0cmFuc2Zyb20gQ1JTIDM4NTcgLT4gNDMyNgogIHN0X3RyYW5zZm9ybSg0MzI2KSAlPiUKICAjIGNhbGN1bGF0ZSBoZXhhZ29ucyBhcmVhCiAgbXV0YXRlKGhleF9hcmVhID0gcm91bmQoYXMubnVtZXJpYyhzdF9hcmVhKC4pKSwxKSkgJT4lCiAgIyBhZGQgcGVyY2VudGFnZSBieSBjb2x1bW4KICBtdXRhdGVfYXQodmFycyhzdGFydHNfd2l0aCgibmF0dXJhbCIpKSwgZnVucyhwYyA9IHJvdW5kKC4vKGhleF9hcmVhICogMC4wMSksMSkpKSAtPiBoZXhfbmF0dXJhbApgYGAKCkV4cG9ydCBoZXhhZ29uIENTViBmaWxlICAKCmBgYHtyfQojIHdyaXRlIGNzdiBXS1QgaGV4YWdvbiBzdGF0aXN0aWNzCnN0X3dyaXRlKGhleF9uYXR1cmFsLCBwYXN0ZTAobWFpbkRpciwgIi8iLCBzdWJEaXIsICIvIiwgaGV4aWRzYSwgIi0iLCBsYXllciwgIi1oZXhzdGF0cy5jc3YiKSwgbGF5ZXJfb3B0aW9ucyA9IGMoIkdFT01FVFJZPUFTX1dLVCIsIkNSRUFURV9DU1ZUPVlFUyIpLCBkZWxldGVfZHNuPVRSVUUpCmBgYAoKIyBDb2RlYm9va3MKYGBge3J9CmRhdGEuZnJhbWUodmFyaWFibGVfbmFtZSA9IGMoCiAgIldLVCIsCiAgImhleGlkIiwKICAibmF0dXJhbF93YXRlciIsCiAgInRvdGFsX2FyZWEiLAogICJoZXhfYXJlYSIsCiAgIm5hdHVyYWxfd2F0ZXJfcGMiKSwKICB2YXJpYWJsZV9kZXNjcmlwdGlvbiA9IGMoCiAgICAiV2VsbC1rbm93biB0ZXh0IHJlcHJlc2VudGluZyB2ZWN0b3IgZ2VvbWV0cnkgb2JqZWN0cyIsCiAgICAiVW5pcXVlIGhheGFnb24gaWRlbnRpZmllciBhY2NvcmRpbmcgdG8gSDMgaW5kZXhpbmciLAogICAgIntrZXlfdmFsdWV9IHBhaXIsIGtleSBpcyB0aGUgJ2xheWVyJyBhbmQgdmFsdWUgaXMgb25lIG9mIHRoZSAnY2xhc3NlcycgKGNsYXNzIGNhbiBiZSA+IDEpIiwKICAgICJTdW0gb2YgYWxsIHZhbHVlcyBhcmVhcyAob3IgY2xhc3NlcyBhcmVhcykgaW4gc3F1YXJlIG1ldGVycyIsCiAgICAiVG90YWwgSDMgaGV4YWdvbiBhcmVhIG9mIHJlc29sdXRpb24gMTIgaW4gc3F1YXJlIG1ldGVycyIsCiAgICAie2tleV92YWx1ZX0gcGVyY2VudGFnZSwgcHJvcG9ydGlvbiBvZiB0aGUgJ3ZhbHVlJyBhcmVhIGZyb20gJ2hleF9hcmVhJyIKICApKSAtPiBjYm9va19oZXhzdGF0cwoKZGF0YS5mcmFtZSh2YXJpYWJsZV9uYW1lID0gYygKICAiaGV4aWQiLAogICJvc21fbmlkXzEiLAogICJvc21fbmlkXzFfYXJlYSIsCiAgIm9zbV9uaWRfMV92YWx1ZSIpLAogIHZhcmlhYmxlX2Rlc2NyaXB0aW9uID0gYygKICAgICJVbmlxdWUgaGF4YWdvbiBpZGVudGlmaWVyIGFjY29yZGluZyB0byBIMyBpbmRleGluZyIsCiAgICAie29zbV9uaWRfWH0sIE9TTSB1bmlxdWUgaWQsICdYJyBpcyBhIGNvcnJlbGF0aXZlIG9mIE9TTSBmZWF0dXJlKHMpLiAnbmlkJyBpcyB0aGUgbWVyZ2Ugb2YgJ29zbV9pZCcgYW5kICdvc21fd2F5X2lkJyIsCiAgICAie29zbV9uaWRfWF9hcmVhfSBpcyB0aGUgYXJlYSBvZiB0aGUgY29ycmVzcG9uZGluZyAnWCcgT1NNIGZlYXR1cmUocykiLAogICAgIntvc21fbmlkX1hfdmFsdWV9IGlzIHRoZSAndmFsdWUnIG9mIHRoZSBjb3JyZXNwb25kaW5nICdYJyBPU00gZmVhdHVyZShzKSIKICAgICkpIC0+IGNib29rX29zbV9sZWdhY3kKYGBgCgpgYGB7cn0KY2Jvb2tfaGV4c3RhdHMgJT4lCiAga2FibGUoKSAlPiUKICBrYWJsZV9zdHlsaW5nKCkKYGBgCgpgYGB7cn0KY2Jvb2tfb3NtX2xlZ2FjeSAlPiUKICBrYWJsZSgpICU+JQogIGthYmxlX3N0eWxpbmcoKQpgYGAKCmBgYHtjc3MsIGVjaG8gPSBGQUxTRSwgY2xhc3Muc291cmNlID0gJ2ZvbGRhYmxlJ30KaDEsIGgyLCBoMyB7CiAgY29sb3I6ICM2RUMwQTU7IAogIGZvbnQtZmFtaWx5OiAiVHJlYnVjaGV0IE1TIgp9CmJvZHkgewogIGZvbnQtZmFtaWx5OiAiVHJlYnVjaGV0IE1TIjsKICBiYWNrZ3JvdW5kLWNvbG9yOiAjRkZGRkY5OyAKfQphIHsKICBjb2xvcjogIzZFQzBBNTsgCn0KLmludmVyc2UgewogIGJhY2tncm91bmQtY29sb3I6ICM2RUMwQTU7IAp9Ci5saXN0LWdyb3VwLWl0ZW0uYWN0aXZlLCAubGlzdC1ncm91cC1pdGVtLmFjdGl2ZTpmb2N1cywgLmxpc3QtZ3JvdXAtaXRlbS5hY3RpdmU6aG92ZXIgewogICAgei1pbmRleDogMjsKICAgIGNvbG9yOiAjZmZmOwogICAgYmFja2dyb3VuZC1jb2xvcjogIzZFQzBBNTsKICAgIGJvcmRlci1jb2xvcjogIzZFQzBBNTsKfQoKLnRvY2lmeSB1bCwgLnRvY2lmeSBsaSB7CiAgICBiYWNrZ3JvdW5kLWNvbG9yOiB0cmFuc3BhcmVudDsKfQoKcHJlLm51bWJlclNvdXJjZSBjb2RlID4gc3BhbiB7CiAgICBsZWZ0OiAtMS41ZW07Cn0KaDEgewogIGZvbnQtc2l6ZTogMTkwJTsKfQpoMiB7CiAgZm9udC1zaXplOiAxNjAlOwp9CmgzIHsKICBmb250LXNpemU6IDE1MCU7Cn0KaDQgewogIGZvbnQtc2l6ZTogMTMwJTsKfQpoNSB7CiAgZm9udC1zaXplOiAxMTAlOwp9Cmg2IHsKICAgZm9udC1zaXplOiA5MCU7Cn0KYGBg</div>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeSourceEmbed("wp-2.2.1.Rmd");
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

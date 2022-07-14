@@ -734,159 +734,209 @@ class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCod
 class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>k_nat</span></code></pre></div>
 <pre><code>## [1] &quot;water&quot;     &quot;wood&quot;      &quot;scrub&quot;     &quot;wetland&quot;   &quot;beach&quot;     &quot;shrubbery&quot;
 ## [7] &quot;mud&quot;       &quot;sand&quot;      &quot;rock&quot;</code></pre>
-<div class="sourceCode" id="cb28"><pre
-class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a>natural <span class="sc">%&gt;%</span></span>
-<span id="cb28-2"><a href="#cb28-2"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb28-3"><a href="#cb28-3"></a>  <span class="fu">count</span>(natural) <span class="sc">%&gt;%</span></span>
-<span id="cb28-4"><a href="#cb28-4"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n)) <span class="sc">%&gt;%</span></span>
-<span id="cb28-5"><a href="#cb28-5"></a>  <span class="fu">knit_print</span>()</span></code></pre></div>
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":["natural"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"water","2":"134"},{"1":"wood","2":"73"},{"1":"scrub","2":"35"},{"1":"wetland","2":"23"},{"1":"beach","2":"10"},{"1":"shrubbery","2":"4"},{"1":"mud","2":"3"},{"1":"sand","2":"2"},{"1":"rock","2":"1"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
 </div>
 </div>
 <div id="create-statistics-by-hexagon" class="section level1"
 number="5">
 <h1><span class="header-section-number">5</span> Create statistics by
 hexagon</h1>
+<div class="sourceCode" id="cb28"><pre
+class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a><span class="co"># set precision</span></span>
+<span id="cb28-2"><a href="#cb28-2"></a><span class="co"># use crs=3857 to speed up intersection</span></span>
+<span id="cb28-3"><a href="#cb28-3"></a>hexpol12 <span class="sc">%&gt;%</span></span>
+<span id="cb28-4"><a href="#cb28-4"></a>  <span class="fu">st_transform</span>(<span class="at">crs=</span><span class="dv">3857</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb28-5"><a href="#cb28-5"></a>  <span class="fu">st_set_precision</span>(units<span class="sc">::</span><span class="fu">set_units</span>(<span class="dv">10</span>, nm)) <span class="ot">-&gt;</span> hexpol12</span>
+<span id="cb28-6"><a href="#cb28-6"></a></span>
+<span id="cb28-7"><a href="#cb28-7"></a><span class="co"># set precision and create objects by key</span></span>
+<span id="cb28-8"><a href="#cb28-8"></a>natural <span class="sc">%&gt;%</span></span>
+<span id="cb28-9"><a href="#cb28-9"></a>  <span class="fu">st_transform</span>(<span class="at">crs=</span><span class="dv">3857</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb28-10"><a href="#cb28-10"></a>  <span class="fu">st_set_precision</span>(units<span class="sc">::</span><span class="fu">set_units</span>(<span class="dv">10</span>, nm)) <span class="sc">%&gt;%</span></span>
+<span id="cb28-11"><a href="#cb28-11"></a>  <span class="co"># after crs transformation is necessary to make valid again</span></span>
+<span id="cb28-12"><a href="#cb28-12"></a>  <span class="fu">st_make_valid</span>() <span class="ot">-&gt;</span> natural</span>
+<span id="cb28-13"><a href="#cb28-13"></a></span>
+<span id="cb28-14"><a href="#cb28-14"></a><span class="co"># intersect hexagons with polygon layer</span></span>
+<span id="cb28-15"><a href="#cb28-15"></a><span class="fu">st_intersection</span>(hexpol12, natural) <span class="ot">-&gt;</span> hp_natural</span></code></pre></div>
 <div class="sourceCode" id="cb29"><pre
-class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a><span class="co"># set precision</span></span>
-<span id="cb29-2"><a href="#cb29-2"></a><span class="co"># use crs=3857 to speed up intersection</span></span>
-<span id="cb29-3"><a href="#cb29-3"></a>hexpol12 <span class="sc">%&gt;%</span></span>
-<span id="cb29-4"><a href="#cb29-4"></a>  <span class="fu">st_transform</span>(<span class="at">crs=</span><span class="dv">3857</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb29-5"><a href="#cb29-5"></a>  <span class="fu">st_set_precision</span>(units<span class="sc">::</span><span class="fu">set_units</span>(<span class="dv">10</span>, nm)) <span class="ot">-&gt;</span> hexpol12</span>
-<span id="cb29-6"><a href="#cb29-6"></a></span>
-<span id="cb29-7"><a href="#cb29-7"></a><span class="co"># set precision and create objects by key</span></span>
-<span id="cb29-8"><a href="#cb29-8"></a>natural <span class="sc">%&gt;%</span></span>
-<span id="cb29-9"><a href="#cb29-9"></a>  <span class="fu">st_transform</span>(<span class="at">crs=</span><span class="dv">3857</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb29-10"><a href="#cb29-10"></a>  <span class="fu">st_set_precision</span>(units<span class="sc">::</span><span class="fu">set_units</span>(<span class="dv">10</span>, nm)) <span class="sc">%&gt;%</span></span>
-<span id="cb29-11"><a href="#cb29-11"></a>  <span class="co"># after crs transformation is necessary to make valid again</span></span>
-<span id="cb29-12"><a href="#cb29-12"></a>  <span class="fu">st_make_valid</span>() <span class="ot">-&gt;</span> natural</span>
-<span id="cb29-13"><a href="#cb29-13"></a></span>
-<span id="cb29-14"><a href="#cb29-14"></a><span class="co"># intersect hexagons with polygon layer</span></span>
-<span id="cb29-15"><a href="#cb29-15"></a><span class="fu">st_intersection</span>(hexpol12, natural) <span class="ot">-&gt;</span> hp_natural</span></code></pre></div>
+class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a>hp_natural <span class="sc">%&gt;%</span></span>
+<span id="cb29-2"><a href="#cb29-2"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb29-3"><a href="#cb29-3"></a>  <span class="fu">count</span>(natural) <span class="sc">%&gt;%</span></span>
+<span id="cb29-4"><a href="#cb29-4"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n)) <span class="sc">%&gt;%</span></span>
+<span id="cb29-5"><a href="#cb29-5"></a>  <span class="fu">kable</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb29-6"><a href="#cb29-6"></a>  <span class="fu">kable_styling</span>()</span></code></pre></div>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+natural
+</th>
+<th style="text-align:right;">
+n
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+water
+</td>
+<td style="text-align:right;">
+9811
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wood
+</td>
+<td style="text-align:right;">
+1404
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+wetland
+</td>
+<td style="text-align:right;">
+1169
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+scrub
+</td>
+<td style="text-align:right;">
+102
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+mud
+</td>
+<td style="text-align:right;">
+86
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+beach
+</td>
+<td style="text-align:right;">
+25
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+rock
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+</tbody>
+</table>
 <div class="sourceCode" id="cb30"><pre
-class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a>hp_natural <span class="sc">%&gt;%</span></span>
-<span id="cb30-2"><a href="#cb30-2"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb30-3"><a href="#cb30-3"></a>  <span class="fu">count</span>(natural) <span class="sc">%&gt;%</span></span>
-<span id="cb30-4"><a href="#cb30-4"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(n)) <span class="sc">%&gt;%</span></span>
-<span id="cb30-5"><a href="#cb30-5"></a>  <span class="fu">knit_print</span>()</span></code></pre></div>
-<div data-pagedtable="false">
-<script data-pagedtable-source type="application/json">
-{"columns":[{"label":["natural"],"name":[1],"type":["chr"],"align":["left"]},{"label":["n"],"name":[2],"type":["int"],"align":["right"]}],"data":[{"1":"water","2":"9811"},{"1":"wood","2":"1404"},{"1":"wetland","2":"1169"},{"1":"scrub","2":"102"},{"1":"mud","2":"86"},{"1":"beach","2":"25"},{"1":"rock","2":"2"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
-  </script>
-</div>
-<div class="sourceCode" id="cb31"><pre
-class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="co"># features &#39;not touching&#39; hexpol6 are read! e.g.: osm_nid = 316996080, natural=shrubbery</span></span>
-<span id="cb31-2"><a href="#cb31-2"></a><span class="co"># unique values in OSM &#39;unclipped&#39; data are more than values clipped to hexpol12</span></span>
-<span id="cb31-3"><a href="#cb31-3"></a><span class="co">#mapview(natural) + mapview(hexpolsa, fill=NA)</span></span></code></pre></div>
+class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a><span class="co"># features &#39;not touching&#39; hexpol6 are read! e.g.: osm_nid = 316996080, natural=shrubbery</span></span>
+<span id="cb30-2"><a href="#cb30-2"></a><span class="co"># unique values in OSM &#39;unclipped&#39; data are more than values clipped to hexpol12</span></span>
+<span id="cb30-3"><a href="#cb30-3"></a><span class="co">#mapview(natural) + mapview(hexpolsa, fill=NA)</span></span></code></pre></div>
 <div id="osm-legacy-data" class="section level2" number="5.1">
 <h2><span class="header-section-number">5.1</span> OSM legacy data</h2>
-<div class="sourceCode" id="cb32"><pre
-class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a><span class="co"># # collapse ids to create a unique id label</span></span>
-<span id="cb32-2"><a href="#cb32-2"></a><span class="co"># hp_natural %&gt;%</span></span>
-<span id="cb32-3"><a href="#cb32-3"></a><span class="co">#   mutate(osm_nid = case_when(is.na(osm_id) ~ osm_way_id,</span></span>
-<span id="cb32-4"><a href="#cb32-4"></a><span class="co">#                              TRUE ~ osm_id)) -&gt; hp_natural</span></span>
-<span id="cb32-5"><a href="#cb32-5"></a></span>
-<span id="cb32-6"><a href="#cb32-6"></a><span class="co"># create summary table of osm_ids by hexagon</span></span>
-<span id="cb32-7"><a href="#cb32-7"></a>hp_natural <span class="sc">%&gt;%</span></span>
-<span id="cb32-8"><a href="#cb32-8"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb32-9"><a href="#cb32-9"></a>  <span class="fu">select</span>(hexid, osm_nid) <span class="sc">%&gt;%</span></span>
-<span id="cb32-10"><a href="#cb32-10"></a>  <span class="fu">group_by</span>(hexid) <span class="sc">%&gt;%</span></span>
-<span id="cb32-11"><a href="#cb32-11"></a>  <span class="fu">mutate</span>(<span class="at">osm_nm =</span> <span class="fu">paste0</span>(<span class="st">&quot;osm_nid_&quot;</span>, <span class="fu">row_number</span>(), <span class="at">sep =</span> <span class="st">&quot;&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb32-12"><a href="#cb32-12"></a>  <span class="co"># osm ids of values as variables</span></span>
-<span id="cb32-13"><a href="#cb32-13"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> osm_nm, <span class="at">values_from =</span> osm_nid) <span class="ot">-&gt;</span> h_natural_onid</span>
-<span id="cb32-14"><a href="#cb32-14"></a></span>
-<span id="cb32-15"><a href="#cb32-15"></a><span class="co"># create summary table of osm areas by hexagon</span></span>
-<span id="cb32-16"><a href="#cb32-16"></a>hp_natural <span class="sc">%&gt;%</span></span>
-<span id="cb32-17"><a href="#cb32-17"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb32-18"><a href="#cb32-18"></a>  <span class="fu">select</span>(hexid, osmf_area) <span class="sc">%&gt;%</span></span>
-<span id="cb32-19"><a href="#cb32-19"></a>  <span class="fu">group_by</span>(hexid) <span class="sc">%&gt;%</span></span>
-<span id="cb32-20"><a href="#cb32-20"></a>  <span class="fu">mutate</span>(<span class="at">osm_nm =</span> <span class="fu">paste0</span>(<span class="st">&quot;osm_nid_&quot;</span>, <span class="fu">row_number</span>(), <span class="st">&quot;_area&quot;</span>, <span class="at">sep =</span> <span class="st">&quot;&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb32-21"><a href="#cb32-21"></a>  <span class="co"># osm areas of values as variables</span></span>
-<span id="cb32-22"><a href="#cb32-22"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> osm_nm, <span class="at">values_from =</span> osmf_area) <span class="ot">-&gt;</span> h_natural_onid_area</span>
-<span id="cb32-23"><a href="#cb32-23"></a></span>
-<span id="cb32-24"><a href="#cb32-24"></a><span class="co"># create summary table of osm features values by hexagon</span></span>
-<span id="cb32-25"><a href="#cb32-25"></a>hp_natural <span class="sc">%&gt;%</span></span>
-<span id="cb32-26"><a href="#cb32-26"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb32-27"><a href="#cb32-27"></a>  <span class="fu">select</span>(hexid, natural) <span class="sc">%&gt;%</span></span>
-<span id="cb32-28"><a href="#cb32-28"></a>  <span class="fu">group_by</span>(hexid) <span class="sc">%&gt;%</span></span>
-<span id="cb32-29"><a href="#cb32-29"></a>  <span class="fu">mutate</span>(<span class="at">osm_nm =</span> <span class="fu">paste0</span>(<span class="st">&quot;osm_nid_&quot;</span>, <span class="fu">row_number</span>(), <span class="st">&quot;_value&quot;</span>, <span class="at">sep =</span> <span class="st">&quot;&quot;</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb32-30"><a href="#cb32-30"></a>  <span class="co"># osm features values as variables</span></span>
-<span id="cb32-31"><a href="#cb32-31"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> osm_nm, <span class="at">values_from =</span> natural) <span class="ot">-&gt;</span> h_natural_onid_value</span>
-<span id="cb32-32"><a href="#cb32-32"></a></span>
-<span id="cb32-33"><a href="#cb32-33"></a><span class="co"># join tables</span></span>
-<span id="cb32-34"><a href="#cb32-34"></a>h_natural_onid <span class="sc">%&gt;%</span></span>
-<span id="cb32-35"><a href="#cb32-35"></a>  <span class="fu">left_join</span>(h_natural_onid_area, <span class="at">by =</span> <span class="st">&quot;hexid&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb32-36"><a href="#cb32-36"></a>  <span class="fu">left_join</span>(h_natural_onid_value, <span class="at">by =</span> <span class="st">&quot;hexid&quot;</span>) <span class="ot">-&gt;</span> h_natural_st</span>
-<span id="cb32-37"><a href="#cb32-37"></a></span>
-<span id="cb32-38"><a href="#cb32-38"></a><span class="co"># see example of hexagon with most &#39;values&#39;</span></span>
-<span id="cb32-39"><a href="#cb32-39"></a>h_natural_st <span class="sc">%&gt;%</span></span>
-<span id="cb32-40"><a href="#cb32-40"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(osm_nid_5_area))</span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre
+class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="co"># create summary table of osm_ids by hexagon</span></span>
+<span id="cb31-2"><a href="#cb31-2"></a>hp_natural <span class="sc">%&gt;%</span></span>
+<span id="cb31-3"><a href="#cb31-3"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb31-4"><a href="#cb31-4"></a>  <span class="fu">select</span>(hexid, osm_nid) <span class="sc">%&gt;%</span></span>
+<span id="cb31-5"><a href="#cb31-5"></a>  <span class="fu">group_by</span>(hexid) <span class="sc">%&gt;%</span></span>
+<span id="cb31-6"><a href="#cb31-6"></a>  <span class="fu">mutate</span>(<span class="at">osm_nm =</span> <span class="fu">paste0</span>(<span class="st">&quot;osm_nid_&quot;</span>, <span class="fu">row_number</span>(), <span class="at">sep =</span> <span class="st">&quot;&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb31-7"><a href="#cb31-7"></a>  <span class="co"># osm ids of values as variables</span></span>
+<span id="cb31-8"><a href="#cb31-8"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> osm_nm, <span class="at">values_from =</span> osm_nid) <span class="ot">-&gt;</span> h_natural_onid</span>
+<span id="cb31-9"><a href="#cb31-9"></a></span>
+<span id="cb31-10"><a href="#cb31-10"></a><span class="co"># create summary table of osm areas by hexagon</span></span>
+<span id="cb31-11"><a href="#cb31-11"></a>hp_natural <span class="sc">%&gt;%</span></span>
+<span id="cb31-12"><a href="#cb31-12"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb31-13"><a href="#cb31-13"></a>  <span class="fu">select</span>(hexid, osmf_area) <span class="sc">%&gt;%</span></span>
+<span id="cb31-14"><a href="#cb31-14"></a>  <span class="fu">group_by</span>(hexid) <span class="sc">%&gt;%</span></span>
+<span id="cb31-15"><a href="#cb31-15"></a>  <span class="fu">mutate</span>(<span class="at">osm_nm =</span> <span class="fu">paste0</span>(<span class="st">&quot;osm_nid_&quot;</span>, <span class="fu">row_number</span>(), <span class="st">&quot;_area&quot;</span>, <span class="at">sep =</span> <span class="st">&quot;&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb31-16"><a href="#cb31-16"></a>  <span class="co"># osm areas of values as variables</span></span>
+<span id="cb31-17"><a href="#cb31-17"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> osm_nm, <span class="at">values_from =</span> osmf_area) <span class="ot">-&gt;</span> h_natural_onid_area</span>
+<span id="cb31-18"><a href="#cb31-18"></a></span>
+<span id="cb31-19"><a href="#cb31-19"></a><span class="co"># create summary table of osm features values by hexagon</span></span>
+<span id="cb31-20"><a href="#cb31-20"></a>hp_natural <span class="sc">%&gt;%</span></span>
+<span id="cb31-21"><a href="#cb31-21"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb31-22"><a href="#cb31-22"></a>  <span class="fu">select</span>(hexid, natural) <span class="sc">%&gt;%</span></span>
+<span id="cb31-23"><a href="#cb31-23"></a>  <span class="fu">group_by</span>(hexid) <span class="sc">%&gt;%</span></span>
+<span id="cb31-24"><a href="#cb31-24"></a>  <span class="fu">mutate</span>(<span class="at">osm_nm =</span> <span class="fu">paste0</span>(<span class="st">&quot;osm_nid_&quot;</span>, <span class="fu">row_number</span>(), <span class="st">&quot;_value&quot;</span>, <span class="at">sep =</span> <span class="st">&quot;&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb31-25"><a href="#cb31-25"></a>  <span class="co"># osm features values as variables</span></span>
+<span id="cb31-26"><a href="#cb31-26"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> osm_nm, <span class="at">values_from =</span> natural) <span class="ot">-&gt;</span> h_natural_onid_value</span>
+<span id="cb31-27"><a href="#cb31-27"></a></span>
+<span id="cb31-28"><a href="#cb31-28"></a><span class="co"># join tables</span></span>
+<span id="cb31-29"><a href="#cb31-29"></a>h_natural_onid <span class="sc">%&gt;%</span></span>
+<span id="cb31-30"><a href="#cb31-30"></a>  <span class="fu">left_join</span>(h_natural_onid_area, <span class="at">by =</span> <span class="st">&quot;hexid&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb31-31"><a href="#cb31-31"></a>  <span class="fu">left_join</span>(h_natural_onid_value, <span class="at">by =</span> <span class="st">&quot;hexid&quot;</span>) <span class="ot">-&gt;</span> h_natural_st</span>
+<span id="cb31-32"><a href="#cb31-32"></a></span>
+<span id="cb31-33"><a href="#cb31-33"></a><span class="co"># see example of hexagon with most &#39;values&#39;</span></span>
+<span id="cb31-34"><a href="#cb31-34"></a>h_natural_st <span class="sc">%&gt;%</span></span>
+<span id="cb31-35"><a href="#cb31-35"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(osm_nid_5_area)) </span></code></pre></div>
 <div data-pagedtable="false">
 <script data-pagedtable-source type="application/json">
 {"columns":[{"label":["hexid"],"name":[1],"type":["chr"],"align":["left"]},{"label":["osm_nid_1"],"name":[2],"type":["chr"],"align":["left"]},{"label":["osm_nid_2"],"name":[3],"type":["chr"],"align":["left"]},{"label":["osm_nid_3"],"name":[4],"type":["chr"],"align":["left"]},{"label":["osm_nid_4"],"name":[5],"type":["chr"],"align":["left"]},{"label":["osm_nid_5"],"name":[6],"type":["chr"],"align":["left"]},{"label":["osm_nid_1_area"],"name":[7],"type":["dbl"],"align":["right"]},{"label":["osm_nid_2_area"],"name":[8],"type":["dbl"],"align":["right"]},{"label":["osm_nid_3_area"],"name":[9],"type":["dbl"],"align":["right"]},{"label":["osm_nid_4_area"],"name":[10],"type":["dbl"],"align":["right"]},{"label":["osm_nid_5_area"],"name":[11],"type":["dbl"],"align":["right"]},{"label":["osm_nid_1_value"],"name":[12],"type":["chr"],"align":["left"]},{"label":["osm_nid_2_value"],"name":[13],"type":["chr"],"align":["left"]},{"label":["osm_nid_3_value"],"name":[14],"type":["chr"],"align":["left"]},{"label":["osm_nid_4_value"],"name":[15],"type":["chr"],"align":["left"]},{"label":["osm_nid_5_value"],"name":[16],"type":["chr"],"align":["left"]}],"data":[{"1":"8c194ad3344cbff","2":"1036674194","3":"1036674195","4":"1036674196","5":"1036674197","6":"1036674198","7":"65.2","8":"55.6","9":"44.9","10":"89.6","11":"41.4","12":"scrub","13":"scrub","14":"scrub","15":"scrub","16":"scrub"}],"options":{"columns":{"min":{},"max":[10]},"rows":{"min":[10],"max":[10]},"pages":{}}}
   </script>
 </div>
 <p>Export OSM legacy data CSV file</p>
-<div class="sourceCode" id="cb33"><pre
-class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1"></a><span class="co"># layer (key) name</span></span>
-<span id="cb33-2"><a href="#cb33-2"></a>layer <span class="ot">&lt;-</span> natural <span class="sc">%&gt;%</span></span>
-<span id="cb33-3"><a href="#cb33-3"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb33-4"><a href="#cb33-4"></a>  <span class="fu">colnames</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb33-5"><a href="#cb33-5"></a>  <span class="fu">first</span>()</span>
-<span id="cb33-6"><a href="#cb33-6"></a></span>
-<span id="cb33-7"><a href="#cb33-7"></a><span class="co"># check/create Output directory</span></span>
-<span id="cb33-8"><a href="#cb33-8"></a>subDir <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;csv-&quot;</span>,hexidsa)</span>
-<span id="cb33-9"><a href="#cb33-9"></a></span>
-<span id="cb33-10"><a href="#cb33-10"></a><span class="cf">if</span> (<span class="fu">file.exists</span>(subDir)){</span>
-<span id="cb33-11"><a href="#cb33-11"></a>    <span class="fu">setwd</span>(<span class="fu">file.path</span>(mainDir))</span>
-<span id="cb33-12"><a href="#cb33-12"></a>} <span class="cf">else</span> {</span>
-<span id="cb33-13"><a href="#cb33-13"></a>    <span class="fu">dir.create</span>(<span class="fu">file.path</span>(mainDir, subDir))</span>
-<span id="cb33-14"><a href="#cb33-14"></a>    <span class="fu">setwd</span>(<span class="fu">file.path</span>(mainDir))</span>
-<span id="cb33-15"><a href="#cb33-15"></a>}</span>
-<span id="cb33-16"><a href="#cb33-16"></a></span>
-<span id="cb33-17"><a href="#cb33-17"></a><span class="co"># write csv of OSM legacy data</span></span>
-<span id="cb33-18"><a href="#cb33-18"></a><span class="fu">write_csv</span>(h_natural_st, <span class="at">file =</span> <span class="fu">paste0</span>(mainDir, <span class="st">&quot;/&quot;</span>, subDir, <span class="st">&quot;/&quot;</span>, hexidsa, <span class="st">&quot;-&quot;</span>, layer, <span class="st">&quot;-osm-legacy.csv&quot;</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb32"><pre
+class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a><span class="co"># layer (key) name</span></span>
+<span id="cb32-2"><a href="#cb32-2"></a>layer <span class="ot">&lt;-</span> natural <span class="sc">%&gt;%</span></span>
+<span id="cb32-3"><a href="#cb32-3"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb32-4"><a href="#cb32-4"></a>  <span class="fu">colnames</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb32-5"><a href="#cb32-5"></a>  <span class="fu">first</span>()</span>
+<span id="cb32-6"><a href="#cb32-6"></a></span>
+<span id="cb32-7"><a href="#cb32-7"></a><span class="co"># check/create Output directory</span></span>
+<span id="cb32-8"><a href="#cb32-8"></a>subDir <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">&quot;csv-&quot;</span>,hexidsa)</span>
+<span id="cb32-9"><a href="#cb32-9"></a></span>
+<span id="cb32-10"><a href="#cb32-10"></a><span class="cf">if</span> (<span class="fu">file.exists</span>(subDir)){</span>
+<span id="cb32-11"><a href="#cb32-11"></a>    <span class="fu">setwd</span>(<span class="fu">file.path</span>(mainDir))</span>
+<span id="cb32-12"><a href="#cb32-12"></a>} <span class="cf">else</span> {</span>
+<span id="cb32-13"><a href="#cb32-13"></a>    <span class="fu">dir.create</span>(<span class="fu">file.path</span>(mainDir, subDir))</span>
+<span id="cb32-14"><a href="#cb32-14"></a>    <span class="fu">setwd</span>(<span class="fu">file.path</span>(mainDir))</span>
+<span id="cb32-15"><a href="#cb32-15"></a>}</span>
+<span id="cb32-16"><a href="#cb32-16"></a></span>
+<span id="cb32-17"><a href="#cb32-17"></a><span class="co"># write csv of OSM legacy data</span></span>
+<span id="cb32-18"><a href="#cb32-18"></a><span class="fu">write_csv</span>(h_natural_st, <span class="at">file =</span> <span class="fu">paste0</span>(mainDir, <span class="st">&quot;/&quot;</span>, subDir, <span class="st">&quot;/&quot;</span>, hexidsa, <span class="st">&quot;-&quot;</span>, layer, <span class="st">&quot;-osm-legacy.csv&quot;</span>))</span></code></pre></div>
 </div>
 <div id="create-statistics-by-hexagon-1" class="section level2"
 number="5.2">
 <h2><span class="header-section-number">5.2</span> Create statistics by
 hexagon</h2>
-<div class="sourceCode" id="cb34"><pre
-class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a><span class="co"># create statistics by hexagon</span></span>
-<span id="cb34-2"><a href="#cb34-2"></a>hp_natural <span class="sc">%&gt;%</span></span>
-<span id="cb34-3"><a href="#cb34-3"></a>  <span class="co"># transfrom CRS 3857 -&gt; 4326</span></span>
-<span id="cb34-4"><a href="#cb34-4"></a>  <span class="fu">st_transform</span>(<span class="dv">4326</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb34-5"><a href="#cb34-5"></a>  <span class="co"># calculate hexagons clipped area</span></span>
-<span id="cb34-6"><a href="#cb34-6"></a>  <span class="fu">mutate</span>(<span class="at">hc_area =</span> <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">st_area</span>(.)),<span class="dv">1</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb34-7"><a href="#cb34-7"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb34-8"><a href="#cb34-8"></a>  <span class="fu">select</span>(hexid, natural, hc_area) <span class="sc">%&gt;%</span></span>
-<span id="cb34-9"><a href="#cb34-9"></a>  <span class="co"># areas of values as variables (areas of equal value are aggregated with &#39;values_fn = sum&#39;)</span></span>
-<span id="cb34-10"><a href="#cb34-10"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> <span class="st">&quot;natural&quot;</span>, <span class="at">values_from =</span> <span class="st">&quot;hc_area&quot;</span>, <span class="at">values_fn =</span> sum, <span class="at">values_fill =</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb34-11"><a href="#cb34-11"></a>  <span class="co"># add prefix to columns 2 onwards</span></span>
-<span id="cb34-12"><a href="#cb34-12"></a>  <span class="fu">rename_with</span>( <span class="sc">~</span> <span class="fu">paste0</span>(<span class="st">&quot;natural_&quot;</span>, .x), <span class="at">.cols =</span> <span class="dv">2</span><span class="sc">:</span><span class="fu">ncol</span>(.)) <span class="sc">%&gt;%</span></span>
-<span id="cb34-13"><a href="#cb34-13"></a>  <span class="fu">mutate_all</span>( <span class="sc">~</span> <span class="fu">replace</span>(., <span class="fu">is.na</span>(.), <span class="dv">0</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb34-14"><a href="#cb34-14"></a>  <span class="co"># add total area adding equal value columns</span></span>
-<span id="cb34-15"><a href="#cb34-15"></a>  <span class="fu">mutate</span>(<span class="at">total_area =</span> <span class="fu">rowSums</span>(<span class="fu">select</span>(., <span class="fu">starts_with</span>(<span class="st">&quot;natural&quot;</span>))),</span>
-<span id="cb34-16"><a href="#cb34-16"></a>         <span class="co"># diversity = number of columns where area &gt; 0</span></span>
-<span id="cb34-17"><a href="#cb34-17"></a>         <span class="at">diversity =</span> <span class="fu">rowSums</span>(<span class="fu">select</span>(., <span class="fu">starts_with</span>(<span class="st">&quot;natural&quot;</span>)) <span class="sc">!=</span> <span class="dv">0</span>)) <span class="ot">-&gt;</span> hp_natural_stats</span>
-<span id="cb34-18"><a href="#cb34-18"></a></span>
-<span id="cb34-19"><a href="#cb34-19"></a><span class="co"># join statistics to hexagons</span></span>
-<span id="cb34-20"><a href="#cb34-20"></a>hexpol12 <span class="sc">%&gt;%</span></span>
-<span id="cb34-21"><a href="#cb34-21"></a>  <span class="fu">left_join</span>(hp_natural_stats, <span class="at">by=</span><span class="st">&quot;hexid&quot;</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb34-22"><a href="#cb34-22"></a>  <span class="co"># transfrom CRS 3857 -&gt; 4326</span></span>
-<span id="cb34-23"><a href="#cb34-23"></a>  <span class="fu">st_transform</span>(<span class="dv">4326</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb34-24"><a href="#cb34-24"></a>  <span class="co"># calculate hexagons area</span></span>
-<span id="cb34-25"><a href="#cb34-25"></a>  <span class="fu">mutate</span>(<span class="at">hex_area =</span> <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">st_area</span>(.)),<span class="dv">1</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb34-26"><a href="#cb34-26"></a>  <span class="co"># add percentage by column</span></span>
-<span id="cb34-27"><a href="#cb34-27"></a>  <span class="fu">mutate_at</span>(<span class="fu">vars</span>(<span class="fu">starts_with</span>(<span class="st">&quot;natural&quot;</span>)), <span class="fu">funs</span>(<span class="at">pc =</span> <span class="fu">round</span>(.<span class="sc">/</span>(hex_area <span class="sc">*</span> <span class="fl">0.01</span>),<span class="dv">1</span>))) <span class="ot">-&gt;</span> hex_natural</span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre
+class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1"></a><span class="co"># create statistics by hexagon</span></span>
+<span id="cb33-2"><a href="#cb33-2"></a>hp_natural <span class="sc">%&gt;%</span></span>
+<span id="cb33-3"><a href="#cb33-3"></a>  <span class="co"># transfrom CRS 3857 -&gt; 4326</span></span>
+<span id="cb33-4"><a href="#cb33-4"></a>  <span class="fu">st_transform</span>(<span class="dv">4326</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb33-5"><a href="#cb33-5"></a>  <span class="co"># calculate hexagons clipped area</span></span>
+<span id="cb33-6"><a href="#cb33-6"></a>  <span class="fu">mutate</span>(<span class="at">hc_area =</span> <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">st_area</span>(.)),<span class="dv">1</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb33-7"><a href="#cb33-7"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb33-8"><a href="#cb33-8"></a>  <span class="fu">select</span>(hexid, natural, hc_area) <span class="sc">%&gt;%</span></span>
+<span id="cb33-9"><a href="#cb33-9"></a>  <span class="co"># areas of values as variables (areas of equal value are aggregated with &#39;values_fn = sum&#39;)</span></span>
+<span id="cb33-10"><a href="#cb33-10"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> <span class="st">&quot;natural&quot;</span>, <span class="at">values_from =</span> <span class="st">&quot;hc_area&quot;</span>, <span class="at">values_fn =</span> sum, <span class="at">values_fill =</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb33-11"><a href="#cb33-11"></a>  <span class="co"># add prefix to columns 2 onwards</span></span>
+<span id="cb33-12"><a href="#cb33-12"></a>  <span class="fu">rename_with</span>( <span class="sc">~</span> <span class="fu">paste0</span>(<span class="st">&quot;natural_&quot;</span>, .x), <span class="at">.cols =</span> <span class="dv">2</span><span class="sc">:</span><span class="fu">ncol</span>(.)) <span class="sc">%&gt;%</span></span>
+<span id="cb33-13"><a href="#cb33-13"></a>  <span class="fu">mutate_all</span>( <span class="sc">~</span> <span class="fu">replace</span>(., <span class="fu">is.na</span>(.), <span class="dv">0</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb33-14"><a href="#cb33-14"></a>  <span class="co"># add total area adding equal value columns</span></span>
+<span id="cb33-15"><a href="#cb33-15"></a>  <span class="fu">mutate</span>(<span class="at">total_area =</span> <span class="fu">rowSums</span>(<span class="fu">select</span>(., <span class="fu">starts_with</span>(<span class="st">&quot;natural&quot;</span>))),</span>
+<span id="cb33-16"><a href="#cb33-16"></a>         <span class="co"># diversity = number of columns where area &gt; 0</span></span>
+<span id="cb33-17"><a href="#cb33-17"></a>         <span class="at">diversity =</span> <span class="fu">rowSums</span>(<span class="fu">select</span>(., <span class="fu">starts_with</span>(<span class="st">&quot;natural&quot;</span>)) <span class="sc">!=</span> <span class="dv">0</span>)) <span class="ot">-&gt;</span> hp_natural_stats</span>
+<span id="cb33-18"><a href="#cb33-18"></a></span>
+<span id="cb33-19"><a href="#cb33-19"></a><span class="co"># join statistics to hexagons</span></span>
+<span id="cb33-20"><a href="#cb33-20"></a>hexpol12 <span class="sc">%&gt;%</span></span>
+<span id="cb33-21"><a href="#cb33-21"></a>  <span class="fu">left_join</span>(hp_natural_stats, <span class="at">by=</span><span class="st">&quot;hexid&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb33-22"><a href="#cb33-22"></a>  <span class="co"># transfrom CRS 3857 -&gt; 4326</span></span>
+<span id="cb33-23"><a href="#cb33-23"></a>  <span class="fu">st_transform</span>(<span class="dv">4326</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb33-24"><a href="#cb33-24"></a>  <span class="co"># calculate hexagons area</span></span>
+<span id="cb33-25"><a href="#cb33-25"></a>  <span class="fu">mutate</span>(<span class="at">hex_area =</span> <span class="fu">round</span>(<span class="fu">as.numeric</span>(<span class="fu">st_area</span>(.)),<span class="dv">1</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb33-26"><a href="#cb33-26"></a>  <span class="co"># add percentage by column</span></span>
+<span id="cb33-27"><a href="#cb33-27"></a>  <span class="fu">mutate_at</span>(<span class="fu">vars</span>(<span class="fu">starts_with</span>(<span class="st">&quot;natural&quot;</span>)), <span class="fu">funs</span>(<span class="at">pc =</span> <span class="fu">round</span>(.<span class="sc">/</span>(hex_area <span class="sc">*</span> <span class="fl">0.01</span>),<span class="dv">1</span>))) <span class="ot">-&gt;</span> hex_natural</span></code></pre></div>
 <p>Export hexagon CSV file</p>
-<div class="sourceCode" id="cb35"><pre
-class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1"></a><span class="co"># write csv WKT hexagon statistics</span></span>
-<span id="cb35-2"><a href="#cb35-2"></a><span class="fu">st_write</span>(hex_natural, <span class="fu">paste0</span>(mainDir, <span class="st">&quot;/&quot;</span>, subDir, <span class="st">&quot;/&quot;</span>, hexidsa, <span class="st">&quot;-&quot;</span>, layer, <span class="st">&quot;-hexstats.csv&quot;</span>), <span class="at">layer_options =</span> <span class="fu">c</span>(<span class="st">&quot;GEOMETRY=AS_WKT&quot;</span>,<span class="st">&quot;CREATE_CSVT=YES&quot;</span>), <span class="at">delete_dsn=</span><span class="cn">TRUE</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb34"><pre
+class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a><span class="co"># write csv WKT hexagon statistics</span></span>
+<span id="cb34-2"><a href="#cb34-2"></a><span class="fu">st_write</span>(hex_natural, <span class="fu">paste0</span>(mainDir, <span class="st">&quot;/&quot;</span>, subDir, <span class="st">&quot;/&quot;</span>, hexidsa, <span class="st">&quot;-&quot;</span>, layer, <span class="st">&quot;-hexstats.csv&quot;</span>), <span class="at">layer_options =</span> <span class="fu">c</span>(<span class="st">&quot;GEOMETRY=AS_WKT&quot;</span>,<span class="st">&quot;CREATE_CSVT=YES&quot;</span>), <span class="at">delete_dsn=</span><span class="cn">TRUE</span>)</span></code></pre></div>
 <pre><code>## Deleting source `/Users/nicolas/Documents/Q_GitHub/t_city/csv-86194ad37ffffff/86194ad37ffffff-natural-hexstats.csv&#39; using driver `CSV&#39;
 ## Writing layer `86194ad37ffffff-natural-hexstats&#39; to data source 
 ##   `/Users/nicolas/Documents/Q_GitHub/t_city/csv-86194ad37ffffff/86194ad37ffffff-natural-hexstats.csv&#39; using driver `CSV&#39;
@@ -896,38 +946,38 @@ class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCod
 </div>
 <div id="codebooks" class="section level1" number="6">
 <h1><span class="header-section-number">6</span> Codebooks</h1>
+<div class="sourceCode" id="cb36"><pre
+class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a><span class="fu">data.frame</span>(<span class="at">variable_name =</span> <span class="fu">c</span>(</span>
+<span id="cb36-2"><a href="#cb36-2"></a>  <span class="st">&quot;WKT&quot;</span>,</span>
+<span id="cb36-3"><a href="#cb36-3"></a>  <span class="st">&quot;hexid&quot;</span>,</span>
+<span id="cb36-4"><a href="#cb36-4"></a>  <span class="st">&quot;natural_water&quot;</span>,</span>
+<span id="cb36-5"><a href="#cb36-5"></a>  <span class="st">&quot;total_area&quot;</span>,</span>
+<span id="cb36-6"><a href="#cb36-6"></a>  <span class="st">&quot;hex_area&quot;</span>,</span>
+<span id="cb36-7"><a href="#cb36-7"></a>  <span class="st">&quot;natural_water_pc&quot;</span>),</span>
+<span id="cb36-8"><a href="#cb36-8"></a>  <span class="at">variable_description =</span> <span class="fu">c</span>(</span>
+<span id="cb36-9"><a href="#cb36-9"></a>    <span class="st">&quot;Well-known text representing vector geometry objects&quot;</span>,</span>
+<span id="cb36-10"><a href="#cb36-10"></a>    <span class="st">&quot;Unique haxagon identifier according to H3 indexing&quot;</span>,</span>
+<span id="cb36-11"><a href="#cb36-11"></a>    <span class="st">&quot;{key_value} pair, key is the &#39;layer&#39; and value is one of the &#39;classes&#39; (class can be &gt; 1)&quot;</span>,</span>
+<span id="cb36-12"><a href="#cb36-12"></a>    <span class="st">&quot;Sum of all values areas (or classes areas) in square meters&quot;</span>,</span>
+<span id="cb36-13"><a href="#cb36-13"></a>    <span class="st">&quot;Total H3 hexagon area of resolution 12 in square meters&quot;</span>,</span>
+<span id="cb36-14"><a href="#cb36-14"></a>    <span class="st">&quot;{key_value} percentage, proportion of the &#39;value&#39; area from &#39;hex_area&#39;&quot;</span></span>
+<span id="cb36-15"><a href="#cb36-15"></a>  )) <span class="ot">-&gt;</span> cbook_hexstats</span>
+<span id="cb36-16"><a href="#cb36-16"></a></span>
+<span id="cb36-17"><a href="#cb36-17"></a><span class="fu">data.frame</span>(<span class="at">variable_name =</span> <span class="fu">c</span>(</span>
+<span id="cb36-18"><a href="#cb36-18"></a>  <span class="st">&quot;hexid&quot;</span>,</span>
+<span id="cb36-19"><a href="#cb36-19"></a>  <span class="st">&quot;osm_nid_1&quot;</span>,</span>
+<span id="cb36-20"><a href="#cb36-20"></a>  <span class="st">&quot;osm_nid_1_area&quot;</span>,</span>
+<span id="cb36-21"><a href="#cb36-21"></a>  <span class="st">&quot;osm_nid_1_value&quot;</span>),</span>
+<span id="cb36-22"><a href="#cb36-22"></a>  <span class="at">variable_description =</span> <span class="fu">c</span>(</span>
+<span id="cb36-23"><a href="#cb36-23"></a>    <span class="st">&quot;Unique haxagon identifier according to H3 indexing&quot;</span>,</span>
+<span id="cb36-24"><a href="#cb36-24"></a>    <span class="st">&quot;{osm_nid_X}, OSM unique id, &#39;X&#39; is a correlative of OSM feature(s). &#39;nid&#39; is the merge of &#39;osm_id&#39; and &#39;osm_way_id&#39;&quot;</span>,</span>
+<span id="cb36-25"><a href="#cb36-25"></a>    <span class="st">&quot;{osm_nid_X_area} is the area of the corresponding &#39;X&#39; OSM feature(s)&quot;</span>,</span>
+<span id="cb36-26"><a href="#cb36-26"></a>    <span class="st">&quot;{osm_nid_X_value} is the &#39;value&#39; of the corresponding &#39;X&#39; OSM feature(s)&quot;</span></span>
+<span id="cb36-27"><a href="#cb36-27"></a>    )) <span class="ot">-&gt;</span> cbook_osm_legacy</span></code></pre></div>
 <div class="sourceCode" id="cb37"><pre
-class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1"></a><span class="fu">data.frame</span>(<span class="at">variable_name =</span> <span class="fu">c</span>(</span>
-<span id="cb37-2"><a href="#cb37-2"></a>  <span class="st">&quot;WKT&quot;</span>,</span>
-<span id="cb37-3"><a href="#cb37-3"></a>  <span class="st">&quot;hexid&quot;</span>,</span>
-<span id="cb37-4"><a href="#cb37-4"></a>  <span class="st">&quot;natural_water&quot;</span>,</span>
-<span id="cb37-5"><a href="#cb37-5"></a>  <span class="st">&quot;total_area&quot;</span>,</span>
-<span id="cb37-6"><a href="#cb37-6"></a>  <span class="st">&quot;hex_area&quot;</span>,</span>
-<span id="cb37-7"><a href="#cb37-7"></a>  <span class="st">&quot;natural_water_pc&quot;</span>),</span>
-<span id="cb37-8"><a href="#cb37-8"></a>  <span class="at">variable_description =</span> <span class="fu">c</span>(</span>
-<span id="cb37-9"><a href="#cb37-9"></a>    <span class="st">&quot;Well-known text representing vector geometry objects&quot;</span>,</span>
-<span id="cb37-10"><a href="#cb37-10"></a>    <span class="st">&quot;Unique haxagon identifier according to H3 indexing&quot;</span>,</span>
-<span id="cb37-11"><a href="#cb37-11"></a>    <span class="st">&quot;{key_value} pair, key is the &#39;layer&#39; and value is one of the &#39;classes&#39; (class can be &gt; 1)&quot;</span>,</span>
-<span id="cb37-12"><a href="#cb37-12"></a>    <span class="st">&quot;Sum of all values areas (or classes areas) in square meters&quot;</span>,</span>
-<span id="cb37-13"><a href="#cb37-13"></a>    <span class="st">&quot;Total H3 hexagon area of resolution 12 in square meters&quot;</span>,</span>
-<span id="cb37-14"><a href="#cb37-14"></a>    <span class="st">&quot;{key_value} percentage, proportion of the &#39;value&#39; area from &#39;hex_area&#39;&quot;</span></span>
-<span id="cb37-15"><a href="#cb37-15"></a>  )) <span class="ot">-&gt;</span> cbook_hexstats</span>
-<span id="cb37-16"><a href="#cb37-16"></a></span>
-<span id="cb37-17"><a href="#cb37-17"></a><span class="fu">data.frame</span>(<span class="at">variable_name =</span> <span class="fu">c</span>(</span>
-<span id="cb37-18"><a href="#cb37-18"></a>  <span class="st">&quot;hexid&quot;</span>,</span>
-<span id="cb37-19"><a href="#cb37-19"></a>  <span class="st">&quot;osm_nid_1&quot;</span>,</span>
-<span id="cb37-20"><a href="#cb37-20"></a>  <span class="st">&quot;osm_nid_1_area&quot;</span>,</span>
-<span id="cb37-21"><a href="#cb37-21"></a>  <span class="st">&quot;osm_nid_1_value&quot;</span>),</span>
-<span id="cb37-22"><a href="#cb37-22"></a>  <span class="at">variable_description =</span> <span class="fu">c</span>(</span>
-<span id="cb37-23"><a href="#cb37-23"></a>    <span class="st">&quot;Unique haxagon identifier according to H3 indexing&quot;</span>,</span>
-<span id="cb37-24"><a href="#cb37-24"></a>    <span class="st">&quot;{osm_nid_X}, OSM unique id, &#39;X&#39; is a correlative of OSM feature(s). &#39;nid&#39; is the merge of &#39;osm_id&#39; and &#39;osm_way_id&#39;&quot;</span>,</span>
-<span id="cb37-25"><a href="#cb37-25"></a>    <span class="st">&quot;{osm_nid_X_area} is the area of the corresponding &#39;X&#39; OSM feature(s)&quot;</span>,</span>
-<span id="cb37-26"><a href="#cb37-26"></a>    <span class="st">&quot;{osm_nid_X_value} is the &#39;value&#39; of the corresponding &#39;X&#39; OSM feature(s)&quot;</span></span>
-<span id="cb37-27"><a href="#cb37-27"></a>    )) <span class="ot">-&gt;</span> cbook_osm_legacy</span></code></pre></div>
-<div class="sourceCode" id="cb38"><pre
-class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a>cbook_hexstats <span class="sc">%&gt;%</span></span>
-<span id="cb38-2"><a href="#cb38-2"></a>  <span class="fu">kable</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb38-3"><a href="#cb38-3"></a>  <span class="fu">kable_styling</span>()</span></code></pre></div>
+class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1"></a>cbook_hexstats <span class="sc">%&gt;%</span></span>
+<span id="cb37-2"><a href="#cb37-2"></a>  <span class="fu">kable</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb37-3"><a href="#cb37-3"></a>  <span class="fu">kable_styling</span>()</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -991,10 +1041,10 @@ natural_water_pc
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb39"><pre
-class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1"></a>cbook_osm_legacy <span class="sc">%&gt;%</span></span>
-<span id="cb39-2"><a href="#cb39-2"></a>  <span class="fu">kable</span>() <span class="sc">%&gt;%</span></span>
-<span id="cb39-3"><a href="#cb39-3"></a>  <span class="fu">kable_styling</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb38"><pre
+class="sourceCode numberSource r numberLines lineAnchors"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a>cbook_osm_legacy <span class="sc">%&gt;%</span></span>
+<span id="cb38-2"><a href="#cb38-2"></a>  <span class="fu">kable</span>() <span class="sc">%&gt;%</span></span>
+<span id="cb38-3"><a href="#cb38-3"></a>  <span class="fu">kable_styling</span>()</span></code></pre></div>
 <table class="table" style="margin-left: auto; margin-right: auto;">
 <thead>
 <tr>
@@ -1092,7 +1142,7 @@ h6 {
 </style>
 </div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiQ3JlYXRlIE9TTSBEYXRhIFByb2Nlc3NpbmcgU2NyaXB0IgphdXRob3I6CiAgbmFtZTogTmljb2xhcyBQYWxvbWlub3MKb3V0cHV0OiAKICBodG1sX2RvY3VtZW50OgogICAgZGZfcHJpbnQ6IHBhZ2VkCiAgICB0b2M6IHRydWUKICAgIHRvY19mbG9hdDogdHJ1ZQogICAgdG9jX2RlcHRoOiAnMycKICAgIG51bWJlcl9zZWN0aW9uczogeWVzCiAgICBzZWxmX2NvbnRhaW5lZDogbm8KICAgIGNvZGVfZG93bmxvYWQ6IHRydWUKICAgIGNvZGVfZm9sZGluZzogaGlkZQogICAgaGlnaGxpZ2h0OiB0YW5nbwpkYXRlOiAiYHIgZm9ybWF0KFN5cy50aW1lKCksICclWS0lbS0lZCcpYCIKLS0tCgojIFNldCB1cCBlbnZpcm9ubWVudAoKYGBge3IgZWNobz1UUlVFLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQojIElmIG5vdCBhbHJlYWR5IGluc3RhbGxlZCAocnVuIG9uY2UsIHRoZW4gY29tbWVudCBsaW5lcyB3aXRoICcjJykKI2luc3RhbGwucGFja2FnZXMoImtuaXRyIikKbGlicmFyeShrbml0cikKa25pdHI6Om9wdHNfY2h1bmskc2V0KGVjaG8gPSBUUlVFLCBtZXNzYWdlID0gRkFMU0UsIHdhcm5pbmcgPSBGQUxTRSwgY2xhc3Muc291cmNlID0gIm51bWJlckxpbmVzIGxpbmVBbmNob3JzIikKYGBgCgpgYGB7ciBlY2hvPVRSVUUsIG1lc3NhZ2U9RkFMU0UsIHdhcm5pbmc9RkFMU0V9CnBrZ3MgPC0gYygidGlkeXZlcnNlIiwic2YiLCJvc21leHRyYWN0IiwiZ2dwbG90MiIsImthYmxlRXh0cmEiKQojIElmIG5vdCBhbHJlYWR5IGluc3RhbGxlZCAocnVuIG9uY2UsIHRoZW4gY29tbWVudCBsaW5lcyB3aXRoICcjJykKI2luc3RhbGwucGFja2FnZXMocGtncykKI3JlbW90ZXM6Omluc3RhbGxfZ2l0aHViKCJjcmF6eWNhcGl2YXJhL2gzLXIiKQojIENvcmUgcGFja2FnZXMKbGlicmFyeSh0aWR5dmVyc2UpICAgICAgICAgICAgIApsaWJyYXJ5KHNmKQpsaWJyYXJ5KGgzKQpsaWJyYXJ5KG9zbWV4dHJhY3QpCmxpYnJhcnkoZ2dwbG90MikKbGlicmFyeShrYWJsZUV4dHJhKQprbml0cjo6b3B0c19jaHVuayRzZXQoZWNobyA9IFRSVUUsIG1lc3NhZ2UgPSBGQUxTRSwgd2FybmluZyA9IEZBTFNFLCBjbGFzcy5zb3VyY2UgPSAibnVtYmVyTGluZXMgbGluZUFuY2hvcnMiKQpvcHRpb25zKHNjaXBlbiA9IDk5OSkKYGBgCgojIENyZWF0ZSBoZXggZ3JpZCBmcm9tIHBvaW50CgpgYGB7cn0KIyBJbmRleCBhIGxhdC9sbmcgcG9pbnQgdG8gYW4gSDMgaW5kZXgKIyBtb2RpZnkgJ2Nvb3JkcycgZm9yIGFuYWx5c2lzIG9uIGEgZGlmZmVyZW50IGFyZWEKIyBoZWxwZXIgd2Vic2l0ZXMgIwojIEgzIGludGVyYWN0aXZlIG1hcDogaHR0cHM6Ly93b2xmLWgzLXZpZXdlci5nbGl0Y2gubWUvCiMgUG9pbnQgZmluZGVyOiBodHRwOi8vYmJveGZpbmRlci5jb20vCmNvb3JkcyA8LSBjKDUxLjUxMjQ2OCwtMC4xMTc0NDkpICMgbGF0LGxuZyBFUFNHOiA0MzI2IC0gV0dTIDg0CiMgZGVmaW5lIHJlc29sdXRpb24gKGxvd2VyIHJlc29sdXRpb24gdG8gY3JlYXRlIGEgbGFyZ2VyIHN0dWR5IGFyZWEpCiMgaGVscGVyIHdlYnNpdGUKIyBUYWJsZSBvZiBDZWxsIEFyZWFzIGZvciBIMyBSZXNvbHV0aW9uczogaHR0cHM6Ly9oM2dlby5vcmcvZG9jcy9jb3JlLWxpYnJhcnkvcmVzdGFibGUvCnJlcyA8LSA2CiMgZ2V0IGhleCBpZApoZXhpZHNhIDwtIGdlb190b19oMyhjb29yZHMsIHJlcykKCiMgZ2V0IGhleCBwb2x5Z29uIGdlb21ldHJ5CmhleHBvbHNhIDwtIGgzX3RvX2dlb19ib3VuZGFyeV9zZihoZXhpZHNhKSAlPiUKICAjIGFkZCBoZXhpZCBjb2x1bW4KICBtdXRhdGUoaGV4aWQgPSBoZXhpZHNhKQoKIyBnZXQgaGV4IHBvbHlnb24gZ2VvbWV0cmllcyB3aXRoIGNlbnRyZXMgY29udGFpbmVkIGluIGEgZ2l2ZW4gcG9seWdvbiBhdCByZXMgPSAxMgpoZXhpZDEyIDwtIHBvbHlmaWxsKGhleHBvbHNhLCByZXMgPSAxMikKIyBnZXQgcmVzID0gMTIgcG9seWdvbnMKaGV4cG9sMTIgPC0gaDNfdG9fZ2VvX2JvdW5kYXJ5X3NmKGhleGlkMTIpICU+JQogICMgYWRkIGhleGlkIGNvbHVtbgogIG11dGF0ZShoZXhpZCA9IGhleGlkMTIpCmBgYAoKIyBHZXQgT1NNIGRhdGEgZm9yIHN0dWR5IGFyZWEKCmBgYHtyfQojIGNoZWNrL2NyZWF0ZSBPdXRwdXQgZGlyZWN0b3J5Cm1haW5EaXIgPC0gZ2V0d2QoKQpzdWJEaXIgPC0gcGFzdGUwKCJvc20tZGF0YS0iLGhleGlkc2EpCgppZiAoZmlsZS5leGlzdHMoc3ViRGlyKSl7CiAgICBzZXR3ZChmaWxlLnBhdGgobWFpbkRpcikpCn0gZWxzZSB7CiAgICBkaXIuY3JlYXRlKGZpbGUucGF0aChtYWluRGlyLCBzdWJEaXIpKQogICAgc2V0d2QoZmlsZS5wYXRoKG1haW5EaXIpKQp9CgojIGdldCBkYXRhCiMgRG93bmxvYWQgdGhlIGRhdGEgdG8gb3NtLWRhdGEgZm9sZGVyLiAKb2VfZ2V0KCJMb25kb24iLCBkb3dubG9hZF9kaXJlY3RvcnkgPSBzdWJEaXIsIHN0cmluZ3NBc0ZhY3RvcnMgPSBGQUxTRSwgZXh0cmFfdGFncyA9IGMoIndhdGVyIiwicmFpbHdheSIpLCBkb3dubG9hZF9vbmx5ID0gVFJVRSwgc2tpcF92ZWN0b3J0cmFuc2xhdGUgPSBUUlVFKQpgYGAKCmBgYHtyfQojIHN0X2xheWVycygifi9Eb2N1bWVudHMvUV9HaXRIdWIvdF9jaXR5L2dlb2ZhYnJpa19Mb25kb24ub3NtLnBiZiIpCiMgb2VfZ2V0X2tleXMoIn4vRG9jdW1lbnRzL1FfR2l0SHViL3RfY2l0eS9nZW9mYWJyaWtfTG9uZG9uLm9zbS5wYmYiLCBsYXllciA9ICJtdWx0aXBvbHlnb25zIikKYGBgCgojIyBSZWFkIHBiZiBmaWxlIGJ5IGxheWVyIHR5cGVzCgpgYGB7cn0KcGJmIDwtIGxpc3QuZmlsZXMocGF0aCA9IGZpbGUucGF0aChtYWluRGlyLCBzdWJEaXIpLCBwYXR0ZXJuID0gIioucGJmIikKZGlyIDwtIGZpbGUucGF0aChtYWluRGlyLCBzdWJEaXIsIHBiZikKCiMgaGV4cG9sc2EgaXMgdGhlIHBvbHlnb25hbCBib3VuZGFyeQojIHBvbHlnb24gZ2VvbWV0cmllcwpvZV9yZWFkKGRpciwgbGF5ZXIgPSAibXVsdGlwb2x5Z29ucyIsIGV4dHJhX3RhZ3MgPSAid2F0ZXIiLCBib3VuZGFyeSA9IGhleHBvbHNhLCBib3VuZGFyeV90eXBlID0gInNwYXQiKSAtPiBwb2xzCiMgbGluZXMgZ2VvbWV0cmllcwpvZV9yZWFkKGRpciwgbGF5ZXIgPSAibGluZXMiLCBleHRyYV90YWdzID0gInJhaWx3YXkiLCBib3VuZGFyeSA9IGhleHBvbHNhLCBib3VuZGFyeV90eXBlID0gInNwYXQiKSAtPiBsaW5lcwpgYGAKCiMgQ3JlYXRlIE9TTSBkYXRhIHN0YXRpc3RpY3MKCiMjIEV4cGxvcmUgZGF0YSBhbmQgc3BsaXQgaW50byByZWxldmFudCBsYXllcnMKCmBgYHtyfQojIHBvbHlnb25zCmdsaW1wc2UocG9scykKYGBgCgpgYGB7cn0KIyBsaW5lcwpnbGltcHNlKGxpbmVzKQpgYGAKCmBgYHtyfQojIHNwbGl0IHBvbHlnb25zIGludG8gcmVsZXZhbnQgcG9seWdvbmFsIGtleXMKIyBkZWZpbmUga2V5cwprZXlzIDwtIGMoIm5hdHVyYWwiKSAjIG9mZi10ZXN0OiAiYnVpbGRpbmciLCAibGFuZHVzZSIsICJ3YXRlciIsIApgYGAKCmBgYHtyfQojIGZ1bmN0aW9uIHRvIGNyZWF0ZSBsaXN0IG9mIG9iamVjdHMgYWNjb3JkaW5nIHRvIHJlbGV2YW50IGxheWVycwojIGRlZmluZSBkYXRhZnJhbWUKZGYgPC0gcG9scwoKcG9sc2xpc3QgPC0gbGlzdCgpCmZvciAoaSBpbiBrZXlzKSB7CiAgZGYgJT4lCiAgICAjIGNvbGxhcHNlIGlkcyB0byBjcmVhdGUgYSB1bmlxdWUgaWQgbGFiZWwKICAgIG11dGF0ZShvc21fbmlkID0gY2FzZV93aGVuKGlzLm5hKG9zbV9pZCkgfiBvc21fd2F5X2lkLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgIFRSVUUgfiBvc21faWQpKSAlPiUKICAgICMgc2VsZWN0IGtleSBhbmQga2VlcCBvc20gaWQKICAgIHNlbGVjdChpLCBvc21fbmlkKSAlPiUKICAgICMgZHJvcCBOQXMKICAgIGRyb3BfbmEoLikgJT4lCiAgICAjIG1ha2UgdmFsaWQgcG9seWdvbnMgKHJlcGFpciB0aG9zZSB3aXRoIHNlbGYtaW50ZXJzZWN0aW9uPykKICAgIHN0X21ha2VfdmFsaWQoKSAtPiB2cG9sCiAgCiAgIyBpZCBvZiByZW1haW5pbmcgaW52YWxpZCBnZW9tZXRyaWVzCiAgd2hpY2goc3RfaXNfdmFsaWQodnBvbCwgcmVhc29uID0gVFJVRSkgIT0gIlZhbGlkIEdlb21ldHJ5IikgLT4gaW52YWxpZAogIAogICMgZ2hvc3QgaW50ZWdlciB0byBlYXNlIHNsaWNlCiAgYyhpbnZhbGlkLCA5OTk5OTkpIC0+IGludmFsaWQKICAKICB2cG9sICU+JQogICAgIyByZW1vdmUgaW52YWxpZCBnZW9tZXRyaWVzCiAgICBzbGljZSgtaW52YWxpZCkgJT4lCiAgICAjIGNhbGN1bGF0ZSBhcmVhIChyZW1vdmUgdW5pdHMgYW5kIHJvdW5kIHRvIDEgZGlnaXQpCiAgICBtdXRhdGUob3NtZl9hcmVhID0gcm91bmQoYXMubnVtZXJpYyhzdF9hcmVhKC4pKSwxKSkgLT4gdnBvbAogIAogICMgZ2V0IG9ubHkgdGhlIG5vbi1lbXB0eSBnZW9tZXRyaWVzCiAgdnBvbFshc3RfaXNfZW1wdHkodnBvbCksICwgZHJvcD1GQUxTRV0gLT4gcG9sc2xpc3RbW2ldXQp9CmBgYAoKYGBge3J9CiMgY2hlY2sgcmVkdWN0aW9uIG9mIGdlb21ldHJpZXMgJ25vdC12YWxpZCcgJiAnbm90LXJlcGFpcmVkJwojIGJlZm9yZSBzdF9tYWtlX3ZhbGlkCnBvbHMgJT4lCiAgc2VsZWN0KG5hdHVyYWwpICU+JQogIGZpbHRlcighaXMubmEoLikpICU+JQogIG5yb3coLikKIyByZXN1bHQ6IDI4NQpgYGAKCmBgYHtyfQojIGFmdGVyIHN0X21ha2VfdmFsaWQKbGVuZ3RoKHBvbHNsaXN0W1sibmF0dXJhbCJdXVtbIm5hdHVyYWwiXV0pCiMgcmVzdWx0OiAyODUKYGBgCgpgYGB7cn0KIyBjaGVjayBleHRlbnQgb2YgT1NNIGZlYXR1cmVzIGluIHJlbGF0aW9uIHRvIHN0dWR5IGFyZWEgaGV4YWdvbgpwb2xzbGlzdFtbIm5hdHVyYWwiXV0gJT4lCiAgc3RfdHJhbnNmb3JtKDI3NzAwKSAlPiUKICBmaWx0ZXIob3NtX25pZCA9PSAyODkzNCkgJT4lCiAgZ2dwbG90KCkgKwogIGdlb21fc2YoKSArCiAgZ2VvbV9zZihkYXRhID0gaGV4cG9sc2EsIGZpbGw9TkEsIGNvbD0idG9tYXRvIikgKwogIHRoZW1lX21pbmltYWwoKSArCiAgY29vcmRfc2YoZGF0dW0gPSAyNzcwMCkKYGBgCgojIyBTdHVkeSBhcmVhIHN0YXRpc3RpY3MgYnkga2V5IAoKYGBge3J9CiMgdmVjdG9yIG9mIHZhbHVlIGNvdW50cyA+IDAuMDUlCnBvbHNsaXN0W1sibmF0dXJhbCJdXSAlPiUKICBzdF9kcm9wX2dlb21ldHJ5KCkgJT4lCiAgY291bnQobmF0dXJhbCkgJT4lCiAgIyBwZXJjZW50YWdlCiAgbXV0YXRlKHBjID0gMTAwKiAobiAvIHN1bShuKSkpICU+JQogIGFycmFuZ2UoZGVzYyhuKSkgLT4gc19uYXQKCnNfbmF0ICU+JQogIGthYmxlKGRpZ2l0cyA9IDIpICU+JQogIGthYmxlX3N0eWxpbmcoKQoKc19uYXQgJT4lCiAgZmlsdGVyKHBjID4gMC4wNSkgJT4lCiAgcHVsbChuYXR1cmFsKSAtPiBrX25hdAoKIyByZWNsYXNzaWZ5IHZhbHVlcyBiZWxvdyB0aHJlc2hvbGQgdG8gJ290aGVyJwojIGNyZWF0ZSAna2V5JyBvYmplY3QgZnJvbSBsaXN0Cm5hdHVyYWwgPC0gcG9sc2xpc3RbWyJuYXR1cmFsIl1dICU+JQogIG11dGF0ZShuYXR1cmFsID0gY2FzZV93aGVuKG5hdHVyYWwgJWluJSBrX25hdCB+IG5hdHVyYWwsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgVFJVRSB+ICJvdGhlciIpKQpgYGAKCmBgYHtyfQprX25hdApgYGAKCmBgYHtyfQpuYXR1cmFsICU+JQogIHN0X2Ryb3BfZ2VvbWV0cnkoKSAlPiUKICBjb3VudChuYXR1cmFsKSAlPiUKICBhcnJhbmdlKGRlc2MobikpICU+JQogIGtuaXRfcHJpbnQoKQpgYGAKCiMgQ3JlYXRlIHN0YXRpc3RpY3MgYnkgaGV4YWdvbgoKYGBge3J9CiMgc2V0IHByZWNpc2lvbgojIHVzZSBjcnM9Mzg1NyB0byBzcGVlZCB1cCBpbnRlcnNlY3Rpb24KaGV4cG9sMTIgJT4lCiAgc3RfdHJhbnNmb3JtKGNycz0zODU3KSAlPiUKICBzdF9zZXRfcHJlY2lzaW9uKHVuaXRzOjpzZXRfdW5pdHMoMTAsIG5tKSkgLT4gaGV4cG9sMTIKCiMgc2V0IHByZWNpc2lvbiBhbmQgY3JlYXRlIG9iamVjdHMgYnkga2V5Cm5hdHVyYWwgJT4lCiAgc3RfdHJhbnNmb3JtKGNycz0zODU3KSAlPiUKICBzdF9zZXRfcHJlY2lzaW9uKHVuaXRzOjpzZXRfdW5pdHMoMTAsIG5tKSkgJT4lCiAgIyBhZnRlciBjcnMgdHJhbnNmb3JtYXRpb24gaXMgbmVjZXNzYXJ5IHRvIG1ha2UgdmFsaWQgYWdhaW4KICBzdF9tYWtlX3ZhbGlkKCkgLT4gbmF0dXJhbAoKIyBpbnRlcnNlY3QgaGV4YWdvbnMgd2l0aCBwb2x5Z29uIGxheWVyCnN0X2ludGVyc2VjdGlvbihoZXhwb2wxMiwgbmF0dXJhbCkgLT4gaHBfbmF0dXJhbApgYGAKCmBgYHtyfQpocF9uYXR1cmFsICU+JQogIHN0X2Ryb3BfZ2VvbWV0cnkoKSAlPiUKICBjb3VudChuYXR1cmFsKSAlPiUKICBhcnJhbmdlKGRlc2MobikpICU+JQogIGtuaXRfcHJpbnQoKQpgYGAKCmBgYHtyfQojIGZlYXR1cmVzICdub3QgdG91Y2hpbmcnIGhleHBvbDYgYXJlIHJlYWQhIGUuZy46IG9zbV9uaWQgPSAzMTY5OTYwODAsIG5hdHVyYWw9c2hydWJiZXJ5CiMgdW5pcXVlIHZhbHVlcyBpbiBPU00gJ3VuY2xpcHBlZCcgZGF0YSBhcmUgbW9yZSB0aGFuIHZhbHVlcyBjbGlwcGVkIHRvIGhleHBvbDEyCiNtYXB2aWV3KG5hdHVyYWwpICsgbWFwdmlldyhoZXhwb2xzYSwgZmlsbD1OQSkKYGBgCgojIyBPU00gbGVnYWN5IGRhdGEKCmBgYHtyfQojICMgY29sbGFwc2UgaWRzIHRvIGNyZWF0ZSBhIHVuaXF1ZSBpZCBsYWJlbAojIGhwX25hdHVyYWwgJT4lCiMgICBtdXRhdGUob3NtX25pZCA9IGNhc2Vfd2hlbihpcy5uYShvc21faWQpIH4gb3NtX3dheV9pZCwKIyAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFRSVUUgfiBvc21faWQpKSAtPiBocF9uYXR1cmFsCgojIGNyZWF0ZSBzdW1tYXJ5IHRhYmxlIG9mIG9zbV9pZHMgYnkgaGV4YWdvbgpocF9uYXR1cmFsICU+JQogIHN0X2Ryb3BfZ2VvbWV0cnkoKSAlPiUKICBzZWxlY3QoaGV4aWQsIG9zbV9uaWQpICU+JQogIGdyb3VwX2J5KGhleGlkKSAlPiUKICBtdXRhdGUob3NtX25tID0gcGFzdGUwKCJvc21fbmlkXyIsIHJvd19udW1iZXIoKSwgc2VwID0gIiIpKSAlPiUKICAjIG9zbSBpZHMgb2YgdmFsdWVzIGFzIHZhcmlhYmxlcwogIHBpdm90X3dpZGVyKG5hbWVzX2Zyb20gPSBvc21fbm0sIHZhbHVlc19mcm9tID0gb3NtX25pZCkgLT4gaF9uYXR1cmFsX29uaWQKCiMgY3JlYXRlIHN1bW1hcnkgdGFibGUgb2Ygb3NtIGFyZWFzIGJ5IGhleGFnb24KaHBfbmF0dXJhbCAlPiUKICBzdF9kcm9wX2dlb21ldHJ5KCkgJT4lCiAgc2VsZWN0KGhleGlkLCBvc21mX2FyZWEpICU+JQogIGdyb3VwX2J5KGhleGlkKSAlPiUKICBtdXRhdGUob3NtX25tID0gcGFzdGUwKCJvc21fbmlkXyIsIHJvd19udW1iZXIoKSwgIl9hcmVhIiwgc2VwID0gIiIpKSAlPiUKICAjIG9zbSBhcmVhcyBvZiB2YWx1ZXMgYXMgdmFyaWFibGVzCiAgcGl2b3Rfd2lkZXIobmFtZXNfZnJvbSA9IG9zbV9ubSwgdmFsdWVzX2Zyb20gPSBvc21mX2FyZWEpIC0+IGhfbmF0dXJhbF9vbmlkX2FyZWEKCiMgY3JlYXRlIHN1bW1hcnkgdGFibGUgb2Ygb3NtIGZlYXR1cmVzIHZhbHVlcyBieSBoZXhhZ29uCmhwX25hdHVyYWwgJT4lCiAgc3RfZHJvcF9nZW9tZXRyeSgpICU+JQogIHNlbGVjdChoZXhpZCwgbmF0dXJhbCkgJT4lCiAgZ3JvdXBfYnkoaGV4aWQpICU+JQogIG11dGF0ZShvc21fbm0gPSBwYXN0ZTAoIm9zbV9uaWRfIiwgcm93X251bWJlcigpLCAiX3ZhbHVlIiwgc2VwID0gIiIpKSAlPiUKICAjIG9zbSBmZWF0dXJlcyB2YWx1ZXMgYXMgdmFyaWFibGVzCiAgcGl2b3Rfd2lkZXIobmFtZXNfZnJvbSA9IG9zbV9ubSwgdmFsdWVzX2Zyb20gPSBuYXR1cmFsKSAtPiBoX25hdHVyYWxfb25pZF92YWx1ZQoKIyBqb2luIHRhYmxlcwpoX25hdHVyYWxfb25pZCAlPiUKICBsZWZ0X2pvaW4oaF9uYXR1cmFsX29uaWRfYXJlYSwgYnkgPSAiaGV4aWQiKSAlPiUKICBsZWZ0X2pvaW4oaF9uYXR1cmFsX29uaWRfdmFsdWUsIGJ5ID0gImhleGlkIikgLT4gaF9uYXR1cmFsX3N0CgojIHNlZSBleGFtcGxlIG9mIGhleGFnb24gd2l0aCBtb3N0ICd2YWx1ZXMnCmhfbmF0dXJhbF9zdCAlPiUKICBmaWx0ZXIoIWlzLm5hKG9zbV9uaWRfNV9hcmVhKSkKYGBgCgpFeHBvcnQgT1NNIGxlZ2FjeSBkYXRhIENTViBmaWxlCgpgYGB7cn0KIyBsYXllciAoa2V5KSBuYW1lCmxheWVyIDwtIG5hdHVyYWwgJT4lCiAgc3RfZHJvcF9nZW9tZXRyeSgpICU+JQogIGNvbG5hbWVzKCkgJT4lCiAgZmlyc3QoKQoKIyBjaGVjay9jcmVhdGUgT3V0cHV0IGRpcmVjdG9yeQpzdWJEaXIgPC0gcGFzdGUwKCJjc3YtIixoZXhpZHNhKQoKaWYgKGZpbGUuZXhpc3RzKHN1YkRpcikpewogICAgc2V0d2QoZmlsZS5wYXRoKG1haW5EaXIpKQp9IGVsc2UgewogICAgZGlyLmNyZWF0ZShmaWxlLnBhdGgobWFpbkRpciwgc3ViRGlyKSkKICAgIHNldHdkKGZpbGUucGF0aChtYWluRGlyKSkKfQoKIyB3cml0ZSBjc3Ygb2YgT1NNIGxlZ2FjeSBkYXRhCndyaXRlX2NzdihoX25hdHVyYWxfc3QsIGZpbGUgPSBwYXN0ZTAobWFpbkRpciwgIi8iLCBzdWJEaXIsICIvIiwgaGV4aWRzYSwgIi0iLCBsYXllciwgIi1vc20tbGVnYWN5LmNzdiIpKQpgYGAKCiMjIENyZWF0ZSBzdGF0aXN0aWNzIGJ5IGhleGFnb24KCmBgYHtyfQojIGNyZWF0ZSBzdGF0aXN0aWNzIGJ5IGhleGFnb24KaHBfbmF0dXJhbCAlPiUKICAjIHRyYW5zZnJvbSBDUlMgMzg1NyAtPiA0MzI2CiAgc3RfdHJhbnNmb3JtKDQzMjYpICU+JQogICMgY2FsY3VsYXRlIGhleGFnb25zIGNsaXBwZWQgYXJlYQogIG11dGF0ZShoY19hcmVhID0gcm91bmQoYXMubnVtZXJpYyhzdF9hcmVhKC4pKSwxKSkgJT4lCiAgc3RfZHJvcF9nZW9tZXRyeSgpICU+JSAKICBzZWxlY3QoaGV4aWQsIG5hdHVyYWwsIGhjX2FyZWEpICU+JQogICMgYXJlYXMgb2YgdmFsdWVzIGFzIHZhcmlhYmxlcyAoYXJlYXMgb2YgZXF1YWwgdmFsdWUgYXJlIGFnZ3JlZ2F0ZWQgd2l0aCAndmFsdWVzX2ZuID0gc3VtJykKICBwaXZvdF93aWRlcihuYW1lc19mcm9tID0gIm5hdHVyYWwiLCB2YWx1ZXNfZnJvbSA9ICJoY19hcmVhIiwgdmFsdWVzX2ZuID0gc3VtLCB2YWx1ZXNfZmlsbCA9IDApICU+JQogICMgYWRkIHByZWZpeCB0byBjb2x1bW5zIDIgb253YXJkcwogIHJlbmFtZV93aXRoKCB+IHBhc3RlMCgibmF0dXJhbF8iLCAueCksIC5jb2xzID0gMjpuY29sKC4pKSAlPiUKICBtdXRhdGVfYWxsKCB+IHJlcGxhY2UoLiwgaXMubmEoLiksIDApKSAlPiUKICAjIGFkZCB0b3RhbCBhcmVhIGFkZGluZyBlcXVhbCB2YWx1ZSBjb2x1bW5zCiAgbXV0YXRlKHRvdGFsX2FyZWEgPSByb3dTdW1zKHNlbGVjdCguLCBzdGFydHNfd2l0aCgibmF0dXJhbCIpKSksCiAgICAgICAgICMgZGl2ZXJzaXR5ID0gbnVtYmVyIG9mIGNvbHVtbnMgd2hlcmUgYXJlYSA+IDAKICAgICAgICAgZGl2ZXJzaXR5ID0gcm93U3VtcyhzZWxlY3QoLiwgc3RhcnRzX3dpdGgoIm5hdHVyYWwiKSkgIT0gMCkpIC0+IGhwX25hdHVyYWxfc3RhdHMKCiMgam9pbiBzdGF0aXN0aWNzIHRvIGhleGFnb25zCmhleHBvbDEyICU+JQogIGxlZnRfam9pbihocF9uYXR1cmFsX3N0YXRzLCBieT0iaGV4aWQiKSAlPiUKICAjIHRyYW5zZnJvbSBDUlMgMzg1NyAtPiA0MzI2CiAgc3RfdHJhbnNmb3JtKDQzMjYpICU+JQogICMgY2FsY3VsYXRlIGhleGFnb25zIGFyZWEKICBtdXRhdGUoaGV4X2FyZWEgPSByb3VuZChhcy5udW1lcmljKHN0X2FyZWEoLikpLDEpKSAlPiUKICAjIGFkZCBwZXJjZW50YWdlIGJ5IGNvbHVtbgogIG11dGF0ZV9hdCh2YXJzKHN0YXJ0c193aXRoKCJuYXR1cmFsIikpLCBmdW5zKHBjID0gcm91bmQoLi8oaGV4X2FyZWEgKiAwLjAxKSwxKSkpIC0+IGhleF9uYXR1cmFsCmBgYAoKRXhwb3J0IGhleGFnb24gQ1NWIGZpbGUgIAoKYGBge3J9CiMgd3JpdGUgY3N2IFdLVCBoZXhhZ29uIHN0YXRpc3RpY3MKc3Rfd3JpdGUoaGV4X25hdHVyYWwsIHBhc3RlMChtYWluRGlyLCAiLyIsIHN1YkRpciwgIi8iLCBoZXhpZHNhLCAiLSIsIGxheWVyLCAiLWhleHN0YXRzLmNzdiIpLCBsYXllcl9vcHRpb25zID0gYygiR0VPTUVUUlk9QVNfV0tUIiwiQ1JFQVRFX0NTVlQ9WUVTIiksIGRlbGV0ZV9kc249VFJVRSkKYGBgCgojIENvZGVib29rcwpgYGB7cn0KZGF0YS5mcmFtZSh2YXJpYWJsZV9uYW1lID0gYygKICAiV0tUIiwKICAiaGV4aWQiLAogICJuYXR1cmFsX3dhdGVyIiwKICAidG90YWxfYXJlYSIsCiAgImhleF9hcmVhIiwKICAibmF0dXJhbF93YXRlcl9wYyIpLAogIHZhcmlhYmxlX2Rlc2NyaXB0aW9uID0gYygKICAgICJXZWxsLWtub3duIHRleHQgcmVwcmVzZW50aW5nIHZlY3RvciBnZW9tZXRyeSBvYmplY3RzIiwKICAgICJVbmlxdWUgaGF4YWdvbiBpZGVudGlmaWVyIGFjY29yZGluZyB0byBIMyBpbmRleGluZyIsCiAgICAie2tleV92YWx1ZX0gcGFpciwga2V5IGlzIHRoZSAnbGF5ZXInIGFuZCB2YWx1ZSBpcyBvbmUgb2YgdGhlICdjbGFzc2VzJyAoY2xhc3MgY2FuIGJlID4gMSkiLAogICAgIlN1bSBvZiBhbGwgdmFsdWVzIGFyZWFzIChvciBjbGFzc2VzIGFyZWFzKSBpbiBzcXVhcmUgbWV0ZXJzIiwKICAgICJUb3RhbCBIMyBoZXhhZ29uIGFyZWEgb2YgcmVzb2x1dGlvbiAxMiBpbiBzcXVhcmUgbWV0ZXJzIiwKICAgICJ7a2V5X3ZhbHVlfSBwZXJjZW50YWdlLCBwcm9wb3J0aW9uIG9mIHRoZSAndmFsdWUnIGFyZWEgZnJvbSAnaGV4X2FyZWEnIgogICkpIC0+IGNib29rX2hleHN0YXRzCgpkYXRhLmZyYW1lKHZhcmlhYmxlX25hbWUgPSBjKAogICJoZXhpZCIsCiAgIm9zbV9uaWRfMSIsCiAgIm9zbV9uaWRfMV9hcmVhIiwKICAib3NtX25pZF8xX3ZhbHVlIiksCiAgdmFyaWFibGVfZGVzY3JpcHRpb24gPSBjKAogICAgIlVuaXF1ZSBoYXhhZ29uIGlkZW50aWZpZXIgYWNjb3JkaW5nIHRvIEgzIGluZGV4aW5nIiwKICAgICJ7b3NtX25pZF9YfSwgT1NNIHVuaXF1ZSBpZCwgJ1gnIGlzIGEgY29ycmVsYXRpdmUgb2YgT1NNIGZlYXR1cmUocykuICduaWQnIGlzIHRoZSBtZXJnZSBvZiAnb3NtX2lkJyBhbmQgJ29zbV93YXlfaWQnIiwKICAgICJ7b3NtX25pZF9YX2FyZWF9IGlzIHRoZSBhcmVhIG9mIHRoZSBjb3JyZXNwb25kaW5nICdYJyBPU00gZmVhdHVyZShzKSIsCiAgICAie29zbV9uaWRfWF92YWx1ZX0gaXMgdGhlICd2YWx1ZScgb2YgdGhlIGNvcnJlc3BvbmRpbmcgJ1gnIE9TTSBmZWF0dXJlKHMpIgogICAgKSkgLT4gY2Jvb2tfb3NtX2xlZ2FjeQpgYGAKCmBgYHtyfQpjYm9va19oZXhzdGF0cyAlPiUKICBrYWJsZSgpICU+JQogIGthYmxlX3N0eWxpbmcoKQpgYGAKCmBgYHtyfQpjYm9va19vc21fbGVnYWN5ICU+JQogIGthYmxlKCkgJT4lCiAga2FibGVfc3R5bGluZygpCmBgYAoKYGBge2NzcywgZWNobyA9IEZBTFNFLCBjbGFzcy5zb3VyY2UgPSAnZm9sZGFibGUnfQpoMSwgaDIsIGgzIHsKICBjb2xvcjogIzZFQzBBNTsgCiAgZm9udC1mYW1pbHk6ICJUcmVidWNoZXQgTVMiCn0KYm9keSB7CiAgZm9udC1mYW1pbHk6ICJUcmVidWNoZXQgTVMiOwogIGJhY2tncm91bmQtY29sb3I6ICNGRkZGRjk7IAp9CmEgewogIGNvbG9yOiAjNkVDMEE1OyAKfQouaW52ZXJzZSB7CiAgYmFja2dyb3VuZC1jb2xvcjogIzZFQzBBNTsgCn0KLmxpc3QtZ3JvdXAtaXRlbS5hY3RpdmUsIC5saXN0LWdyb3VwLWl0ZW0uYWN0aXZlOmZvY3VzLCAubGlzdC1ncm91cC1pdGVtLmFjdGl2ZTpob3ZlciB7CiAgICB6LWluZGV4OiAyOwogICAgY29sb3I6ICNmZmY7CiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjNkVDMEE1OwogICAgYm9yZGVyLWNvbG9yOiAjNkVDMEE1Owp9CgoudG9jaWZ5IHVsLCAudG9jaWZ5IGxpIHsKICAgIGJhY2tncm91bmQtY29sb3I6IHRyYW5zcGFyZW50Owp9CgpwcmUubnVtYmVyU291cmNlIGNvZGUgPiBzcGFuIHsKICAgIGxlZnQ6IC0xLjVlbTsKfQpoMSB7CiAgZm9udC1zaXplOiAxOTAlOwp9CmgyIHsKICBmb250LXNpemU6IDE2MCU7Cn0KaDMgewogIGZvbnQtc2l6ZTogMTUwJTsKfQpoNCB7CiAgZm9udC1zaXplOiAxMzAlOwp9Cmg1IHsKICBmb250LXNpemU6IDExMCU7Cn0KaDYgewogICBmb250LXNpemU6IDkwJTsKfQpgYGA=</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiQ3JlYXRlIE9TTSBEYXRhIFByb2Nlc3NpbmcgU2NyaXB0IgphdXRob3I6CiAgbmFtZTogTmljb2xhcyBQYWxvbWlub3MKb3V0cHV0OiAKICBodG1sX2RvY3VtZW50OgogICAgZGZfcHJpbnQ6IHBhZ2VkCiAgICB0b2M6IHRydWUKICAgIHRvY19mbG9hdDogdHJ1ZQogICAgdG9jX2RlcHRoOiAnMycKICAgIG51bWJlcl9zZWN0aW9uczogeWVzCiAgICBzZWxmX2NvbnRhaW5lZDogbm8KICAgIGNvZGVfZG93bmxvYWQ6IHRydWUKICAgIGNvZGVfZm9sZGluZzogaGlkZQogICAgaGlnaGxpZ2h0OiB0YW5nbwpkYXRlOiAiYHIgZm9ybWF0KFN5cy50aW1lKCksICclWS0lbS0lZCcpYCIKLS0tCgojIFNldCB1cCBlbnZpcm9ubWVudAoKYGBge3IgZWNobz1UUlVFLCBtZXNzYWdlPUZBTFNFLCB3YXJuaW5nPUZBTFNFfQojIElmIG5vdCBhbHJlYWR5IGluc3RhbGxlZCAocnVuIG9uY2UsIHRoZW4gY29tbWVudCBsaW5lcyB3aXRoICcjJykKI2luc3RhbGwucGFja2FnZXMoImtuaXRyIikKbGlicmFyeShrbml0cikKa25pdHI6Om9wdHNfY2h1bmskc2V0KGVjaG8gPSBUUlVFLCBtZXNzYWdlID0gRkFMU0UsIHdhcm5pbmcgPSBGQUxTRSwgY2xhc3Muc291cmNlID0gIm51bWJlckxpbmVzIGxpbmVBbmNob3JzIikKYGBgCgpgYGB7ciBlY2hvPVRSVUUsIG1lc3NhZ2U9RkFMU0UsIHdhcm5pbmc9RkFMU0V9CnBrZ3MgPC0gYygidGlkeXZlcnNlIiwic2YiLCJvc21leHRyYWN0IiwiZ2dwbG90MiIsImthYmxlRXh0cmEiKQojIElmIG5vdCBhbHJlYWR5IGluc3RhbGxlZCAocnVuIG9uY2UsIHRoZW4gY29tbWVudCBsaW5lcyB3aXRoICcjJykKI2luc3RhbGwucGFja2FnZXMocGtncykKI3JlbW90ZXM6Omluc3RhbGxfZ2l0aHViKCJjcmF6eWNhcGl2YXJhL2gzLXIiKQojIENvcmUgcGFja2FnZXMKbGlicmFyeSh0aWR5dmVyc2UpICAgICAgICAgICAgIApsaWJyYXJ5KHNmKQpsaWJyYXJ5KGgzKQpsaWJyYXJ5KG9zbWV4dHJhY3QpCmxpYnJhcnkoZ2dwbG90MikKbGlicmFyeShrYWJsZUV4dHJhKQprbml0cjo6b3B0c19jaHVuayRzZXQoZWNobyA9IFRSVUUsIG1lc3NhZ2UgPSBGQUxTRSwgd2FybmluZyA9IEZBTFNFLCBjbGFzcy5zb3VyY2UgPSAibnVtYmVyTGluZXMgbGluZUFuY2hvcnMiKQpvcHRpb25zKHNjaXBlbiA9IDk5OSkKYGBgCgojIENyZWF0ZSBoZXggZ3JpZCBmcm9tIHBvaW50CgpgYGB7cn0KIyBJbmRleCBhIGxhdC9sbmcgcG9pbnQgdG8gYW4gSDMgaW5kZXgKIyBtb2RpZnkgJ2Nvb3JkcycgZm9yIGFuYWx5c2lzIG9uIGEgZGlmZmVyZW50IGFyZWEKIyBoZWxwZXIgd2Vic2l0ZXMgIwojIEgzIGludGVyYWN0aXZlIG1hcDogaHR0cHM6Ly93b2xmLWgzLXZpZXdlci5nbGl0Y2gubWUvCiMgUG9pbnQgZmluZGVyOiBodHRwOi8vYmJveGZpbmRlci5jb20vCmNvb3JkcyA8LSBjKDUxLjUxMjQ2OCwtMC4xMTc0NDkpICMgbGF0LGxuZyBFUFNHOiA0MzI2IC0gV0dTIDg0CiMgZGVmaW5lIHJlc29sdXRpb24gKGxvd2VyIHJlc29sdXRpb24gdG8gY3JlYXRlIGEgbGFyZ2VyIHN0dWR5IGFyZWEpCiMgaGVscGVyIHdlYnNpdGUKIyBUYWJsZSBvZiBDZWxsIEFyZWFzIGZvciBIMyBSZXNvbHV0aW9uczogaHR0cHM6Ly9oM2dlby5vcmcvZG9jcy9jb3JlLWxpYnJhcnkvcmVzdGFibGUvCnJlcyA8LSA2CiMgZ2V0IGhleCBpZApoZXhpZHNhIDwtIGdlb190b19oMyhjb29yZHMsIHJlcykKCiMgZ2V0IGhleCBwb2x5Z29uIGdlb21ldHJ5CmhleHBvbHNhIDwtIGgzX3RvX2dlb19ib3VuZGFyeV9zZihoZXhpZHNhKSAlPiUKICAjIGFkZCBoZXhpZCBjb2x1bW4KICBtdXRhdGUoaGV4aWQgPSBoZXhpZHNhKQoKIyBnZXQgaGV4IHBvbHlnb24gZ2VvbWV0cmllcyB3aXRoIGNlbnRyZXMgY29udGFpbmVkIGluIGEgZ2l2ZW4gcG9seWdvbiBhdCByZXMgPSAxMgpoZXhpZDEyIDwtIHBvbHlmaWxsKGhleHBvbHNhLCByZXMgPSAxMikKIyBnZXQgcmVzID0gMTIgcG9seWdvbnMKaGV4cG9sMTIgPC0gaDNfdG9fZ2VvX2JvdW5kYXJ5X3NmKGhleGlkMTIpICU+JQogICMgYWRkIGhleGlkIGNvbHVtbgogIG11dGF0ZShoZXhpZCA9IGhleGlkMTIpCmBgYAoKIyBHZXQgT1NNIGRhdGEgZm9yIHN0dWR5IGFyZWEKCmBgYHtyfQojIGNoZWNrL2NyZWF0ZSBPdXRwdXQgZGlyZWN0b3J5Cm1haW5EaXIgPC0gZ2V0d2QoKQpzdWJEaXIgPC0gcGFzdGUwKCJvc20tZGF0YS0iLGhleGlkc2EpCgppZiAoZmlsZS5leGlzdHMoc3ViRGlyKSl7CiAgICBzZXR3ZChmaWxlLnBhdGgobWFpbkRpcikpCn0gZWxzZSB7CiAgICBkaXIuY3JlYXRlKGZpbGUucGF0aChtYWluRGlyLCBzdWJEaXIpKQogICAgc2V0d2QoZmlsZS5wYXRoKG1haW5EaXIpKQp9CgojIGdldCBkYXRhCiMgRG93bmxvYWQgdGhlIGRhdGEgdG8gb3NtLWRhdGEgZm9sZGVyLiAKb2VfZ2V0KCJMb25kb24iLCBkb3dubG9hZF9kaXJlY3RvcnkgPSBzdWJEaXIsIHN0cmluZ3NBc0ZhY3RvcnMgPSBGQUxTRSwgZXh0cmFfdGFncyA9IGMoIndhdGVyIiwicmFpbHdheSIpLCBkb3dubG9hZF9vbmx5ID0gVFJVRSwgc2tpcF92ZWN0b3J0cmFuc2xhdGUgPSBUUlVFKQpgYGAKCmBgYHtyfQojIHN0X2xheWVycygifi9Eb2N1bWVudHMvUV9HaXRIdWIvdF9jaXR5L2dlb2ZhYnJpa19Mb25kb24ub3NtLnBiZiIpCiMgb2VfZ2V0X2tleXMoIn4vRG9jdW1lbnRzL1FfR2l0SHViL3RfY2l0eS9nZW9mYWJyaWtfTG9uZG9uLm9zbS5wYmYiLCBsYXllciA9ICJtdWx0aXBvbHlnb25zIikKYGBgCgojIyBSZWFkIHBiZiBmaWxlIGJ5IGxheWVyIHR5cGVzCgpgYGB7cn0KcGJmIDwtIGxpc3QuZmlsZXMocGF0aCA9IGZpbGUucGF0aChtYWluRGlyLCBzdWJEaXIpLCBwYXR0ZXJuID0gIioucGJmIikKZGlyIDwtIGZpbGUucGF0aChtYWluRGlyLCBzdWJEaXIsIHBiZikKCiMgaGV4cG9sc2EgaXMgdGhlIHBvbHlnb25hbCBib3VuZGFyeQojIHBvbHlnb24gZ2VvbWV0cmllcwpvZV9yZWFkKGRpciwgbGF5ZXIgPSAibXVsdGlwb2x5Z29ucyIsIGV4dHJhX3RhZ3MgPSAid2F0ZXIiLCBib3VuZGFyeSA9IGhleHBvbHNhLCBib3VuZGFyeV90eXBlID0gInNwYXQiKSAtPiBwb2xzCiMgbGluZXMgZ2VvbWV0cmllcwpvZV9yZWFkKGRpciwgbGF5ZXIgPSAibGluZXMiLCBleHRyYV90YWdzID0gInJhaWx3YXkiLCBib3VuZGFyeSA9IGhleHBvbHNhLCBib3VuZGFyeV90eXBlID0gInNwYXQiKSAtPiBsaW5lcwpgYGAKCiMgQ3JlYXRlIE9TTSBkYXRhIHN0YXRpc3RpY3MKCiMjIEV4cGxvcmUgZGF0YSBhbmQgc3BsaXQgaW50byByZWxldmFudCBsYXllcnMKCmBgYHtyfQojIHBvbHlnb25zCmdsaW1wc2UocG9scykKYGBgCgpgYGB7cn0KIyBsaW5lcwpnbGltcHNlKGxpbmVzKQpgYGAKCmBgYHtyfQojIHNwbGl0IHBvbHlnb25zIGludG8gcmVsZXZhbnQgcG9seWdvbmFsIGtleXMKIyBkZWZpbmUga2V5cwprZXlzIDwtIGMoIm5hdHVyYWwiKSAjIG9mZi10ZXN0OiAiYnVpbGRpbmciLCAibGFuZHVzZSIsICJ3YXRlciIsIApgYGAKCmBgYHtyfQojIGZ1bmN0aW9uIHRvIGNyZWF0ZSBsaXN0IG9mIG9iamVjdHMgYWNjb3JkaW5nIHRvIHJlbGV2YW50IGxheWVycwojIGRlZmluZSBkYXRhZnJhbWUKZGYgPC0gcG9scwoKcG9sc2xpc3QgPC0gbGlzdCgpCmZvciAoaSBpbiBrZXlzKSB7CiAgZGYgJT4lCiAgICAjIGNvbGxhcHNlIGlkcyB0byBjcmVhdGUgYSB1bmlxdWUgaWQgbGFiZWwKICAgIG11dGF0ZShvc21fbmlkID0gY2FzZV93aGVuKGlzLm5hKG9zbV9pZCkgfiBvc21fd2F5X2lkLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgIFRSVUUgfiBvc21faWQpKSAlPiUKICAgICMgc2VsZWN0IGtleSBhbmQga2VlcCBvc20gaWQKICAgIHNlbGVjdChpLCBvc21fbmlkKSAlPiUKICAgICMgZHJvcCBOQXMKICAgIGRyb3BfbmEoLikgJT4lCiAgICAjIG1ha2UgdmFsaWQgcG9seWdvbnMgKHJlcGFpciB0aG9zZSB3aXRoIHNlbGYtaW50ZXJzZWN0aW9uPykKICAgIHN0X21ha2VfdmFsaWQoKSAtPiB2cG9sCiAgCiAgIyBpZCBvZiByZW1haW5pbmcgaW52YWxpZCBnZW9tZXRyaWVzCiAgd2hpY2goc3RfaXNfdmFsaWQodnBvbCwgcmVhc29uID0gVFJVRSkgIT0gIlZhbGlkIEdlb21ldHJ5IikgLT4gaW52YWxpZAogIAogICMgZ2hvc3QgaW50ZWdlciB0byBlYXNlIHNsaWNlCiAgYyhpbnZhbGlkLCA5OTk5OTkpIC0+IGludmFsaWQKICAKICB2cG9sICU+JQogICAgIyByZW1vdmUgaW52YWxpZCBnZW9tZXRyaWVzCiAgICBzbGljZSgtaW52YWxpZCkgJT4lCiAgICAjIGNhbGN1bGF0ZSBhcmVhIChyZW1vdmUgdW5pdHMgYW5kIHJvdW5kIHRvIDEgZGlnaXQpCiAgICBtdXRhdGUob3NtZl9hcmVhID0gcm91bmQoYXMubnVtZXJpYyhzdF9hcmVhKC4pKSwxKSkgLT4gdnBvbAogIAogICMgZ2V0IG9ubHkgdGhlIG5vbi1lbXB0eSBnZW9tZXRyaWVzCiAgdnBvbFshc3RfaXNfZW1wdHkodnBvbCksICwgZHJvcD1GQUxTRV0gLT4gcG9sc2xpc3RbW2ldXQp9CmBgYAoKYGBge3J9CiMgY2hlY2sgcmVkdWN0aW9uIG9mIGdlb21ldHJpZXMgJ25vdC12YWxpZCcgJiAnbm90LXJlcGFpcmVkJwojIGJlZm9yZSBzdF9tYWtlX3ZhbGlkCnBvbHMgJT4lCiAgc2VsZWN0KG5hdHVyYWwpICU+JQogIGZpbHRlcighaXMubmEoLikpICU+JQogIG5yb3coLikKIyByZXN1bHQ6IDI4NQpgYGAKCmBgYHtyfQojIGFmdGVyIHN0X21ha2VfdmFsaWQKbGVuZ3RoKHBvbHNsaXN0W1sibmF0dXJhbCJdXVtbIm5hdHVyYWwiXV0pCiMgcmVzdWx0OiAyODUKYGBgCgpgYGB7cn0KIyBjaGVjayBleHRlbnQgb2YgT1NNIGZlYXR1cmVzIGluIHJlbGF0aW9uIHRvIHN0dWR5IGFyZWEgaGV4YWdvbgpwb2xzbGlzdFtbIm5hdHVyYWwiXV0gJT4lCiAgc3RfdHJhbnNmb3JtKDI3NzAwKSAlPiUKICBmaWx0ZXIob3NtX25pZCA9PSAyODkzNCkgJT4lCiAgZ2dwbG90KCkgKwogIGdlb21fc2YoKSArCiAgZ2VvbV9zZihkYXRhID0gaGV4cG9sc2EsIGZpbGw9TkEsIGNvbD0idG9tYXRvIikgKwogIHRoZW1lX21pbmltYWwoKSArCiAgY29vcmRfc2YoZGF0dW0gPSAyNzcwMCkKYGBgCgojIyBTdHVkeSBhcmVhIHN0YXRpc3RpY3MgYnkga2V5IAoKYGBge3J9CiMgdmVjdG9yIG9mIHZhbHVlIGNvdW50cyA+IDAuMDUlCnBvbHNsaXN0W1sibmF0dXJhbCJdXSAlPiUKICBzdF9kcm9wX2dlb21ldHJ5KCkgJT4lCiAgY291bnQobmF0dXJhbCkgJT4lCiAgIyBwZXJjZW50YWdlCiAgbXV0YXRlKHBjID0gMTAwKiAobiAvIHN1bShuKSkpICU+JQogIGFycmFuZ2UoZGVzYyhuKSkgLT4gc19uYXQKCnNfbmF0ICU+JQogIGthYmxlKGRpZ2l0cyA9IDIpICU+JQogIGthYmxlX3N0eWxpbmcoKQoKc19uYXQgJT4lCiAgZmlsdGVyKHBjID4gMC4wNSkgJT4lCiAgcHVsbChuYXR1cmFsKSAtPiBrX25hdAoKIyByZWNsYXNzaWZ5IHZhbHVlcyBiZWxvdyB0aHJlc2hvbGQgdG8gJ290aGVyJwojIGNyZWF0ZSAna2V5JyBvYmplY3QgZnJvbSBsaXN0Cm5hdHVyYWwgPC0gcG9sc2xpc3RbWyJuYXR1cmFsIl1dICU+JQogIG11dGF0ZShuYXR1cmFsID0gY2FzZV93aGVuKG5hdHVyYWwgJWluJSBrX25hdCB+IG5hdHVyYWwsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgVFJVRSB+ICJvdGhlciIpKQpgYGAKCmBgYHtyfQprX25hdApgYGAKCiMgQ3JlYXRlIHN0YXRpc3RpY3MgYnkgaGV4YWdvbgoKYGBge3J9CiMgc2V0IHByZWNpc2lvbgojIHVzZSBjcnM9Mzg1NyB0byBzcGVlZCB1cCBpbnRlcnNlY3Rpb24KaGV4cG9sMTIgJT4lCiAgc3RfdHJhbnNmb3JtKGNycz0zODU3KSAlPiUKICBzdF9zZXRfcHJlY2lzaW9uKHVuaXRzOjpzZXRfdW5pdHMoMTAsIG5tKSkgLT4gaGV4cG9sMTIKCiMgc2V0IHByZWNpc2lvbiBhbmQgY3JlYXRlIG9iamVjdHMgYnkga2V5Cm5hdHVyYWwgJT4lCiAgc3RfdHJhbnNmb3JtKGNycz0zODU3KSAlPiUKICBzdF9zZXRfcHJlY2lzaW9uKHVuaXRzOjpzZXRfdW5pdHMoMTAsIG5tKSkgJT4lCiAgIyBhZnRlciBjcnMgdHJhbnNmb3JtYXRpb24gaXMgbmVjZXNzYXJ5IHRvIG1ha2UgdmFsaWQgYWdhaW4KICBzdF9tYWtlX3ZhbGlkKCkgLT4gbmF0dXJhbAoKIyBpbnRlcnNlY3QgaGV4YWdvbnMgd2l0aCBwb2x5Z29uIGxheWVyCnN0X2ludGVyc2VjdGlvbihoZXhwb2wxMiwgbmF0dXJhbCkgLT4gaHBfbmF0dXJhbApgYGAKCmBgYHtyfQpocF9uYXR1cmFsICU+JQogIHN0X2Ryb3BfZ2VvbWV0cnkoKSAlPiUKICBjb3VudChuYXR1cmFsKSAlPiUKICBhcnJhbmdlKGRlc2MobikpICU+JQogIGthYmxlKCkgJT4lCiAga2FibGVfc3R5bGluZygpCmBgYAoKYGBge3J9CiMgZmVhdHVyZXMgJ25vdCB0b3VjaGluZycgaGV4cG9sNiBhcmUgcmVhZCEgZS5nLjogb3NtX25pZCA9IDMxNjk5NjA4MCwgbmF0dXJhbD1zaHJ1YmJlcnkKIyB1bmlxdWUgdmFsdWVzIGluIE9TTSAndW5jbGlwcGVkJyBkYXRhIGFyZSBtb3JlIHRoYW4gdmFsdWVzIGNsaXBwZWQgdG8gaGV4cG9sMTIKI21hcHZpZXcobmF0dXJhbCkgKyBtYXB2aWV3KGhleHBvbHNhLCBmaWxsPU5BKQpgYGAKCiMjIE9TTSBsZWdhY3kgZGF0YQoKYGBge3J9CiMgY3JlYXRlIHN1bW1hcnkgdGFibGUgb2Ygb3NtX2lkcyBieSBoZXhhZ29uCmhwX25hdHVyYWwgJT4lCiAgc3RfZHJvcF9nZW9tZXRyeSgpICU+JQogIHNlbGVjdChoZXhpZCwgb3NtX25pZCkgJT4lCiAgZ3JvdXBfYnkoaGV4aWQpICU+JQogIG11dGF0ZShvc21fbm0gPSBwYXN0ZTAoIm9zbV9uaWRfIiwgcm93X251bWJlcigpLCBzZXAgPSAiIikpICU+JQogICMgb3NtIGlkcyBvZiB2YWx1ZXMgYXMgdmFyaWFibGVzCiAgcGl2b3Rfd2lkZXIobmFtZXNfZnJvbSA9IG9zbV9ubSwgdmFsdWVzX2Zyb20gPSBvc21fbmlkKSAtPiBoX25hdHVyYWxfb25pZAoKIyBjcmVhdGUgc3VtbWFyeSB0YWJsZSBvZiBvc20gYXJlYXMgYnkgaGV4YWdvbgpocF9uYXR1cmFsICU+JQogIHN0X2Ryb3BfZ2VvbWV0cnkoKSAlPiUKICBzZWxlY3QoaGV4aWQsIG9zbWZfYXJlYSkgJT4lCiAgZ3JvdXBfYnkoaGV4aWQpICU+JQogIG11dGF0ZShvc21fbm0gPSBwYXN0ZTAoIm9zbV9uaWRfIiwgcm93X251bWJlcigpLCAiX2FyZWEiLCBzZXAgPSAiIikpICU+JQogICMgb3NtIGFyZWFzIG9mIHZhbHVlcyBhcyB2YXJpYWJsZXMKICBwaXZvdF93aWRlcihuYW1lc19mcm9tID0gb3NtX25tLCB2YWx1ZXNfZnJvbSA9IG9zbWZfYXJlYSkgLT4gaF9uYXR1cmFsX29uaWRfYXJlYQoKIyBjcmVhdGUgc3VtbWFyeSB0YWJsZSBvZiBvc20gZmVhdHVyZXMgdmFsdWVzIGJ5IGhleGFnb24KaHBfbmF0dXJhbCAlPiUKICBzdF9kcm9wX2dlb21ldHJ5KCkgJT4lCiAgc2VsZWN0KGhleGlkLCBuYXR1cmFsKSAlPiUKICBncm91cF9ieShoZXhpZCkgJT4lCiAgbXV0YXRlKG9zbV9ubSA9IHBhc3RlMCgib3NtX25pZF8iLCByb3dfbnVtYmVyKCksICJfdmFsdWUiLCBzZXAgPSAiIikpICU+JQogICMgb3NtIGZlYXR1cmVzIHZhbHVlcyBhcyB2YXJpYWJsZXMKICBwaXZvdF93aWRlcihuYW1lc19mcm9tID0gb3NtX25tLCB2YWx1ZXNfZnJvbSA9IG5hdHVyYWwpIC0+IGhfbmF0dXJhbF9vbmlkX3ZhbHVlCgojIGpvaW4gdGFibGVzCmhfbmF0dXJhbF9vbmlkICU+JQogIGxlZnRfam9pbihoX25hdHVyYWxfb25pZF9hcmVhLCBieSA9ICJoZXhpZCIpICU+JQogIGxlZnRfam9pbihoX25hdHVyYWxfb25pZF92YWx1ZSwgYnkgPSAiaGV4aWQiKSAtPiBoX25hdHVyYWxfc3QKCiMgc2VlIGV4YW1wbGUgb2YgaGV4YWdvbiB3aXRoIG1vc3QgJ3ZhbHVlcycKaF9uYXR1cmFsX3N0ICU+JQogIGZpbHRlcighaXMubmEob3NtX25pZF81X2FyZWEpKSAKYGBgCgpFeHBvcnQgT1NNIGxlZ2FjeSBkYXRhIENTViBmaWxlCgpgYGB7cn0KIyBsYXllciAoa2V5KSBuYW1lCmxheWVyIDwtIG5hdHVyYWwgJT4lCiAgc3RfZHJvcF9nZW9tZXRyeSgpICU+JQogIGNvbG5hbWVzKCkgJT4lCiAgZmlyc3QoKQoKIyBjaGVjay9jcmVhdGUgT3V0cHV0IGRpcmVjdG9yeQpzdWJEaXIgPC0gcGFzdGUwKCJjc3YtIixoZXhpZHNhKQoKaWYgKGZpbGUuZXhpc3RzKHN1YkRpcikpewogICAgc2V0d2QoZmlsZS5wYXRoKG1haW5EaXIpKQp9IGVsc2UgewogICAgZGlyLmNyZWF0ZShmaWxlLnBhdGgobWFpbkRpciwgc3ViRGlyKSkKICAgIHNldHdkKGZpbGUucGF0aChtYWluRGlyKSkKfQoKIyB3cml0ZSBjc3Ygb2YgT1NNIGxlZ2FjeSBkYXRhCndyaXRlX2NzdihoX25hdHVyYWxfc3QsIGZpbGUgPSBwYXN0ZTAobWFpbkRpciwgIi8iLCBzdWJEaXIsICIvIiwgaGV4aWRzYSwgIi0iLCBsYXllciwgIi1vc20tbGVnYWN5LmNzdiIpKQpgYGAKCiMjIENyZWF0ZSBzdGF0aXN0aWNzIGJ5IGhleGFnb24KCmBgYHtyfQojIGNyZWF0ZSBzdGF0aXN0aWNzIGJ5IGhleGFnb24KaHBfbmF0dXJhbCAlPiUKICAjIHRyYW5zZnJvbSBDUlMgMzg1NyAtPiA0MzI2CiAgc3RfdHJhbnNmb3JtKDQzMjYpICU+JQogICMgY2FsY3VsYXRlIGhleGFnb25zIGNsaXBwZWQgYXJlYQogIG11dGF0ZShoY19hcmVhID0gcm91bmQoYXMubnVtZXJpYyhzdF9hcmVhKC4pKSwxKSkgJT4lCiAgc3RfZHJvcF9nZW9tZXRyeSgpICU+JSAKICBzZWxlY3QoaGV4aWQsIG5hdHVyYWwsIGhjX2FyZWEpICU+JQogICMgYXJlYXMgb2YgdmFsdWVzIGFzIHZhcmlhYmxlcyAoYXJlYXMgb2YgZXF1YWwgdmFsdWUgYXJlIGFnZ3JlZ2F0ZWQgd2l0aCAndmFsdWVzX2ZuID0gc3VtJykKICBwaXZvdF93aWRlcihuYW1lc19mcm9tID0gIm5hdHVyYWwiLCB2YWx1ZXNfZnJvbSA9ICJoY19hcmVhIiwgdmFsdWVzX2ZuID0gc3VtLCB2YWx1ZXNfZmlsbCA9IDApICU+JQogICMgYWRkIHByZWZpeCB0byBjb2x1bW5zIDIgb253YXJkcwogIHJlbmFtZV93aXRoKCB+IHBhc3RlMCgibmF0dXJhbF8iLCAueCksIC5jb2xzID0gMjpuY29sKC4pKSAlPiUKICBtdXRhdGVfYWxsKCB+IHJlcGxhY2UoLiwgaXMubmEoLiksIDApKSAlPiUKICAjIGFkZCB0b3RhbCBhcmVhIGFkZGluZyBlcXVhbCB2YWx1ZSBjb2x1bW5zCiAgbXV0YXRlKHRvdGFsX2FyZWEgPSByb3dTdW1zKHNlbGVjdCguLCBzdGFydHNfd2l0aCgibmF0dXJhbCIpKSksCiAgICAgICAgICMgZGl2ZXJzaXR5ID0gbnVtYmVyIG9mIGNvbHVtbnMgd2hlcmUgYXJlYSA+IDAKICAgICAgICAgZGl2ZXJzaXR5ID0gcm93U3VtcyhzZWxlY3QoLiwgc3RhcnRzX3dpdGgoIm5hdHVyYWwiKSkgIT0gMCkpIC0+IGhwX25hdHVyYWxfc3RhdHMKCiMgam9pbiBzdGF0aXN0aWNzIHRvIGhleGFnb25zCmhleHBvbDEyICU+JQogIGxlZnRfam9pbihocF9uYXR1cmFsX3N0YXRzLCBieT0iaGV4aWQiKSAlPiUKICAjIHRyYW5zZnJvbSBDUlMgMzg1NyAtPiA0MzI2CiAgc3RfdHJhbnNmb3JtKDQzMjYpICU+JQogICMgY2FsY3VsYXRlIGhleGFnb25zIGFyZWEKICBtdXRhdGUoaGV4X2FyZWEgPSByb3VuZChhcy5udW1lcmljKHN0X2FyZWEoLikpLDEpKSAlPiUKICAjIGFkZCBwZXJjZW50YWdlIGJ5IGNvbHVtbgogIG11dGF0ZV9hdCh2YXJzKHN0YXJ0c193aXRoKCJuYXR1cmFsIikpLCBmdW5zKHBjID0gcm91bmQoLi8oaGV4X2FyZWEgKiAwLjAxKSwxKSkpIC0+IGhleF9uYXR1cmFsCmBgYAoKRXhwb3J0IGhleGFnb24gQ1NWIGZpbGUgIAoKYGBge3J9CiMgd3JpdGUgY3N2IFdLVCBoZXhhZ29uIHN0YXRpc3RpY3MKc3Rfd3JpdGUoaGV4X25hdHVyYWwsIHBhc3RlMChtYWluRGlyLCAiLyIsIHN1YkRpciwgIi8iLCBoZXhpZHNhLCAiLSIsIGxheWVyLCAiLWhleHN0YXRzLmNzdiIpLCBsYXllcl9vcHRpb25zID0gYygiR0VPTUVUUlk9QVNfV0tUIiwiQ1JFQVRFX0NTVlQ9WUVTIiksIGRlbGV0ZV9kc249VFJVRSkKYGBgCgojIENvZGVib29rcwpgYGB7cn0KZGF0YS5mcmFtZSh2YXJpYWJsZV9uYW1lID0gYygKICAiV0tUIiwKICAiaGV4aWQiLAogICJuYXR1cmFsX3dhdGVyIiwKICAidG90YWxfYXJlYSIsCiAgImhleF9hcmVhIiwKICAibmF0dXJhbF93YXRlcl9wYyIpLAogIHZhcmlhYmxlX2Rlc2NyaXB0aW9uID0gYygKICAgICJXZWxsLWtub3duIHRleHQgcmVwcmVzZW50aW5nIHZlY3RvciBnZW9tZXRyeSBvYmplY3RzIiwKICAgICJVbmlxdWUgaGF4YWdvbiBpZGVudGlmaWVyIGFjY29yZGluZyB0byBIMyBpbmRleGluZyIsCiAgICAie2tleV92YWx1ZX0gcGFpciwga2V5IGlzIHRoZSAnbGF5ZXInIGFuZCB2YWx1ZSBpcyBvbmUgb2YgdGhlICdjbGFzc2VzJyAoY2xhc3MgY2FuIGJlID4gMSkiLAogICAgIlN1bSBvZiBhbGwgdmFsdWVzIGFyZWFzIChvciBjbGFzc2VzIGFyZWFzKSBpbiBzcXVhcmUgbWV0ZXJzIiwKICAgICJUb3RhbCBIMyBoZXhhZ29uIGFyZWEgb2YgcmVzb2x1dGlvbiAxMiBpbiBzcXVhcmUgbWV0ZXJzIiwKICAgICJ7a2V5X3ZhbHVlfSBwZXJjZW50YWdlLCBwcm9wb3J0aW9uIG9mIHRoZSAndmFsdWUnIGFyZWEgZnJvbSAnaGV4X2FyZWEnIgogICkpIC0+IGNib29rX2hleHN0YXRzCgpkYXRhLmZyYW1lKHZhcmlhYmxlX25hbWUgPSBjKAogICJoZXhpZCIsCiAgIm9zbV9uaWRfMSIsCiAgIm9zbV9uaWRfMV9hcmVhIiwKICAib3NtX25pZF8xX3ZhbHVlIiksCiAgdmFyaWFibGVfZGVzY3JpcHRpb24gPSBjKAogICAgIlVuaXF1ZSBoYXhhZ29uIGlkZW50aWZpZXIgYWNjb3JkaW5nIHRvIEgzIGluZGV4aW5nIiwKICAgICJ7b3NtX25pZF9YfSwgT1NNIHVuaXF1ZSBpZCwgJ1gnIGlzIGEgY29ycmVsYXRpdmUgb2YgT1NNIGZlYXR1cmUocykuICduaWQnIGlzIHRoZSBtZXJnZSBvZiAnb3NtX2lkJyBhbmQgJ29zbV93YXlfaWQnIiwKICAgICJ7b3NtX25pZF9YX2FyZWF9IGlzIHRoZSBhcmVhIG9mIHRoZSBjb3JyZXNwb25kaW5nICdYJyBPU00gZmVhdHVyZShzKSIsCiAgICAie29zbV9uaWRfWF92YWx1ZX0gaXMgdGhlICd2YWx1ZScgb2YgdGhlIGNvcnJlc3BvbmRpbmcgJ1gnIE9TTSBmZWF0dXJlKHMpIgogICAgKSkgLT4gY2Jvb2tfb3NtX2xlZ2FjeQpgYGAKCmBgYHtyfQpjYm9va19oZXhzdGF0cyAlPiUKICBrYWJsZSgpICU+JQogIGthYmxlX3N0eWxpbmcoKQpgYGAKCmBgYHtyfQpjYm9va19vc21fbGVnYWN5ICU+JQogIGthYmxlKCkgJT4lCiAga2FibGVfc3R5bGluZygpCmBgYAoKYGBge2NzcywgZWNobyA9IEZBTFNFLCBjbGFzcy5zb3VyY2UgPSAnZm9sZGFibGUnfQpoMSwgaDIsIGgzIHsKICBjb2xvcjogIzZFQzBBNTsgCiAgZm9udC1mYW1pbHk6ICJUcmVidWNoZXQgTVMiCn0KYm9keSB7CiAgZm9udC1mYW1pbHk6ICJUcmVidWNoZXQgTVMiOwogIGJhY2tncm91bmQtY29sb3I6ICNGRkZGRjk7IAp9CmEgewogIGNvbG9yOiAjNkVDMEE1OyAKfQouaW52ZXJzZSB7CiAgYmFja2dyb3VuZC1jb2xvcjogIzZFQzBBNTsgCn0KLmxpc3QtZ3JvdXAtaXRlbS5hY3RpdmUsIC5saXN0LWdyb3VwLWl0ZW0uYWN0aXZlOmZvY3VzLCAubGlzdC1ncm91cC1pdGVtLmFjdGl2ZTpob3ZlciB7CiAgICB6LWluZGV4OiAyOwogICAgY29sb3I6ICNmZmY7CiAgICBiYWNrZ3JvdW5kLWNvbG9yOiAjNkVDMEE1OwogICAgYm9yZGVyLWNvbG9yOiAjNkVDMEE1Owp9CgoudG9jaWZ5IHVsLCAudG9jaWZ5IGxpIHsKICAgIGJhY2tncm91bmQtY29sb3I6IHRyYW5zcGFyZW50Owp9CgpwcmUubnVtYmVyU291cmNlIGNvZGUgPiBzcGFuIHsKICAgIGxlZnQ6IC0xLjVlbTsKfQpoMSB7CiAgZm9udC1zaXplOiAxOTAlOwp9CmgyIHsKICBmb250LXNpemU6IDE2MCU7Cn0KaDMgewogIGZvbnQtc2l6ZTogMTUwJTsKfQpoNCB7CiAgZm9udC1zaXplOiAxMzAlOwp9Cmg1IHsKICBmb250LXNpemU6IDExMCU7Cn0KaDYgewogICBmb250LXNpemU6IDkwJTsKfQpgYGA=</div>
 
 
 </div>

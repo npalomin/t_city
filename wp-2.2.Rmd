@@ -220,15 +220,6 @@ natural <- polslist[["natural"]] %>%
 k_nat
 ```
 
-```{r}
-natural %>%
-  st_drop_geometry() %>%
-  count(natural) %>%
-  arrange(desc(n)) %>%
-  kable() %>%
-  kable_styling()
-```
-
 # Create statistics by hexagon
 
 ```{r}
@@ -267,11 +258,6 @@ hp_natural %>%
 ## OSM legacy data
 
 ```{r}
-# # collapse ids to create a unique id label
-# hp_natural %>%
-#   mutate(osm_nid = case_when(is.na(osm_id) ~ osm_way_id,
-#                              TRUE ~ osm_id)) -> hp_natural
-
 # create summary table of osm_ids by hexagon
 hp_natural %>%
   st_drop_geometry() %>%

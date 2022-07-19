@@ -6,6 +6,23 @@ date: '2022-06-22'
 
 Original Publish Date: 2022-06-22 <br> Updated on: `r format(Sys.time(), '%Y-%m-%d')`
 
+
+## WP 2, review 2
+
+date: 2022-07-19
+
+### Key points
+
+- Output files and data structure
+- Reproducibility
+
+### Actions
+
+- Look at 'values' statistics by city defined as administrative boundaries according to OSM
+- Group together osm-legacy-stats by name
+- Lines statistics won't have percentage
+
+
 ## WP 2, review 2
 
 date: 2022-07-12

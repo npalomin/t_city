@@ -148,11 +148,12 @@ oe_read(dir, layer = "lines", extra_tags = "railway", boundary = hexpolsa, bound
 # Create OSM city data statistics
 
 ## City data keys above threshold 
+
 ```{r}
 # caculate osm city stats by key and get values > 0.05% count
-values005 <- function(value) {
+values005 <- function(value, df) {
   
-  pols_city %>%
+  df %>%
     st_drop_geometry() %>%
     select({{value}}) %>%
     filter(!is.na(.)) %>%
@@ -168,10 +169,10 @@ values005 <- function(value) {
 
 # test function
 # eg: natural, water, 
-values005(natural)
+values005(highway, lines_city)
 
 pols_city %>%
-  filter(water %in% values005(water))
+  filter(water %in% values005(water, pols_city))
 
 # pols_city %>%
 #   st_drop_geometry() %>%
@@ -209,7 +210,6 @@ pols_city %>%
 #                              TRUE ~ "other"))
 ```
 
-
 # Create OSM data statistics
 
 ## Explore data and split into relevant layers
@@ -225,15 +225,21 @@ glimpse(lines)
 ```
 
 ```{r}
-# split polygons into relevant polygonal keys
+# split POLYGONS into relevant polygonal keys
 # define keys
-keys <- c("natural") # off-test: "building", "landuse", "water", 
+keys <- c("natural", "water") # off-test: "building", "landuse", "water", 
+
+# split LINES into relevant polygonal keys
+# define keys
+keys <- c("natural", "water") # off-test: "building", "landuse", "water",
 ```
 
 ```{r}
-# function to create list of valid objects according to relevant layers
+# function to create list of valid POLYGON objects according to relevant layers
 # define dataframe
 df <- pols
+# define keys
+keys <- c("natural", "water") # off-test: "building", "landuse", "water",
 
 polslist <- list()
 for (i in keys) {
@@ -258,138 +264,60 @@ for (i in keys) {
     # remove invalid geometries
     slice(-invalid) %>%
     # calculate area (remove units and round to 1 digit)
-    mutate(osmf_area = round(as.numeric(st_area(.)),1)) -> vpol
+    mutate(osmf_dim = round(as.numeric(st_area(.)),1)) -> vpol
   
   # get only the non-empty geometries
   vpol[!st_is_empty(vpol), , drop=FALSE] -> vpol
   
   # reclassify by threshold criteria 
   vpol %>%
-    mutate(!!sym(i) := case_when(!!sym(i) %in% values005(!!sym(i)) ~ !!sym(i),
+    mutate(!!sym(i) := case_when(!!sym(i) %in% values005(!!sym(i), pols_city) ~ !!sym(i),
                          TRUE ~ "other")) -> polslist[[i]]
 }
 
-# ref: https://stackoverflow.com/questions/50639903/paste-variable-name-in-mutate-dplyr
+# function to create list of valid LINE objects according to relevant layers
+# define dataframe
+df <- lines
+# define keys
+keys <- c("waterway", "railway") # off-test: "highway"
 
-# polslist[["natural"]] %>%
-#   st_drop_geometry() %>%
-#   group_by(natural) %>%
-#   summarise(n = n())
-# 
-# pols %>%
-#   # collapse ids to create a unique id label
-#   mutate(osm_nid = case_when(is.na(osm_id) ~ osm_way_id,
-#                             TRUE ~ osm_id)) %>%
-#   # select key and keep osm id
-#   select(natural, osm_nid) %>%
-#   # drop NAs
-#   drop_na(.) %>%
-#   # make valid polygons (repair those with self-intersection?)
-#   st_make_valid() -> vpol
-#   
-# # id of remaining invalid geometries
-# which(st_is_valid(vpol, reason = TRUE) != "Valid Geometry") -> invalid
-#   
-# # ghost integer to ease slice
-# c(invalid, 999999) -> invalid
-#   
-# vpol %>%
-#   # remove invalid geometries
-#   slice(-invalid) %>%
-#   # calculate area (remove units and round to 1 digit)
-#   mutate(osmf_area = round(as.numeric(st_area(.)),1)) -> vpol
-#   
-# # get only the non-empty geometries
-# vpol[!st_is_empty(vpol), , drop=FALSE] -> vpol
-# 
-# vpol %>%
-#    mutate(natural = case_when(natural %in% keys005(natural) ~ natural,
-#                               TRUE ~ "other")) -> vpol
-# 
-# vpol %>%
-#   st_drop_geometry() %>%
-#   select(natural) %>%
-#   group_by(natural) %>%
-#   summarise(n = n())
-```
-
-```{r}
-# check reduction of geometries 'not-valid' & 'not-repaired'
-# before st_make_valid
-pols %>%
-  select(natural) %>%
-  filter(!is.na(natural)) %>%
-  nrow(.)
-# result: 285
-```
-
-```{r}
-# after st_make_valid
-length(polslist[["natural"]][["natural"]])
-# result: 285
-```
-
-```{r}
-# check extent of OSM features in relation to study area hexagon
-polslist[["natural"]] %>%
-  st_transform(27700) %>%
-  filter(osm_nid == 28934) %>%
-  ggplot() +
-  geom_sf() +
-  geom_sf(data = hexpolsa, fill=NA, col="tomato") +
-  theme_minimal() +
-  coord_sf(datum = 27700)
+lineslist <- list()
+for (i in keys) {
+  df %>%
+    # collapse ids to create a unique id label: lines don't have 'osm_way_id'
+    mutate(osm_nid = osm_id) %>%
+    # select key and keep osm id
+    select(i, osm_nid) %>%
+    # drop NAs
+    drop_na(.) %>%
+    # make valid polygons (repair those with self-intersection?)
+    st_make_valid() -> vpol
+  
+  # id of remaining invalid geometries
+  which(st_is_valid(vpol, reason = TRUE) != "Valid Geometry") -> invalid
+  
+  # ghost integer to ease slice
+  c(invalid, 999999) -> invalid
+  
+  vpol %>%
+    # remove invalid geometries
+    slice(-invalid) %>%
+    # calculate length (remove units and round to 1 digit)
+    mutate(osmf_dim = round(as.numeric(st_length(.)),1)) -> vpol
+  
+  # get only the non-empty geometries
+  vpol[!st_is_empty(vpol), , drop=FALSE] -> vpol
+  
+  # reclassify by threshold criteria 
+  vpol %>%
+    mutate(!!sym(i) := case_when(!!sym(i) %in% values005(!!sym(i), lines_city) ~ !!sym(i),
+                         TRUE ~ "other")) -> lineslist[[i]]
+}
 ```
 
 ## Study area statistics by key 
 
-```{r}
-# vector of value counts > 0.05%
-polslist[["natural"]] %>%
-  st_drop_geometry() %>%
-  count(natural) %>%
-  # percentage
-  mutate(pc = 100* (n / sum(n))) %>%
-  arrange(desc(n)) -> s_nat
-
-s_nat %>%
-  kable(digits = 2) %>%
-  kable_styling()
-
-s_nat %>%
-  filter(pc > 0.05) %>%
-  pull(natural) -> k_nat
-
-# reclassify values below threshold to 'other'
-# create 'key' object from list
-natural <- polslist[["natural"]] %>%
-  mutate(natural = case_when(natural %in% k_nat ~ natural,
-                             TRUE ~ "other"))
-```
-
-```{r}
-k_nat
-```
-
 # Create statistics by hexagon
-
-```{r}
-# set precision
-# use crs=3857 to speed up intersection
-hexpol12 %>%
-  st_transform(crs=3857) %>%
-  st_set_precision(units::set_units(10, nm)) -> hexpol12
-
-# # set precision and create objects by key
-# natural %>%
-#   st_transform(crs=3857) %>%
-#   st_set_precision(units::set_units(10, nm)) %>%
-#   # after crs transformation is necessary to make valid again
-#   st_make_valid() -> natural
-
-# # intersect hexagons with polygon layer
-# st_intersection(hexpol12, natural) -> hp_natural
-```
 
 ```{r}
 # function that prepares geometry and intersects with hexpol
@@ -402,25 +330,11 @@ hexintersect <- function(geoms) {
   st_intersection(hexpol12, geoms) -> geoms
 }
 
-# apply function to all elements in list
+# apply function to all elements in POLYGON list
 lapply(polslist, hexintersect) -> polslisthex
-```
 
-
-
-```{r}
-# hp_natural %>%
-#   st_drop_geometry() %>%
-#   count(natural) %>%
-#   arrange(desc(n)) %>%
-#   kable() %>%
-#   kable_styling()
-```
-
-```{r}
-# features 'not touching' hexpol6 are read! e.g.: osm_nid = 316996080, natural=shrubbery
-# unique values in OSM 'unclipped' data are more than values clipped to hexpol12
-#mapview(natural) + mapview(hexpolsa, fill=NA)
+# apply function to all elements in LINES list
+lapply(lineslist, hexintersect) -> lineslisthex
 ```
 
 ## OSM legacy data
@@ -436,76 +350,41 @@ osmtable <- function(key) {
     # osm ids of values as variables
     pivot_wider(names_from = osm_nm, values_from = osm_nid) -> onid
   
-  # create summary table of osm areas by hexagon
+  # create summary table of osm feature dimensions by hexagon
   key %>%
     st_drop_geometry() %>%
-    select(hexid, osmf_area) %>%
+    select(hexid, osmf_dim) %>%
     group_by(hexid) %>%
-    mutate(osm_nm = paste0("osm_nid_", "area_", row_number(), sep = "")) %>%
+    mutate(osm_nm = paste0("osm_", "dim_", row_number(), sep = "")) %>%
     # osm areas of values as variables
-    pivot_wider(names_from = osm_nm, values_from = osmf_area) -> area
+    pivot_wider(names_from = osm_nm, values_from = osmf_dim) -> dimension
   
   # create summary table of osm features values by hexagon
   key %>%
     st_drop_geometry() %>%
     select(hexid, 2) %>%
     group_by(hexid) %>%
-    mutate(osm_nm = paste0("osm_nid_", "value_", row_number(), sep = "")) %>%
+    mutate(osm_nm = paste0("osm_", "value_", row_number(), sep = "")) %>%
     # osm features values as variables
     pivot_wider(names_from = osm_nm, values_from = 2) -> value
   
   # join tables
   onid %>%
-    left_join(area, by = "hexid") %>%
+    left_join(dimension, by = "hexid") %>%
     left_join(value, by = "hexid") %>%
     select(hexid, ends_with(as.character(1:500))) -> key
 }
 
-# apply function to all elements in list
-lapply(polslisthex, osmtable) -> listosmtable
+# apply function to all elements in POLYGON list
+lapply(polslisthex, osmtable) -> polsosmtable
+
+# apply function to all elements in LINES list
+lapply(lineslisthex, osmtable) -> linesosmtable
 ```
 
 ```{r}
-listosmtable[["water"]]
-```
-
-
-```{r}
-# # create summary table of osm_ids by hexagon
-# hp_natural %>%
-#   st_drop_geometry() %>%
-#   select(hexid, osm_nid) %>%
-#   group_by(hexid) %>%
-#   mutate(osm_nm = paste0("osm_nid_", row_number(), sep = "")) %>%
-#   # osm ids of values as variables
-#   pivot_wider(names_from = osm_nm, values_from = osm_nid) -> h_natural_onid
-# 
-# # create summary table of osm areas by hexagon
-# hp_natural %>%
-#   st_drop_geometry() %>%
-#   select(hexid, osmf_area) %>%
-#   group_by(hexid) %>%
-#   mutate(osm_nm = paste0("osm_nid_", row_number(), "_area", sep = "")) %>%
-#   # osm areas of values as variables
-#   pivot_wider(names_from = osm_nm, values_from = osmf_area) -> h_natural_onid_area
-# 
-# # create summary table of osm features values by hexagon
-# hp_natural %>%
-#   st_drop_geometry() %>%
-#   select(hexid, natural) %>%
-#   group_by(hexid) %>%
-#   mutate(osm_nm = paste0("osm_nid_", row_number(), "_value", sep = "")) %>%
-#   # osm features values as variables
-#   pivot_wider(names_from = osm_nm, values_from = natural) -> h_natural_onid_value
-# 
-# # join tables
-# h_natural_onid %>%
-#   left_join(h_natural_onid_area, by = "hexid") %>%
-#   left_join(h_natural_onid_value, by = "hexid") -> h_natural_st
-# 
-# # see example of hexagon with most 'values'
-# h_natural_st %>%
-#   filter(!is.na(osm_nid_5_area)) 
+linesosmtable$waterway %>%
+  filter(!is.na(osm_nid_5))
 ```
 
 Export OSM legacy data CSV file
@@ -521,44 +400,28 @@ if (file.exists(subDir)){
     setwd(file.path(mainDir))
 }
 
-# write csv of OSM legacy data
-for (i in 1:length(listosmtable)) {
+# write csv of OSM legacy data for POLYGONS
+for (i in 1:length(polsosmtable)) {
   
-  write_csv(listosmtable[[i]], file = paste0(mainDir, "/", subDir, "/", hexidsa, "-", names(listosmtable)[i], "-osm-legacy.csv"))
+  write_csv(polsosmtable[[i]], file = paste0(mainDir, "/", subDir, "/", hexidsa, "-", names(polsosmtable)[i], "-osm-legacy.csv"))
 
 }
-```
 
-```{r}
-# # layer (key) name
-# layer <- natural %>%
-#   st_drop_geometry() %>%
-#   colnames() %>%
-#   first()
-# 
-# # check/create Output directory
-# subDir <- paste0("csv-",hexidsa)
-# 
-# if (file.exists(subDir)){
-#     setwd(file.path(mainDir))
-# } else {
-#     dir.create(file.path(mainDir, subDir))
-#     setwd(file.path(mainDir))
-# }
-# 
-# # write csv of OSM legacy data
-# write_csv(h_natural_st, file = paste0(mainDir, "/", subDir, "/", hexidsa, "-", layer, "-osm-legacy.csv"))
+# write csv of OSM legacy data for LINES
+for (i in 1:length(linesosmtable)) {
+  
+  write_csv(linesosmtable[[i]], file = paste0(mainDir, "/", subDir, "/", hexidsa, "-", names(linesosmtable)[i], "-osm-legacy.csv"))
+
+}
 ```
 
 ## Create statistics by hexagon
 
 ```{r}
-polslisthex$natural
-```
-
-```{r}
-hexstats <- function(key) {
+# POLYGONS
+hexstatspol <- function(key) {
   
+  # for each element on the list
   key %>%
     # transfrom CRS 3857 -> 4326
     st_transform(4326) %>%
@@ -572,53 +435,114 @@ hexstats <- function(key) {
     rename_with( ~ paste0(colnames(key)[2], "_", .x), .cols = 2:ncol(.)) %>%
     mutate_all( ~ replace(., is.na(.), 0)) %>%
     # add total area adding equal value columns
-    mutate(total_area = rowSums(select(., starts_with(colnames(key)[2]))),
+    mutate(total_dim = rowSums(select(., starts_with(colnames(key)[2]))),
            # diversity = number of columns where area > 0
            diversity = rowSums(select(., starts_with(colnames(key)[2])) != 0)) -> key
+  
+  # column name pattern
+  substr(colnames(key)[2], 1, 3) -> pat
+  
+  # join statistics to hexagons
+  hexpol12 %>%
+    left_join(key, by="hexid") %>%
+    # transfrom CRS 3857 -> 4326
+    st_transform(4326) %>%
+    # calculate hexagons area
+    mutate(hex_area = round(as.numeric(st_area(.)),1)) %>%
+    # add percentage by column
+    mutate(across(starts_with(pat), ~ round(./(hex_area * 0.01),1), .names = '{col}_pc')) -> key
+  
 }
 
 # apply function to all elements in list
-lapply(polslisthex, hexstats) -> test
+lapply(polslisthex, hexstatspol) -> polstats
+
+
+# LINES
+hexstatsline <- function(key) {
+  
+  # for each element on the list
+  key %>%
+    # transfrom CRS 3857 -> 4326
+    st_transform(4326) %>%
+    # calculate hexagons clipped area
+    mutate(hc_len = round(as.numeric(st_length(.)),1)) %>%
+    st_drop_geometry() %>% 
+    select(hexid, 2, hc_len) %>%
+    # areas of values as variables (areas of equal value are aggregated with 'values_fn = sum')
+    pivot_wider(names_from = 2, values_from = "hc_len", values_fn = sum, values_fill = 0) %>%
+    # add prefix to columns 2 onwards
+    rename_with( ~ paste0(colnames(key)[2], "_", .x), .cols = 2:ncol(.)) %>%
+    mutate_all( ~ replace(., is.na(.), 0)) %>%
+    # add total area adding equal value columns
+    mutate(total_dim = rowSums(select(., starts_with(colnames(key)[2]))),
+           # diversity = number of columns where area > 0
+           diversity = rowSums(select(., starts_with(colnames(key)[2])) != 0)) -> key
+  
+  # join statistics to hexagons
+  hexpol12 %>%
+    left_join(key, by="hexid") %>%
+    # transfrom CRS 3857 -> 4326
+    st_transform(4326) -> key
+}
+
+# apply function to all elements in list
+lapply(lineslisthex, hexstatsline) -> linestats
 ```
 
-
-
-
 ```{r}
-# create statistics by hexagon
-hp_natural %>%
-  # transfrom CRS 3857 -> 4326
-  st_transform(4326) %>%
-  # calculate hexagons clipped area
-  mutate(hc_area = round(as.numeric(st_area(.)),1)) %>%
-  st_drop_geometry() %>% 
-  select(hexid, natural, hc_area) %>%
-  # areas of values as variables (areas of equal value are aggregated with 'values_fn = sum')
-  pivot_wider(names_from = "natural", values_from = "hc_area", values_fn = sum, values_fill = 0) %>%
-  # add prefix to columns 2 onwards
-  rename_with( ~ paste0("natural_", .x), .cols = 2:ncol(.)) %>%
-  mutate_all( ~ replace(., is.na(.), 0)) %>%
-  # add total area adding equal value columns
-  mutate(total_area = rowSums(select(., starts_with("natural"))),
-         # diversity = number of columns where area > 0
-         diversity = rowSums(select(., starts_with("natural")) != 0)) -> hp_natural_stats
-
-# join statistics to hexagons
-hexpol12 %>%
-  left_join(hp_natural_stats, by="hexid") %>%
-  # transfrom CRS 3857 -> 4326
-  st_transform(4326) %>%
-  # calculate hexagons area
-  mutate(hex_area = round(as.numeric(st_area(.)),1)) %>%
-  # add percentage by column
-  mutate_at(vars(starts_with("natural")), funs(pc = round(./(hex_area * 0.01),1))) -> hex_natural
+# # create statistics by hexagon
+# hp_natural %>%
+#   # transfrom CRS 3857 -> 4326
+#   st_transform(4326) %>%
+#   # calculate hexagons clipped area
+#   mutate(hc_area = round(as.numeric(st_area(.)),1)) %>%
+#   st_drop_geometry() %>% 
+#   select(hexid, natural, hc_area) %>%
+#   # areas of values as variables (areas of equal value are aggregated with 'values_fn = sum')
+#   pivot_wider(names_from = "natural", values_from = "hc_area", values_fn = sum, values_fill = 0) %>%
+#   # add prefix to columns 2 onwards
+#   rename_with( ~ paste0("natural_", .x), .cols = 2:ncol(.)) %>%
+#   mutate_all( ~ replace(., is.na(.), 0)) %>%
+#   # add total area adding equal value columns
+#   mutate(total_area = rowSums(select(., starts_with("natural"))),
+#          # diversity = number of columns where area > 0
+#          diversity = rowSums(select(., starts_with("natural")) != 0)) -> hp_natural_stats
+# 
+# # join statistics to hexagons
+# hexpol12 %>%
+#   left_join(hp_natural_stats, by="hexid") %>%
+#   # transfrom CRS 3857 -> 4326
+#   st_transform(4326) %>%
+#   # calculate hexagons area
+#   mutate(hex_area = round(as.numeric(st_area(.)),1)) %>%
+#   # add percentage by column
+#   mutate_at(vars(starts_with("natural")), funs(pc = round(./(hex_area * 0.01),1))) -> hex_natural
 ```
 
 Export hexagon CSV file  
 
 ```{r}
-# write csv WKT hexagon statistics
-st_write(hex_natural, paste0(mainDir, "/", subDir, "/", hexidsa, "-", layer, "-hexstats.csv"), layer_options = c("GEOMETRY=AS_WKT","CREATE_CSVT=YES"), delete_dsn=TRUE)
+# POLYGONS
+# write csv of OSM legacy data
+for (i in 1:length(polstats)) {
+  
+  st_write(polstats[[i]], paste0(mainDir, "/", subDir, "/", hexidsa, "-", names(polstats)[i], "-hexstats.csv"), layer_options = c("GEOMETRY=AS_WKT","CREATE_CSVT=YES"), delete_dsn=TRUE)
+
+}
+
+# LINES
+# write csv of OSM legacy data
+for (i in 1:length(linestats)) {
+  
+  st_write(linestats[[i]], paste0(mainDir, "/", subDir, "/", hexidsa, "-", names(linestats)[i], "-hexstats.csv"), layer_options = c("GEOMETRY=AS_WKT","CREATE_CSVT=YES"), delete_dsn=TRUE)
+
+}
+```
+
+```{r}
+# # write csv WKT hexagon statistics
+# st_write(hex_natural, paste0(mainDir, "/", subDir, "/", hexidsa, "-", layer, "-hexstats.csv"), layer_options = c("GEOMETRY=AS_WKT","CREATE_CSVT=YES"), delete_dsn=TRUE)
 ```
 
 # Codebooks
@@ -627,28 +551,30 @@ data.frame(variable_name = c(
   "WKT",
   "hexid",
   "natural_water",
-  "total_area",
+  "total_dim",
+  "diversity",
   "hex_area",
   "natural_water_pc"),
   variable_description = c(
     "Well-known text representing vector geometry objects",
-    "Unique haxagon identifier according to H3 indexing",
+    "Unique hexagon identifier according to H3 indexing",
     "{key_value} pair, key is the 'layer' and value is one of the 'classes' (class can be > 1)",
-    "Sum of all values areas (or classes areas) in square meters",
-    "Total H3 hexagon area of resolution 12 in square meters",
-    "{key_value} percentage, proportion of the 'value' area from 'hex_area'"
+    "Sum of all values' dimensions (area or length) in square meters or meters",
+    "Sum of different values in hexagon",
+    "Total H3 hexagon area of resolution 12 in square meters for polygonal OSM features",
+    "{key_value} percentage, proportion of the 'value' area from 'hex_area' for linear OSM features"
   )) -> cbook_hexstats
 
 data.frame(variable_name = c(
   "hexid",
   "osm_nid_1",
-  "osm_nid_1_area",
-  "osm_nid_1_value"),
+  "osm_dim_1",
+  "osm_value_1"),
   variable_description = c(
     "Unique haxagon identifier according to H3 indexing",
     "{osm_nid_X}, OSM unique id, 'X' is a correlative of OSM feature(s). 'nid' is the merge of 'osm_id' and 'osm_way_id'",
-    "{osm_nid_X_area} is the area of the corresponding 'X' OSM feature(s)",
-    "{osm_nid_X_value} is the 'value' of the corresponding 'X' OSM feature(s)"
+    "{osm_dim_X} is the area of the corresponding 'X' OSM feature(s)",
+    "{osm_value_X} is the 'value' of the corresponding 'X' OSM feature(s)"
     )) -> cbook_osm_legacy
 ```
 

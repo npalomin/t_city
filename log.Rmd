@@ -21,6 +21,7 @@ date: 2022-07-19
 - Look at 'values' statistics by city defined as administrative boundaries according to OSM
 - Group together osm-legacy-stats by name
 - Lines statistics won't have percentage
+- List ids of hexagons grid in city
 
 
 ## WP 2, review 2

@@ -454,7 +454,7 @@ data.frame(variable_name = c(
   variable_description = c(
     "Well-known text representing vector geometry objects",
     "Unique hexagon identifier according to H3 indexing",
-    "{key_value} pair, key is the 'layer' and value is one of the 'classes' (class can be > 1)",
+    "{key_value} aggregated dimensions (area or length), key is the 'layer' and value is one of the 'classes'",
     "Sum of all values' dimensions (area or length) in square meters or meters",
     "Sum of different values in hexagon",
     "Total H3 hexagon area of resolution 12 in square meters for polygonal OSM features",

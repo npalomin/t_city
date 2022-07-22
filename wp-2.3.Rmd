@@ -71,7 +71,7 @@ oe_read(paste0(mainDir, "/", subDir, "/", pbf), skip_vectortranslate = TRUE, qui
   # max(st_distance(st_cast(hexpolsa,"POINT"), st_centroid(hexpolsa))) / 2
   st_buffer(1850)-> citybox
 
-# get all hexagons with centers contained in a given polygon
+# get all hexagons with centers contained in city
 h3_indexes <- polyfill(citybox, res = 6)
 ```
 

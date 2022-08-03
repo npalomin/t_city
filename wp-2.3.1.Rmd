@@ -119,6 +119,13 @@ hexpol12 %>%
   st_drop_geometry() -> hexid12
 ```
 
+```{r}
+hexpol12 <- h3_to_geo_boundary_sf(hexid12) %>%
+  # add hexid column
+  mutate(hexid = hexid12)
+```
+
+
 # Read pbf file by layer types
 
 ```{r}
@@ -351,6 +358,30 @@ for (i in 1:length(linesosmtable)) {
 ```
 
 ## Create statistics by hexagon
+
+```{r}
+polslisthex[["natural"]]
+```
+
+```{r}
+polslisthex[["natural"]] %>%
+    # transfrom CRS 3857 -> 4326
+    st_transform(4326) %>%
+    # calculate hexagons clipped area
+    mutate(hc_area = round(as.numeric(st_area(.)),1)) %>%
+    st_drop_geometry() %>% 
+    select(hexid, 2, hc_area) %>%
+    # areas of values as variables (areas of equal value are aggregated with 'values_fn = sum')
+    pivot_wider(names_from = 2, values_from = "hc_area", values_fn = sum, values_fill = 0) %>%
+    # add prefix to columns 2 onwards
+    rename_with( ~ paste0("value=", .x), .cols = 2:ncol(.)) %>%
+    mutate_all( ~ replace(., is.na(.), 0)) %>%
+    # add total area adding equal value columns
+    mutate(total_dim = rowSums(select(., starts_with("value="))),
+           # diversity = number of columns where area > 0
+           diversity = rowSums(select(., starts_with("value=")) != 0)) 
+```
+
 
 ```{r}
 # POLYGONS

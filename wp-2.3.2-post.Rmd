@@ -1,0 +1,93 @@
+---
+title: "Create OSM Data Processing Script"
+author:
+  name: Nicolas Palominos
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    toc_depth: '3'
+    number_sections: yes
+    self_contained: no
+    code_download: true
+    code_folding: hide
+    highlight: tango
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+---
+
+# Set up environment
+
+```{r, echo = FALSE, class.source = 'foldable'}
+using<-function(...) {
+    libs<-unlist(list(...))
+    req<-unlist(lapply(libs,require,character.only=TRUE))
+    need<-libs[req==FALSE]
+    if(length(need)>0){ 
+        install.packages(need)
+        lapply(need,require,character.only=TRUE)
+    }
+}
+
+# h3 from github repo
+if(!require(h3)){
+    remotes::install_github("crazycapivara/h3-r")
+}
+```
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+using("osmextract","kableExtra","ggplot2","sf","tidyverse","knitr","h3")
+options(scipen = 999)
+```
+
+# Read data for 'buildings'
+
+```{r}
+library(readr)
+# X86194ad37ffffff_
+building_hexstats <- read_csv("csv-London-86194ad37ffffff/86194ad37ffffff-building-hexstats.csv")
+
+# X86194ad37ffffff_
+building_osm_legacy <- read_csv("csv-London-86194ad37ffffff/86194ad37ffffff-building-osm-legacy.csv")
+
+london <- st_read("London-osm-data/geofabrik_London.gpkg")
+```
+
+```{r}
+building_hexstats %>%
+  select(2:ncol(.)) %>%
+  arrange(desc(building_yes)) %>%
+  head()
+```
+
+```{r}
+building_osm_legacy %>%
+  filter(hexid == "8c194ad327741ff")
+```
+
+```{r}
+london %>%
+  # collapse ids to create a unique id label
+  mutate(osm_nid = case_when(is.na(osm_id) ~ osm_way_id,
+                             TRUE ~ osm_id)) %>%
+  filter(osm_nid %in% c(2023676, 150143253, 150143254, 150143256, 150143259, 319342619)) %>%
+  select(osm_nid, name) %>%
+  ggplot() +
+  geom_sf(alpha = 0.2) +
+  theme_void() +
+  labs(title = "National Theatre")
+```
+
+```{r}
+london %>%
+  # collapse ids to create a unique id label
+  mutate(osm_nid = case_when(is.na(osm_id) ~ osm_way_id,
+                             TRUE ~ osm_id)) %>%
+  filter(osm_nid %in% c(2023676, 150143253, 150143254, 150143256, 150143259, 319342619)) %>%
+  select(osm_nid) %>%
+  ggplot() +
+  geom_sf() +
+  theme_void() +
+  facet_wrap(~osm_nid)
+```
+

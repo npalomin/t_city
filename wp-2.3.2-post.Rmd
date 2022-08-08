@@ -59,6 +59,9 @@ building_hexstats %>%
   arrange(desc(building_yes)) %>%
   head()
 ```
+```{r}
+h1 <- h3_to_geo_boundary_sf("8c194ad327741ff")
+```
 
 ```{r}
 building_osm_legacy %>%
@@ -74,6 +77,7 @@ london %>%
   select(osm_nid, name) %>%
   ggplot() +
   geom_sf(alpha = 0.2) +
+  geom_sf(data = h1, alpha = 0, col="tomato") +
   theme_void() +
   labs(title = "National Theatre")
 ```

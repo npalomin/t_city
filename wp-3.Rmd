@@ -1,0 +1,66 @@
+---
+title: "Data showcasing"
+author:
+  name: Nicolas Palominos
+output: 
+  html_document:
+    df_print: paged
+    toc: true
+    toc_float: true
+    toc_depth: '3'
+    number_sections: yes
+    self_contained: no
+    code_download: true
+    code_folding: hide
+    highlight: tango
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+---
+
+# Set up environment
+
+```{r, echo = FALSE, class.source = 'foldable'}
+using<-function(...) {
+    libs<-unlist(list(...))
+    req<-unlist(lapply(libs,require,character.only=TRUE))
+    need<-libs[req==FALSE]
+    if(length(need)>0){ 
+        install.packages(need)
+        lapply(need,require,character.only=TRUE)
+    }
+}
+
+# h3 from github repo
+if(!require(h3)){
+    remotes::install_github("crazycapivara/h3-r")
+}
+```
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+using("osmextract","kableExtra","ggplot2","sf","tidyverse","knitr","h3","janitor")
+options(scipen = 999)
+```
+
+# Read data
+
+```{r}
+sd <- st_read("large_data/Tranquil City Index_Sample.geojson")
+```
+
+# Filter variables
+
+```{r}
+names(sd)
+
+kv <- c("index", "tranquilcityindex_day", "dBA_total_LQ16", "no2_conc", "pm25_conc", "greencov_perc", "bluecov_perc", "treecov_perc")
+
+sd %>%
+  select(kv) %>%
+  st_drop_geometry() -> sdcsv
+
+write_csv(sdcsv, "large_data/sdcsv.csv")
+```
+
+
+
+
+

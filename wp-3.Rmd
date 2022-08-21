@@ -76,6 +76,6 @@ sdtejson
 
 ["8c194ad01da05ff",0.8,41.24,26.47327,10.5475,35.33,0,20.58]
 
-[{"name":"index","type":"string","format":"","analyzerType":"STRING"},{"name":"tranquilcityindex_day","type":"real","format":"","analyzerType":"FLOAT"},{"name":"dBA_total_LQ16","type":"real","format":"","analyzerType":"FLOAT"}]
+[{"name":"index","type":"string","format":"","analyzerType":"STRING"},{"name":"TranquilCity_Index","type":"real","format":"","analyzerType":"FLOAT"},{"name":"Rating","type":"string","format":"","analyzerType":"STRING"}]
 
-
+55.8614098175835, -4.250582048995372

@@ -60,7 +60,12 @@ sd %>%
   rename(TranquilCity_Index = tci_v3_mean,
          Rating = rating) %>%
   mutate(Rating = str_to_title(Rating),
-         TranquilCity_Index = round(TranquilCity_Index,3)) -> sdte
+         Rating = case_when(Rating == "High" ~ "1 High",
+                            Rating == "Good" ~ "2 Good",
+                            Rating == "Moderate" ~ "3 Moderate",
+                            Rating == "Fair" ~ "4 Fair",
+                            Rating == "Low" ~ "5 Low")) %>%
+  select(index, Rating) -> sdte
 
 write_csv(sdte, "large_data/tci-glasgow.csv")
 names(sdte)
@@ -72,6 +77,9 @@ sdte %>%
 sdtejson
 
 #write_json(sdtejson, "large_data/tci-glasgow.json") # adds \before " doesn't work
+
+rev(c("#ffffcc","#d9f0a3","#addd8e","#78c679","#31a354","#006837")) %>%
+  dput()
 ```
 
 ["8c194ad01da05ff",0.8,41.24,26.47327,10.5475,35.33,0,20.58]
@@ -79,3 +87,6 @@ sdtejson
 [{"name":"index","type":"string","format":"","analyzerType":"STRING"},{"name":"TranquilCity_Index","type":"real","format":"","analyzerType":"FLOAT"},{"name":"Rating","type":"string","format":"","analyzerType":"STRING"}]
 
 55.8614098175835, -4.250582048995372
+
+c("#006837", "#31a354", "#78c679", "#addd8e", "#d9f0a3", "#ffffcc"
+)

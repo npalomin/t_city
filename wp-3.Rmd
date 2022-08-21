@@ -43,7 +43,12 @@ options(scipen = 999)
 # Read data
 
 ```{r}
-sd <- st_read("large_data/Tranquil City Index_Sample.geojson")
+library(readr)
+library(tidyverse)
+#install.packages("jsonlite")
+library(jsonlite)
+
+sd <- read.csv("large_data/Glasogw_TranquilCityIndex_ratings.csv")
 ```
 
 # Filter variables
@@ -51,16 +56,26 @@ sd <- st_read("large_data/Tranquil City Index_Sample.geojson")
 ```{r}
 names(sd)
 
-kv <- c("index", "tranquilcityindex_day", "dBA_total_LQ16", "no2_conc", "pm25_conc", "greencov_perc", "bluecov_perc", "treecov_perc")
-
 sd %>%
-  select(kv) %>%
-  st_drop_geometry() -> sdcsv
+  rename(TranquilCity_Index = tci_v3_mean,
+         Rating = rating) %>%
+  mutate(Rating = str_to_title(Rating),
+         TranquilCity_Index = round(TranquilCity_Index,3)) -> sdte
 
-write_csv(sdcsv, "large_data/sdcsv.csv")
+write_csv(sdte, "large_data/tci-glasgow.csv")
+names(sdte)
+
+sdte %>%
+  # slice(1:400) %>%
+  toJSON(dataframe = "values") -> sdtejson
+
+sdtejson
+
+#write_json(sdtejson, "large_data/tci-glasgow.json") # adds \before " doesn't work
 ```
 
+["8c194ad01da05ff",0.8,41.24,26.47327,10.5475,35.33,0,20.58]
 
-
+[{"name":"index","type":"string","format":"","analyzerType":"STRING"},{"name":"tranquilcityindex_day","type":"real","format":"","analyzerType":"FLOAT"},{"name":"dBA_total_LQ16","type":"real","format":"","analyzerType":"FLOAT"}]
 
 

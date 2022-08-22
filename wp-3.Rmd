@@ -80,6 +80,10 @@ sdtejson
 
 rev(c("#ffffcc","#d9f0a3","#addd8e","#78c679","#31a354","#006837")) %>%
   dput()
+
+library(RColorBrewer)
+colorRampPalette(c("#0F6E3F", "#DAF0A6", "#FDFDFD"))(5) %>%
+  dput()
 ```
 
 ["8c194ad01da05ff",0.8,41.24,26.47327,10.5475,35.33,0,20.58]

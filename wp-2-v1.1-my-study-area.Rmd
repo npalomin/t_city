@@ -510,7 +510,7 @@ end_time - start_time
 ```{css, echo = FALSE, class.source = 'foldable'}
 h1, h2, h3 {
   color: #6EC0A5; 
-  font-family: "Trebuchet MS"
+  font-family: "Trebuchet MS";
 }
 body {
   font-family: "Trebuchet MS";

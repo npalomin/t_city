@@ -1,5 +1,5 @@
 ---
-title: "Create OSM Data Processing Script 2. my-study-area"
+title: "Query OSM data from geometry input"
 author:
   name: Nicolas Palominos
 output: 
@@ -585,5 +585,3 @@ h6 {
 #   geom_sf(data=sabox,fill=NA, col="tomato") +
 #   geom_sf(data=saboundary, fill=NA, col="navy")
 ```
-
-

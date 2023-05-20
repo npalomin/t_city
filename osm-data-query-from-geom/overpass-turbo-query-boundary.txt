@@ -6,7 +6,7 @@ The original search was:
 [out:json][timeout:25];
 // gather results
 (
-  // query part for: “name=Hertfordshire and admin_level=6”
+  // query part for: “name=Hertfordshire and admin_level=8”
   node["name"="Buenos Aires"]["admin_level"="8"](-34.71000915922493,-58.59317779541015,-34.52437861374528,-58.31199645996093);
   way["name"="Buenos Aires"]["admin_level"="8"](-34.71000915922493,-58.59317779541015,-34.52437861374528,-58.31199645996093);
   relation["name"="Buenos Aires"]["admin_level"="8"](-34.71000915922493,-58.59317779541015,-34.52437861374528,-58.31199645996093);

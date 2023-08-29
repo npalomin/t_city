@@ -1,0 +1,28 @@
+---
+title: "A0-avas-demo-data"
+output: html_document
+date: "2023-08-29"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(sf)
+library(mapview)
+```
+
+# read data
+```{r}
+demo <- st_read("/Users/nicolas/Documents/WORKS/TCity/TfL_AVAS/Bus_Test v4.shp")
+```
+
+```{r}
+mapview(demo)
+```
+
+```{r}
+names(demo)
+```
+
